@@ -6,12 +6,12 @@ import eu.ejdr.application.common.Result
 import eu.ejdr.domain.error.entities.auth.AuthError
 
 /**
- * Implémentation par défaut de [LogoutUseCase].
+ * Implémentation de [LogoutUseCase].
  *
  * Orchestration pure : délègue la déconnexion à l'[AuthRepository] et renvoie son
  * résultat tel quel.
  */
-class DefaultLogoutUseCase(
+class LogoutUseCaseImpl(
     private val authRepository: AuthRepository,
 ) : LogoutUseCase {
     override suspend fun invoke(): Result<Unit, AuthError> = authRepository.logout()

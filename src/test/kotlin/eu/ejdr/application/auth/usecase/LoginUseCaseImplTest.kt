@@ -12,10 +12,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class DefaultLoginUseCaseTest {
+class LoginUseCaseImplTest {
 
     private val repository = mockk<AuthRepository>()
-    private val useCase = DefaultLoginUseCase(repository)
+    private val useCase = LoginUseCaseImpl(repository)
 
     private val creds = Credentials("a@b.c", "pw")
 

@@ -6,14 +6,14 @@ import eu.ejdr.application.common.Result
 import eu.ejdr.domain.error.entities.auth.AuthError
 
 /**
- * Service réutilisable encapsulant la restauration silencieuse de session.
+ * Implémentation de [SessionService].
  *
  * Centralise la logique de rétablissement de session (vérification d'une session
  * persistée puis rafraîchissement) afin qu'elle soit partagée entre les use cases
  * plutôt que dupliquée. Un service peut s'appuyer sur des repositories et d'autres
  * services ; il ne dépend que des abstractions.
  */
-class DefaultSessionService(
+class SessionServiceImpl(
     private val authRepository: AuthRepository,
 ) : SessionService {
 

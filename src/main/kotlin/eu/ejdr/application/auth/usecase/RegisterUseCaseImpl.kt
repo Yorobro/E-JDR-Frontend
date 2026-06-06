@@ -8,12 +8,12 @@ import eu.ejdr.domain.entities.auth.User
 import eu.ejdr.domain.error.entities.auth.AuthError
 
 /**
- * Implémentation par défaut de [RegisterUseCase].
+ * Implémentation de [RegisterUseCase].
  *
  * Orchestration pure : délègue la création de compte à l'[AuthRepository] et
  * renvoie son résultat tel quel.
  */
-class DefaultRegisterUseCase(
+class RegisterUseCaseImpl(
     private val authRepository: AuthRepository,
 ) : RegisterUseCase {
     override suspend fun invoke(credentials: Credentials): Result<User, AuthError> =

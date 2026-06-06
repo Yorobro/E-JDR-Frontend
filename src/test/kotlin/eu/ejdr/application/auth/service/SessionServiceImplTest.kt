@@ -11,10 +11,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class DefaultSessionServiceTest {
+class SessionServiceImplTest {
 
     private val repository = mockk<AuthRepository>()
-    private val service = DefaultSessionService(repository)
+    private val service = SessionServiceImpl(repository)
 
     @Test
     fun `restore returns NoPersistedSession when nothing persisted`() = runTest {

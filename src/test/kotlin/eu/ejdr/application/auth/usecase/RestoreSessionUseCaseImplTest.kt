@@ -10,10 +10,10 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class DefaultRestoreSessionUseCaseTest {
+class RestoreSessionUseCaseImplTest {
 
     private val service = mockk<SessionService>()
-    private val useCase = DefaultRestoreSessionUseCase(service)
+    private val useCase = RestoreSessionUseCaseImpl(service)
 
     @Test
     fun `delegates to session service`() = runTest {
