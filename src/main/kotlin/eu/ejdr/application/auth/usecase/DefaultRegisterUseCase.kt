@@ -7,6 +7,12 @@ import eu.ejdr.domain.entities.auth.Credentials
 import eu.ejdr.domain.entities.auth.User
 import eu.ejdr.domain.error.entities.auth.AuthError
 
+/**
+ * Implémentation par défaut de [RegisterUseCase].
+ *
+ * Orchestration pure : délègue la création de compte à l'[AuthRepository] et
+ * renvoie son résultat tel quel.
+ */
 class DefaultRegisterUseCase(
     private val authRepository: AuthRepository,
 ) : RegisterUseCase {

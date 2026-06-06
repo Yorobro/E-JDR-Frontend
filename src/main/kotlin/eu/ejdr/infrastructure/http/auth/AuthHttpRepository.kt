@@ -19,6 +19,24 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 
+/**
+ * Implémentation HTTP de [AuthRepository] dialoguant avec les routes
+ * `/auth/login`, `/auth/register`, `/auth/refresh` et `/auth/logout`.
+ *
+ * Modèle d'authentification : la session repose sur des cookies HttpOnly posés
+ * et lus par le serveur via le [HttpClient]. Ce code ne manipule donc jamais le
+ * token directement ; seul le refresh_token est persisté chiffré par
+ * [SecureCookiesStorage] pour permettre la restauration de session.
+ *
+ * Toute erreur de transport est convertie en [AuthError.Network] ; les échecs
+ * applicatifs passent par [AuthHttpMapper.toAuthError].
+ *
+ * @property client Client HTTP configuré (cookies + JSON).
+ * @property config Configuration applicative (URL de base).
+ * @property mapper Traducteur DTO/statut HTTP vers le domaine.
+ * @property cookiesStorage Stockage des cookies, sollicité pour effacer la
+ * session persistée lors d'un refresh échoué ou d'une déconnexion.
+ */
 class AuthHttpRepository(
     private val client: HttpClient,
     private val config: AppConfig,
@@ -26,12 +44,34 @@ class AuthHttpRepository(
     private val cookiesStorage: SecureCookiesStorage,
 ) : AuthRepository {
 
+    /**
+     * Authentifie un utilisateur existant via `/auth/login`.
+     *
+     * @param credentials Identifiants saisis par l'utilisateur.
+     * @return [Result.Success] avec l'[User] connecté, sinon une [AuthError].
+     */
     override suspend fun login(credentials: Credentials): Result<User, AuthError> =
         authenticate("/auth/login", credentials)
 
+    /**
+     * Crée un compte puis ouvre la session via `/auth/register`.
+     *
+     * @param credentials Identifiants du nouveau compte.
+     * @return [Result.Success] avec l'[User] créé, sinon une [AuthError].
+     */
     override suspend fun register(credentials: Credentials): Result<User, AuthError> =
         authenticate("/auth/register", credentials)
 
+    /**
+     * Logique commune de login/register : poste les identifiants, puis traduit
+     * la réponse (succès -> [User], échec -> [AuthError] via le mapper). Les
+     * cookies de session éventuels sont gérés de façon transparente par le
+     * [HttpClient].
+     *
+     * @param path Chemin de l'endpoint d'authentification.
+     * @param credentials Identifiants à transmettre.
+     * @return Le résultat typé de l'opération.
+     */
     private suspend fun authenticate(path: String, credentials: Credentials): Result<User, AuthError> =
         runCatching {
             val response: HttpResponse = client.post("${config.baseUrl}$path") {
@@ -46,6 +86,15 @@ class AuthHttpRepository(
             }
         }.getOrElse { Result.Failure(AuthError.Network) }
 
+    /**
+     * Renouvelle la session via `/auth/refresh` à partir du refresh_token.
+     *
+     * En cas d'échec, le cookie persisté est effacé pour éviter de retenter
+     * indéfiniment une restauration avec un jeton invalide.
+     *
+     * @return [Result.Success] si la session est renouvelée, sinon
+     * [AuthError.SessionExpired] (échec serveur) ou [AuthError.Network].
+     */
     override suspend fun refresh(): Result<Unit, AuthError> =
         runCatching {
             val response = client.post("${config.baseUrl}/auth/refresh")
@@ -57,6 +106,15 @@ class AuthHttpRepository(
             }
         }.getOrElse { Result.Failure(AuthError.Network) }
 
+    /**
+     * Déconnecte l'utilisateur via `/auth/logout`.
+     *
+     * Le cookie persisté est systématiquement effacé, que l'appel serveur
+     * réussisse ou échoue : la déconnexion locale doit toujours aboutir. L'appel
+     * renvoie donc toujours un succès.
+     *
+     * @return Toujours [Result.Success].
+     */
     override suspend fun logout(): Result<Unit, AuthError> =
         runCatching {
             client.post("${config.baseUrl}/auth/logout")
@@ -67,5 +125,10 @@ class AuthHttpRepository(
             Result.Success(Unit)
         }
 
+    /**
+     * Indique si une session restaurable (refresh_token chiffré) existe sur disque.
+     *
+     * @return `true` si un refresh_token a été persisté, sinon `false`.
+     */
     override fun hasPersistedSession(): Boolean = cookiesStorage.hasPersistedSession()
 }

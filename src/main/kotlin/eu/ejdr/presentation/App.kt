@@ -20,6 +20,13 @@ import eu.ejdr.presentation.feature.auth.page.RegisterPage
 import eu.ejdr.presentation.navigation.Screen
 import org.koin.compose.koinInject
 
+/**
+ * Composable racine de l'application.
+ *
+ * Au démarrage, tente un auto-login via [RestoreSessionUseCase] : en cas de succès, l'utilisateur
+ * est dirigé vers l'accueil, sinon vers la connexion. Le composable détient l'état de navigation
+ * ([Screen]) et effectue le routing par état entre les pages (Splash, Login, Register, Home).
+ */
 @Composable
 fun App() {
     MaterialTheme {

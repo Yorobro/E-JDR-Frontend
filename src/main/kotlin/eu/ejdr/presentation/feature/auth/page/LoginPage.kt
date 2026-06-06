@@ -13,6 +13,17 @@ import eu.ejdr.presentation.feature.auth.component.LoginForm
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+/**
+ * Page de connexion (composant INTELLIGENT).
+ *
+ * Seul endroit de la feature auth qui injecte et appelle le [LoginUseCase] (via [koinInject]).
+ * Elle détient l'état local du formulaire (email, mot de passe, erreur, chargement), orchestre
+ * l'appel au use case dans une coroutine, et traduit l'erreur domaine ([Result.Failure]) en
+ * message UI. Le rendu est délégué au composant bête [LoginForm].
+ *
+ * @param onAuthenticated Callback appelé en cas de connexion réussie (navigation vers l'accueil).
+ * @param onGoToRegister Callback de navigation vers la page d'inscription.
+ */
 @Composable
 fun LoginPage(
     onAuthenticated: () -> Unit,

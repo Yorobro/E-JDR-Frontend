@@ -12,6 +12,18 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
 import org.koin.dsl.module
 
+/**
+ * Module Koin de la couche infrastructure.
+ *
+ * Il fournit les briques techniques (configuration, sécurité, accès réseau) et
+ * câble les implémentations infra aux ports déclarés par la couche application.
+ * En particulier, le port [AuthRepository] est lié à son implémentation HTTP
+ * [AuthHttpRepository] : la présentation ne dépend ainsi que de l'interface.
+ *
+ * Composants exposés : [AppConfig], [KeyStoreProvider], [CookieCipher],
+ * [SecureCookiesStorage], le [HttpClient] (via [KtorClientFactory]),
+ * [AuthHttpMapper] et [AuthRepository].
+ */
 val infrastructureModule = module {
     single { AppConfig.load() }
     single { KeyStoreProvider(get<AppConfig>().dataDir) }

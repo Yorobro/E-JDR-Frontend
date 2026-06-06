@@ -11,6 +11,23 @@ import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.LabeledTextField
 
+/**
+ * Formulaire d'inscription.
+ *
+ * Composant BÊTE (stateless) : il ne détient aucun état et n'appelle aucun use case. Il reçoit
+ * toutes ses valeurs en paramètres et remonte les événements (saisie, soumission, navigation)
+ * via des callbacks. Toute la logique est portée par la page parente ([RegisterPage]).
+ *
+ * @param email Valeur courante du champ email.
+ * @param password Valeur courante du champ mot de passe.
+ * @param errorMessage Message d'erreur à afficher, ou `null` si aucune erreur.
+ * @param loading Indique si une opération est en cours (désactive les champs et boutons).
+ * @param onEmailChange Callback remontant la modification de l'email.
+ * @param onPasswordChange Callback remontant la modification du mot de passe.
+ * @param onSubmit Callback déclenché à la soumission du formulaire.
+ * @param onGoToLogin Callback de navigation vers l'écran de connexion.
+ * @param modifier Modifier Compose appliqué au formulaire.
+ */
 @Composable
 fun RegisterForm(
     email: String,

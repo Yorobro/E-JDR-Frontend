@@ -13,6 +13,17 @@ import eu.ejdr.presentation.feature.auth.component.RegisterForm
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
+/**
+ * Page d'inscription (composant INTELLIGENT).
+ *
+ * Seul endroit de la feature auth qui injecte et appelle le [RegisterUseCase] (via [koinInject]).
+ * Elle détient l'état local du formulaire (email, mot de passe, erreur, chargement), orchestre
+ * l'appel au use case dans une coroutine, et traduit l'erreur domaine ([Result.Failure]) en
+ * message UI. Le rendu est délégué au composant bête [RegisterForm].
+ *
+ * @param onAuthenticated Callback appelé en cas d'inscription réussie (navigation vers l'accueil).
+ * @param onGoToLogin Callback de navigation vers la page de connexion.
+ */
 @Composable
 fun RegisterPage(
     onAuthenticated: () -> Unit,

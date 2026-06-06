@@ -5,10 +5,50 @@ import eu.ejdr.domain.entities.auth.Credentials
 import eu.ejdr.domain.entities.auth.User
 import eu.ejdr.domain.error.entities.auth.AuthError
 
+/**
+ * Port d'accès à l'authentification : abstraction des opérations distantes et locales
+ * liées à la session utilisateur.
+ *
+ * Implémenté par la couche infrastructure ; consommé par les use cases et services
+ * de la couche application sans dépendre des détails techniques (HTTP, stockage, etc.).
+ * Toutes les opérations renvoient un [Result] : aucune exception ne doit remonter.
+ */
 interface AuthRepository {
+    /**
+     * Authentifie un utilisateur existant.
+     *
+     * @param credentials identifiants de connexion à vérifier
+     * @return l'[User] authentifié, ou une [AuthError] en cas d'échec
+     */
     suspend fun login(credentials: Credentials): Result<User, AuthError>
+
+    /**
+     * Crée un nouveau compte utilisateur.
+     *
+     * @param credentials identifiants du compte à créer
+     * @return l'[User] nouvellement enregistré, ou une [AuthError] en cas d'échec
+     */
     suspend fun register(credentials: Credentials): Result<User, AuthError>
+
+    /**
+     * Rafraîchit la session courante à partir des informations persistées
+     * (renouvellement de jeton).
+     *
+     * @return [Unit] si la session est renouvelée, ou une [AuthError] sinon
+     */
     suspend fun refresh(): Result<Unit, AuthError>
+
+    /**
+     * Termine la session courante et invalide les informations persistées.
+     *
+     * @return [Unit] si la déconnexion réussit, ou une [AuthError] sinon
+     */
     suspend fun logout(): Result<Unit, AuthError>
+
+    /**
+     * Indique si une session est persistée localement (sans la valider auprès du serveur).
+     *
+     * @return `true` si des informations de session existent localement, `false` sinon
+     */
     fun hasPersistedSession(): Boolean
 }

@@ -12,6 +12,16 @@ import eu.ejdr.application.auth.usecase.DefaultRegisterUseCase
 import eu.ejdr.application.auth.usecase.DefaultRestoreSessionUseCase
 import org.koin.dsl.module
 
+/**
+ * Module Koin de la couche application.
+ *
+ * Il enregistre les services et use cases métier en les liant à leurs interfaces
+ * (ports d'entrée) : [SessionService], [LoginUseCase], [RegisterUseCase],
+ * [RestoreSessionUseCase] et [LogoutUseCase] sont fournis via leurs
+ * implémentations par défaut. Leurs dépendances infra (ex. [AuthRepository])
+ * sont résolues depuis [infrastructureModule], la présentation ne connaissant
+ * que ces interfaces.
+ */
 val applicationModule = module {
     single<SessionService> { DefaultSessionService(get()) }
     single<LoginUseCase> { DefaultLoginUseCase(get()) }
