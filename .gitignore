@@ -1,7 +1,10 @@
 .gradle/
 build/
+bin/
 *.iml
 .idea/
+.vscode/
+.kotlin/
 local.properties
 *.jceks
 *.keystore
