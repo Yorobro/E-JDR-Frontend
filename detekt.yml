@@ -1,0 +1,65 @@
+# Configuration detekt — pragmatique.
+# On garde les règles à forte valeur (complexité, code mort, exceptions, sûreté)
+# et on neutralise les règles de style/formatage qui feraient double emploi avec le
+# compilateur ou qui sont trop bruyantes sur ce code (UI Compose, DSL Koin/Ktor).
+
+build:
+  maxIssues: 0
+
+complexity:
+  LongMethod:
+    active: true
+    threshold: 80
+  LongParameterList:
+    # Les @Composable et constructeurs d'injection ont légitimement beaucoup de paramètres.
+    active: false
+  TooManyFunctions:
+    active: false
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 20
+
+exceptions:
+  TooGenericExceptionCaught:
+    # `runCatching { ... }` et les `catch` de secours volontaires (clear-on-fail) sont assumés.
+    active: false
+  SwallowedException:
+    active: false
+  ThrowingExceptionsWithoutMessageOrCause:
+    active: false
+
+style:
+  MagicNumber:
+    # Beaucoup de constantes UI (dp, sp, tailles) ; gérées par le design system.
+    active: false
+  ReturnCount:
+    active: false
+  UnusedPrivateMember:
+    active: true
+  ForbiddenComment:
+    active: false
+  MaxLineLength:
+    active: false
+  WildcardImport:
+    active: false
+  UnnecessaryAbstractClass:
+    active: false
+
+naming:
+  FunctionNaming:
+    # Les fonctions @Composable sont volontairement en PascalCase.
+    active: false
+  TopLevelPropertyNaming:
+    active: false
+  MatchingDeclarationName:
+    # Un fichier de composant (ex. AppButton.kt) regroupe le @Composable et son enum
+    # de variante (ButtonVariant) : le 1er déclarant ne porte pas toujours le nom du fichier.
+    active: false
+
+potential-bugs:
+  active: true
+
+empty-blocks:
+  EmptyCatchBlock:
+    # Les blocs catch vides documentés (purge best-effort) sont intentionnels.
+    active: false

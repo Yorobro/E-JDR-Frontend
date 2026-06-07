@@ -21,5 +21,11 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
+      - name: Static analysis (detekt)
+        run: ./gradlew detekt --no-daemon --stacktrace
+
       - name: Build and run tests
         run: ./gradlew build --no-daemon --stacktrace
+
+      - name: Verify coverage (Kover)
+        run: ./gradlew koverVerify --no-daemon --stacktrace

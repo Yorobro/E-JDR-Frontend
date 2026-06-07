@@ -25,10 +25,11 @@ class AuthHttpMapper {
     /**
      * Traduit un échec HTTP en erreur métier d'authentification.
      *
-     * Le statut HTTP prime pour identifier les cas connus (401 -> identifiants
-     * invalides, 409 -> e-mail déjà utilisé, 403 -> session expirée) ; les
-     * champs {code, message} du corps d'erreur ne servent qu'à enrichir le cas
-     * [AuthError.Unknown] par défaut.
+     * Le **code applicatif** prime quand il est présent (contrat partagé avec le backend,
+     * cf. les codes émis par `AuthHttpMapper.toHttpStatus` côté serveur) car un même statut
+     * 401 recouvre deux cas distincts : `INVALID_CREDENTIALS` (login) et
+     * `INVALID_REFRESH_TOKEN` (session à renouveler). À défaut de code, on retombe sur le
+     * statut HTTP, puis sur [AuthError.Unknown].
      *
      * @param status Statut HTTP retourné par l'API.
      * @param code Code d'erreur applicatif éventuel (issu d'[eu.ejdr.infrastructure.http.auth.dto.ApiErrorDto]).
@@ -36,10 +37,14 @@ class AuthHttpMapper {
      * @return L'[AuthError] du domaine correspondant.
      */
     fun toAuthError(status: HttpStatusCode, code: String?, message: String?): AuthError =
-        when (status) {
-            HttpStatusCode.Unauthorized -> AuthError.InvalidCredentials
-            HttpStatusCode.Conflict -> AuthError.EmailAlreadyUsed
-            HttpStatusCode.Forbidden -> AuthError.SessionExpired
-            else -> AuthError.Unknown(message ?: code ?: status.description)
+        when (code) {
+            "INVALID_CREDENTIALS" -> AuthError.InvalidCredentials
+            "EMAIL_ALREADY_USED" -> AuthError.EmailAlreadyUsed
+            "INVALID_REFRESH_TOKEN" -> AuthError.SessionExpired
+            else -> when (status) {
+                HttpStatusCode.Unauthorized -> AuthError.InvalidCredentials
+                HttpStatusCode.Conflict -> AuthError.EmailAlreadyUsed
+                else -> AuthError.Unknown(message ?: code ?: status.description)
+            }
         }
 }

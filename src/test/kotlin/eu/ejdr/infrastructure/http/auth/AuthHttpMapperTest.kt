@@ -26,4 +26,12 @@ class AuthHttpMapperTest {
         val error = mapper.toAuthError(HttpStatusCode.InternalServerError, code = null, message = "boom")
         assertEquals("Erreur inattendue: boom", error.message)
     }
+
+    @Test
+    fun `INVALID_REFRESH_TOKEN code on 401 maps to SessionExpired`() {
+        // Contrat partagé : le backend renvoie 401 + ce code pour un refresh à renouveler ;
+        // le code prime sur le statut (un 401 nu resterait InvalidCredentials).
+        val error = mapper.toAuthError(HttpStatusCode.Unauthorized, code = "INVALID_REFRESH_TOKEN", message = null)
+        assertEquals(AuthError.SessionExpired, error)
+    }
 }

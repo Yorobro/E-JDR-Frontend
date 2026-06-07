@@ -19,6 +19,9 @@ Application **desktop** (Compose for Desktop, JVM pur) du projet E-JDR, écrite 
 # Build complet (compilation + tests)
 ./gradlew build
 
+# Analyse statique (detekt) et vérification de couverture (Kover)
+./gradlew detekt koverVerify
+
 # Empaqueter une distribution native (exe/msi)
 ./gradlew packageDistributionForCurrentOS
 ```
@@ -62,6 +65,10 @@ lui-même. Côté desktop :
 - `SecureCookiesStorage` persiste **uniquement** le `refresh_token`, **chiffré
   AES-GCM** (clé dans un KeyStore JCEKS local), sous `%APPDATA%/E-JDR/`.
   L'`access_token` reste en mémoire.
+- Le mot de passe du KeyStore est **dérivé d'attributs locaux** (utilisateur + machine,
+  SHA-256) et non codé en dur : le coffre est lié à son environnement. Ce n'est pas un
+  secret matériel (un attaquant ayant un accès complet au poste pourrait le reconstituer),
+  mais cela supprime tout secret en clair dans le binaire.
 - Au démarrage, `RestoreSessionUseCase` tente un `/auth/refresh` silencieux pour
   rester connecté après redémarrage ; en cas d'échec, l'écran de connexion s'affiche.
 - Logout efface les cookies en mémoire et le fichier persisté.

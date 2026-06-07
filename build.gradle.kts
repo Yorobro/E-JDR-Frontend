@@ -5,6 +5,8 @@ plugins {
     kotlin("plugin.serialization") version "2.2.20"
     id("org.jetbrains.compose") version "1.11.1"
     id("org.jetbrains.kotlin.plugin.compose") version "2.2.20"
+    id("io.gitlab.arturbosch.detekt") version "1.23.8"
+    id("org.jetbrains.kotlinx.kover") version "0.9.1"
 }
 
 group = "eu.ejdr"
@@ -46,6 +48,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
     testImplementation("io.mockk:mockk:1.14.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+    testImplementation("io.ktor:ktor-client-mock:$ktorVersion")
 }
 
 tasks.test {
@@ -63,6 +66,43 @@ compose.desktop {
             targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             packageName = "E-JDR"
             packageVersion = "1.0.0"
+        }
+    }
+}
+
+// ───────────────────────────────────────────────────────────────
+// Qualité : detekt (analyse statique) + Kover (couverture)
+//
+// detekt est retenu plutôt que ktlint : les versions actuelles du plugin ktlint
+// embarquent un frontend Kotlin incompatible avec Kotlin 2.2 (échec de parsing).
+// detekt analyse le code source pour les vraies anomalies (complexité, code mort,
+// constructions risquées) sans imposer un style de mise en forme.
+// ───────────────────────────────────────────────────────────────
+detekt {
+    buildUponDefaultConfig = true
+    config.setFrom(files("$rootDir/detekt.yml"))
+    // Ne pas analyser les sources générées / compilées.
+    ignoreFailures = false
+}
+
+kover {
+    reports {
+        filters {
+            excludes {
+                // Exclus : UI Compose (testée manuellement), DI, point d'entrée, DTO/erreurs déclaratifs.
+                packages(
+                    "eu.ejdr.presentation",
+                    "eu.ejdr.di",
+                )
+                classes(
+                    "eu.ejdr.MainKt",
+                )
+            }
+        }
+        verify {
+            rule {
+                minBound(60) // plancher de couverture : la CI échoue en dessous.
+            }
         }
     }
 }
