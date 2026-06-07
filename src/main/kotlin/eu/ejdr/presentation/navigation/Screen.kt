@@ -16,6 +16,11 @@ sealed interface Screen {
     /** Écran d'inscription. */
     data object Register : Screen
 
-    /** Écran d'accueil affiché une fois l'utilisateur authentifié. */
-    data object Home : Screen
+    /**
+     * Zone connectée : écran utilisateur affiché une fois l'utilisateur authentifié.
+     *
+     * @property user Profil connecté, ou `null` si arrivé par auto-login sans profil chargé.
+     */
+    data class User(val user: eu.ejdr.domain.entities.auth.User?) : Screen
+    // NB: nom qualifié pour lever l'ambiguïté avec le nom de la data class elle-même.
 }

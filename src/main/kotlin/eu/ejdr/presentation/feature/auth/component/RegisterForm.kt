@@ -1,15 +1,16 @@
 package eu.ejdr.presentation.feature.auth.component
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import eu.ejdr.presentation.shared.component.atomic.AppButton
+import eu.ejdr.presentation.shared.component.atomic.AppPasswordField
+import eu.ejdr.presentation.shared.component.atomic.AppTextField
+import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
+import eu.ejdr.presentation.shared.component.molecule.FieldGroup
 import eu.ejdr.presentation.shared.component.molecule.FormError
-import eu.ejdr.presentation.shared.component.molecule.LabeledTextField
+import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
  * Formulaire d'inscription.
@@ -40,14 +41,14 @@ fun RegisterForm(
     onGoToLogin: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Column(
-        modifier = modifier.fillMaxWidth().padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+    FieldGroup(
+        modifier = modifier.fillMaxWidth().padding(AppTheme.dimens.md),
+        spacing = AppTheme.dimens.md,
     ) {
-        LabeledTextField(email, onEmailChange, "Email", enabled = !loading)
-        LabeledTextField(password, onPasswordChange, "Mot de passe", isPassword = true, enabled = !loading)
+        AppTextField(email, onEmailChange, "Email", enabled = !loading, modifier = Modifier.fillMaxWidth())
+        AppPasswordField(password, onPasswordChange, "Mot de passe", enabled = !loading, modifier = Modifier.fillMaxWidth())
         FormError(errorMessage)
         AppButton("S'inscrire", onSubmit, loading = loading, modifier = Modifier.fillMaxWidth())
-        AppButton("J'ai déjà un compte", onGoToLogin, enabled = !loading, modifier = Modifier.fillMaxWidth())
+        AppButton("J'ai déjà un compte", onGoToLogin, variant = ButtonVariant.Text, enabled = !loading, modifier = Modifier.fillMaxWidth())
     }
 }

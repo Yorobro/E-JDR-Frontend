@@ -9,6 +9,7 @@ import androidx.compose.runtime.setValue
 import eu.ejdr.application.auth.abstraction.usecase.LoginUseCase
 import eu.ejdr.application.common.Result
 import eu.ejdr.domain.entities.auth.Credentials
+import eu.ejdr.domain.entities.auth.User
 import eu.ejdr.presentation.feature.auth.component.LoginForm
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -21,12 +22,12 @@ import org.koin.compose.koinInject
  * l'appel au use case dans une coroutine, et traduit l'erreur domaine ([Result.Failure]) en
  * message UI. Le rendu est délégué au composant bête [LoginForm].
  *
- * @param onAuthenticated Callback appelé en cas de connexion réussie (navigation vers l'accueil).
+ * @param onAuthenticated Callback appelé en cas de connexion réussie, portant l'utilisateur connecté.
  * @param onGoToRegister Callback de navigation vers la page d'inscription.
  */
 @Composable
 fun LoginPage(
-    onAuthenticated: () -> Unit,
+    onAuthenticated: (User) -> Unit,
     onGoToRegister: () -> Unit,
 ) {
     val loginUseCase = koinInject<LoginUseCase>()
@@ -50,7 +51,7 @@ fun LoginPage(
             error = null
             scope.launch {
                 when (val result = loginUseCase(Credentials(email.trim(), password))) {
-                    is Result.Success -> onAuthenticated()
+                    is Result.Success -> onAuthenticated(result.value)
                     is Result.Failure -> error = result.error.message
                 }
                 loading = false
