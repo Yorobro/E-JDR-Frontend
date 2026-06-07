@@ -22,7 +22,9 @@ class NumericInputTest {
 
     @Test
     fun `decimal allowed drops extra dots`() {
-        assertEquals("12.34", filterNumericInput("1.2.3.4", allowDecimal = true, allowNegative = false))
+        // Règle : garder tous les chiffres + le premier point uniquement ; les points
+        // suivants sont supprimés mais les chiffres restants sont conservés.
+        assertEquals("1.234", filterNumericInput("1.2.3.4", allowDecimal = true, allowNegative = false))
     }
 
     @Test
