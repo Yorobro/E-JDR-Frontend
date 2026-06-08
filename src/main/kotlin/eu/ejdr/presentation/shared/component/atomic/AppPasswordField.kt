@@ -12,6 +12,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -39,6 +40,7 @@ fun AppPasswordField(
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
     enabled: Boolean = true,
+    leadingIcon: ImageVector? = null,
 ) {
     var visible by remember { mutableStateOf(false) }
     AppTextField(
@@ -48,6 +50,7 @@ fun AppPasswordField(
         modifier = modifier,
         errorMessage = errorMessage,
         enabled = enabled,
+        leadingIcon = leadingIcon,
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         trailingContent = {

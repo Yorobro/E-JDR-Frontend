@@ -1,34 +1,36 @@
 package eu.ejdr.presentation.feature.auth.component
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Email
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppPasswordField
+import eu.ejdr.presentation.shared.component.atomic.AppText
+import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
-import eu.ejdr.presentation.shared.component.molecule.FieldGroup
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.theme.AppTheme
 
-/**
- * Formulaire de connexion.
- *
- * Composant BÊTE (stateless) : il ne détient aucun état et n'appelle aucun use case. Il reçoit
- * toutes ses valeurs en paramètres et remonte les événements (saisie, soumission, navigation)
- * via des callbacks. Toute la logique est portée par la page parente ([LoginPage]).
- *
- * @param email Valeur courante du champ email.
- * @param password Valeur courante du champ mot de passe.
- * @param errorMessage Message d'erreur à afficher, ou `null` si aucune erreur.
- * @param loading Indique si une opération est en cours (désactive les champs et boutons).
- * @param onEmailChange Callback remontant la modification de l'email.
- * @param onPasswordChange Callback remontant la modification du mot de passe.
- * @param onSubmit Callback déclenché à la soumission du formulaire.
- * @param onGoToRegister Callback de navigation vers l'écran d'inscription.
- * @param modifier Modifier Compose appliqué au formulaire.
- */
 @Composable
 fun LoginForm(
     email: String,
@@ -41,14 +43,88 @@ fun LoginForm(
     onGoToRegister: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    FieldGroup(
-        modifier = modifier.fillMaxWidth().padding(AppTheme.dimens.md),
-        spacing = AppTheme.dimens.md,
+    Box(
+        modifier = modifier.fillMaxSize().background(AppTheme.colors.background),
+        contentAlignment = Alignment.Center,
     ) {
-        AppTextField(email, onEmailChange, "Email", enabled = !loading, modifier = Modifier.fillMaxWidth())
-        AppPasswordField(password, onPasswordChange, "Mot de passe", enabled = !loading, modifier = Modifier.fillMaxWidth())
-        FormError(errorMessage)
-        AppButton("Se connecter", onSubmit, loading = loading, modifier = Modifier.fillMaxWidth())
-        AppButton("Créer un compte", onGoToRegister, variant = ButtonVariant.Text, enabled = !loading, modifier = Modifier.fillMaxWidth())
+        Surface(
+            modifier = Modifier.width(360.dp),
+            shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
+            color = AppTheme.colors.surface,
+            shadowElevation = 2.dp,
+            tonalElevation = 0.dp,
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(AppTheme.dimens.xl),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                AppText(
+                    text = "E-JDR",
+                    style = AppTextStyle.Title,
+                    textAlign = TextAlign.Center,
+                )
+                Spacer(Modifier.height(AppTheme.dimens.xs))
+                AppText(
+                    text = "Connectez-vous pour continuer",
+                    style = AppTextStyle.Body,
+                    color = AppTheme.colors.textSecondary,
+                    textAlign = TextAlign.Center,
+                )
+
+                Spacer(Modifier.height(AppTheme.dimens.lg))
+
+                AppTextField(
+                    value = email,
+                    onValueChange = onEmailChange,
+                    label = "Email",
+                    enabled = !loading,
+                    leadingIcon = Icons.Outlined.Email,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(AppTheme.dimens.sm))
+                AppPasswordField(
+                    value = password,
+                    onValueChange = onPasswordChange,
+                    label = "Mot de passe",
+                    enabled = !loading,
+                    leadingIcon = Icons.Outlined.Lock,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Spacer(Modifier.height(AppTheme.dimens.xs))
+                FormError(errorMessage)
+                Spacer(Modifier.height(AppTheme.dimens.sm))
+
+                AppButton(
+                    label = "Se connecter",
+                    onClick = onSubmit,
+                    loading = loading,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+
+                Spacer(Modifier.height(AppTheme.dimens.md))
+                HorizontalDivider(color = AppTheme.colors.border)
+                Spacer(Modifier.height(AppTheme.dimens.xs))
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+                ) {
+                    AppText(
+                        text = "Pas encore de compte ?",
+                        style = AppTextStyle.Caption,
+                        color = AppTheme.colors.textSecondary,
+                    )
+                    AppButton(
+                        label = "S'inscrire",
+                        onClick = onGoToRegister,
+                        variant = ButtonVariant.Text,
+                        enabled = !loading,
+                    )
+                }
+            }
+        }
     }
 }
