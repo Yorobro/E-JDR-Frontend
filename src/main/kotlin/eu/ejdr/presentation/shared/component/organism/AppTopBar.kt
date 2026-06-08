@@ -6,6 +6,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,19 +25,22 @@ import eu.ejdr.presentation.shared.theme.AppTheme
 /**
  * Organisme barre de navigation supérieure (top bar) de la zone connectée.
  *
- * Composant bête : il affiche le titre de l'application à gauche et un bouton de déconnexion
- * à droite, et remonte le clic via [onLogout]. Présent en haut de tous les écrans connectés
- * via [AppScaffold].
+ * Composant bête : affiche le titre à gauche (précédé d'un bouton retour si [onBack] est fourni)
+ * et les actions à droite (icône paramètres si [onSettings] est fourni, puis déconnexion).
  *
- * @param title Titre affiché à gauche (nom de l'application ou de l'écran).
+ * @param title Titre affiché à gauche.
  * @param onLogout Callback déclenché au clic sur le bouton de déconnexion.
  * @param modifier Modifier Compose appliqué à la barre.
+ * @param onSettings Callback pour ouvrir les paramètres ; si `null`, l'icône est masquée.
+ * @param onBack Callback pour revenir en arrière ; si `null`, le bouton est masqué.
  */
 @Composable
 fun AppTopBar(
     title: String,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    onSettings: (() -> Unit)? = null,
+    onBack: (() -> Unit)? = null,
 ) {
     val colors = AppTheme.colors
     Row(
@@ -43,12 +52,39 @@ fun AppTopBar(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
-        AppText(text = title, style = AppTextStyle.Title)
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+        ) {
+            if (onBack != null) {
+                IconButton(onClick = onBack) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Retour",
+                        tint = colors.text,
+                        modifier = Modifier.size(AppTheme.dimens.iconSize),
+                    )
+                }
+            }
+            AppText(text = title, style = AppTextStyle.Title)
+        }
 
-        AppButton(
-            label = "Déconnexion",
-            onClick = onLogout,
-            variant = ButtonVariant.Text,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (onSettings != null) {
+                IconButton(onClick = onSettings) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Paramètres",
+                        tint = colors.text,
+                        modifier = Modifier.size(AppTheme.dimens.iconSize),
+                    )
+                }
+            }
+            AppButton(
+                label = "Déconnexion",
+                onClick = onLogout,
+                variant = ButtonVariant.Text,
+            )
+        }
     }
 }
