@@ -10,7 +10,7 @@ plugins {
 }
 
 group = "eu.ejdr"
-version = "0.1.0"
+version = project.findProperty("version")?.toString() ?: "0.1.0"
 
 repositories {
     google()
@@ -65,7 +65,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             packageName = "E-JDR"
-            packageVersion = "1.0.0"
+            packageVersion = project.version.toString()
         }
     }
 }
@@ -104,5 +104,12 @@ kover {
                 minBound(60) // plancher de couverture : la CI échoue en dessous.
             }
         }
+    }
+}
+
+// Utility task to expose the project version for CI
+tasks.register("printVersion") {
+    doLast {
+        println(project.version.toString())
     }
 }
