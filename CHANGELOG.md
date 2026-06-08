@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.1.0...v1.1.1) (2026-06-08)
+
+
+### Bug Fixes
+
+* set production backend URL as default ([d97d1b8](https://github.com/Yorobro/E-JDR-Frontend/commit/d97d1b886883f4f3154e2a534aa980effe0d6115))
+
 ## [1.1.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.0.2...v1.1.0) (2026-06-08)
 
 
