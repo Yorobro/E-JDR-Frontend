@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.0.1...v1.0.2) (2026-06-08)
+
+
+### Bug Fixes
+
+* merge release and cd into single workflow ([98a4841](https://github.com/Yorobro/E-JDR-Frontend/commit/98a48412791a6b789322f6123a9f98f81bead69d))
+* replace cycjimmy action with npx semantic-release and tag detection ([3d21047](https://github.com/Yorobro/E-JDR-Frontend/commit/3d210472e4cba79604f5e52bc8bc698561818369))
+
 ## [1.0.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.0.0...v1.0.1) (2026-06-08)
 
 
