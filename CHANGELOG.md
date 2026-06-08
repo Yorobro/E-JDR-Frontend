@@ -1,3 +1,11 @@
+## [1.3.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.2.0...v1.3.0) (2026-06-08)
+
+
+### Features
+
+* **theme:** add dark theme with settings page and persistence ([4e0f7a0](https://github.com/Yorobro/E-JDR-Frontend/commit/4e0f7a0c26cc673ea00ac84f8f9f70a5e580c354))
+* **update:** implement download and install update use case ([4fb26fe](https://github.com/Yorobro/E-JDR-Frontend/commit/4fb26fe1060a8e95faab80a3c6b9f2358bf8b009))
+
 ## [1.2.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.1.1...v1.2.0) (2026-06-08)
 
 
