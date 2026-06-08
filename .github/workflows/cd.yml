@@ -85,7 +85,13 @@ jobs:
             }
             const owner = context.repo.owner;
             const repo = context.repo.repo;
-            const tag = github.event.release && github.event.release.tag_name ? github.event.release.tag_name : context.ref.replace('refs/tags/', '');
+            const tag = (context.payload && context.payload.release && context.payload.release.tag_name)
+              ? context.payload.release.tag_name
+              : (context.ref ? context.ref.replace('refs/tags/', '') : '');
+            if (!tag) {
+              core.info('No release tag found in the context; nothing to upload.');
+              return;
+            }
             core.info(`Uploading ${files.length} asset(s) to release ${tag}`);
             const release = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
             const release_id = release.data.id;
