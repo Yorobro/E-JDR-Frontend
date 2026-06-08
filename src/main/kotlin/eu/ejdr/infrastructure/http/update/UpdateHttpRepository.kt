@@ -16,6 +16,8 @@ class UpdateHttpRepository(private val client: HttpClient) : UpdateRepository {
         val response = client.get(GITHUB_API)
         if (!response.status.isSuccess()) return null
         val dto = response.body<GitHubReleaseDto>()
-        UpdateInfo(version = dto.tagName, releaseUrl = dto.htmlUrl)
+        val asset = dto.assets.firstOrNull { it.name.endsWith(".exe") }
+            ?: dto.assets.firstOrNull { it.name.endsWith(".msi") }
+        UpdateInfo(version = dto.tagName, releaseUrl = dto.htmlUrl, downloadUrl = asset?.browserDownloadUrl)
     }.getOrNull()
 }
