@@ -1,10 +1,12 @@
 package eu.ejdr.di
 
 import eu.ejdr.application.auth.abstraction.repository.AuthRepository
+import eu.ejdr.application.update.abstraction.repository.UpdateRepository
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.KtorClientFactory
 import eu.ejdr.infrastructure.http.auth.AuthHttpMapper
 import eu.ejdr.infrastructure.http.auth.AuthHttpRepository
+import eu.ejdr.infrastructure.http.update.UpdateHttpRepository
 import eu.ejdr.infrastructure.security.CookieCipher
 import eu.ejdr.infrastructure.security.KeyStoreProvider
 import eu.ejdr.infrastructure.security.SecureCookiesStorage
@@ -32,4 +34,5 @@ val infrastructureModule = module {
     single<HttpClient> { KtorClientFactory(get(), get<SecureCookiesStorage>()).create() }
     single { AuthHttpMapper() }
     single<AuthRepository> { AuthHttpRepository(get(), get(), get(), get<SecureCookiesStorage>()) }
+    single<UpdateRepository> { UpdateHttpRepository(get()) }
 }

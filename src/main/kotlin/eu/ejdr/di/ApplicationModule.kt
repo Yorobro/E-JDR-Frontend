@@ -10,6 +10,8 @@ import eu.ejdr.application.auth.usecase.LoginUseCaseImpl
 import eu.ejdr.application.auth.usecase.LogoutUseCaseImpl
 import eu.ejdr.application.auth.usecase.RegisterUseCaseImpl
 import eu.ejdr.application.auth.usecase.RestoreSessionUseCaseImpl
+import eu.ejdr.application.update.CheckUpdateUseCaseImpl
+import eu.ejdr.application.update.abstraction.usecase.CheckUpdateUseCase
 import org.koin.dsl.module
 
 /**
@@ -28,4 +30,5 @@ val applicationModule = module {
     single<RegisterUseCase> { RegisterUseCaseImpl(get()) }
     single<RestoreSessionUseCase> { RestoreSessionUseCaseImpl(get()) }
     single<LogoutUseCase> { LogoutUseCaseImpl(get()) }
+    single<CheckUpdateUseCase> { CheckUpdateUseCaseImpl(get()) }
 }

@@ -16,12 +16,15 @@ import androidx.compose.ui.Modifier
 import eu.ejdr.application.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.auth.abstraction.usecase.RestoreSessionUseCase
 import eu.ejdr.application.common.Result
+import eu.ejdr.application.update.abstraction.UpdateInfo
+import eu.ejdr.application.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.presentation.feature.auth.page.LoginPage
 import eu.ejdr.presentation.feature.auth.page.RegisterPage
 import eu.ejdr.presentation.feature.user.page.UserPage
 import eu.ejdr.presentation.navigation.Screen
 import eu.ejdr.presentation.shared.component.organism.AppScaffold
 import eu.ejdr.presentation.shared.component.organism.AppTopBar
+import eu.ejdr.presentation.shared.component.organism.UpdateDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
@@ -43,10 +46,13 @@ fun App() {
     AppTheme {
         val restoreSession = koinInject<RestoreSessionUseCase>()
         val logout = koinInject<LogoutUseCase>()
+        val checkUpdate = koinInject<CheckUpdateUseCase>()
         val scope = rememberCoroutineScope()
         var screen by remember { mutableStateOf<Screen>(Screen.Splash) }
+        var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
 
         LaunchedEffect(Unit) {
+            launch { updateInfo = checkUpdate() }
             screen = when (restoreSession()) {
                 is Result.Success -> Screen.User(user = null)
                 is Result.Failure -> Screen.Login
@@ -84,6 +90,10 @@ fun App() {
             ) {
                 UserPage(user = current.user)
             }
+        }
+
+        updateInfo?.let { info ->
+            UpdateDialog(info = info, onDismiss = { updateInfo = null })
         }
     }
 }

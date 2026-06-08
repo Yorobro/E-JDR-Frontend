@@ -55,8 +55,32 @@ tasks.test {
     useJUnitPlatform()
 }
 
+val generateBuildConfig by tasks.registering {
+    val appVersion = project.version.toString()
+    val outputDir = layout.buildDirectory.dir("generated/source/buildConfig")
+    outputs.dir(outputDir)
+    inputs.property("version", appVersion)
+    doLast {
+        val file = outputDir.get().asFile.resolve("eu/ejdr/BuildConfig.kt")
+        file.parentFile.mkdirs()
+        file.writeText(
+            """
+            package eu.ejdr
+
+            internal object BuildConfig {
+                const val APP_VERSION = "$appVersion"
+                const val GITHUB_REPO = "Yorobro/E-JDR-Frontend"
+            }
+            """.trimIndent()
+        )
+    }
+}
+
 kotlin {
     jvmToolchain(21)
+    sourceSets.main {
+        kotlin.srcDir(generateBuildConfig)
+    }
 }
 
 compose.desktop {
