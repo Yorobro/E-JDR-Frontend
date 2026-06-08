@@ -13,7 +13,7 @@ data class AppConfig(
 ) {
     companion object {
         fun load(): AppConfig {
-            val baseUrl = System.getenv("EJDR_API_URL") ?: "http://localhost:3000"
+            val baseUrl = System.getenv("EJDR_API_URL") ?: "https://ejdr-backend.vyxs.fr"
             val appData = System.getenv("APPDATA")
                 ?: System.getProperty("user.home")
             val dataDir = File(appData, "E-JDR").apply { mkdirs() }
