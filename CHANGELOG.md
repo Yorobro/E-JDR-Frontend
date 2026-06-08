@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.0.0...v1.0.1) (2026-06-08)
+
+
+### Bug Fixes
+
+* trigger release to validate new cd pipeline ([cc3212c](https://github.com/Yorobro/E-JDR-Frontend/commit/cc3212c56a440332b4f54bc97135962f034ce487))
+
 ## 1.0.0 (2026-06-08)
 
 
