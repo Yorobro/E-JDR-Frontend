@@ -78,3 +78,37 @@ lui-même. Côté desktop :
 Inclus : squelette d'architecture complet + feature **Auth** (login, register,
 auto-login, logout). À venir : WebSocket, feature Host, routes protégées
 (le refresh-sur-401 est prévu mais inactif tant qu'aucune route protégée n'existe).
+
+## Versioning & Releases
+
+- **Stratégie**: SemVer (MAJOR.MINOR.PATCH) combiné avec *Conventional Commits*.
+  - `feat:` → bump MINOR
+  - `fix:` → bump PATCH
+  - `BREAKING CHANGE` ou `!` → bump MAJOR
+
+- **Automatisation**: `semantic-release` est configuré (`.releaserc.json`) pour
+  analyser les commits, calculer le nouveau numéro, mettre à jour `gradle.properties`,
+  générer `CHANGELOG.md` et créer la Release GitHub.
+
+- **Hooks locaux**: `commitlint` + `husky` sont fournis pour valider les messages
+  de commit. Après avoir installé les dépendances, exécute:
+
+```bash
+npm ci
+npm run prepare   # installe les hooks husky (commit-msg)
+```
+
+- **Flux CI/CD**:
+  1. Poussez vos commits (respectant *Conventional Commits*) sur `main`.
+  2. Le workflow `.github/workflows/release.yml` exécute `semantic-release` et
+     publie une Release GitHub si un bump est requis.
+  3. Le workflow CD (`.github/workflows/cd.yml`) est déclenché sur l'événement
+     `release.published`: il build les distributions natives (Windows EXE/MSI)
+     et attache les artefacts à la Release.
+
+- **Bump manuel**: si tu préfères un contrôle manuel, mets à jour `version` dans
+  `gradle.properties` avant de merger la PR.
+
+- **Validation**: le workflow `CI - release tooling checks` valide localement les
+  messages de commit dans les PRs.
+

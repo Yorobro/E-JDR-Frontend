@@ -1,0 +1,21 @@
+name: CI - release tooling checks
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint_commits:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      - name: Install dev deps
+        run: npm ci
+      - name: Validate commit messages
+        run: npx commitlint --from=HEAD~10 --to=HEAD
