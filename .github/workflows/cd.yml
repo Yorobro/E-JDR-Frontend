@@ -1,9 +1,9 @@
 name: CD - Build & Release
 
 on:
-  workflow_dispatch: # permet de tester manuellement
+  workflow_dispatch:
   workflow_run:
-    workflows: ["CI"] # DOIT correspondre exactement au name de ton ci.yml
+    workflows: ["CI"]
     types: [completed]
     branches: [main]
 
@@ -33,13 +33,13 @@ jobs:
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v4
 
-      - name: Build EXE with Compose
-        run: .\gradlew.bat packageExe --no-daemon --stacktrace
+      - name: Build EXE and MSI
+        run: .\gradlew.bat packageDistributionForCurrentOS --no-daemon --stacktrace
 
-      - name: Upload build artifacts
+      - name: Upload ONLY app artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: exe-build
+          name: app-build
           path: |
             build/compose/binaries/main/exe/*.exe
             build/compose/binaries/main/msi/*.msi
@@ -53,20 +53,20 @@ jobs:
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
-          name: exe-build
+          name: app-build
           path: dist
 
-      - name: Show files
+      - name: Show files (debug)
         run: ls -R dist || true
 
-      - name: Create Release + Upload EXE
+      - name: Create Release + Upload EXE/MSI
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
           name: Release v${{ github.run_number }}
           body: |
-            ✅ Build automatique depuis commit :
-            ${{ github.event.workflow_run.head_sha }}
+            ✅ Build automatique
+            Commit : ${{ github.event.workflow_run.head_sha }}
           files: |
             dist/**/*.exe
             dist/**/*.msi
