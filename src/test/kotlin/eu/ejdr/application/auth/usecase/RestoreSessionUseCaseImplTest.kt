@@ -2,6 +2,7 @@ package eu.ejdr.application.auth.usecase
 
 import eu.ejdr.application.auth.abstraction.service.SessionService
 import eu.ejdr.application.common.Result
+import eu.ejdr.domain.entities.auth.User
 import eu.ejdr.domain.error.entities.auth.AuthError
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -16,10 +17,13 @@ class RestoreSessionUseCaseImplTest {
     private val useCase = RestoreSessionUseCaseImpl(service)
 
     @Test
-    fun `delegates to session service`() = runTest {
-        coEvery { service.restore() } returns Result.Success(Unit)
+    fun `delegates to session service and returns user on success`() = runTest {
+        coEvery { service.restore() } returns Result.Success(User("u-1", "a@b.c"))
 
-        assertIs<Result.Success<Unit>>(useCase())
+        val result = useCase()
+
+        assertIs<Result.Success<User>>(result)
+        assertEquals("a@b.c", result.value.email)
     }
 
     @Test

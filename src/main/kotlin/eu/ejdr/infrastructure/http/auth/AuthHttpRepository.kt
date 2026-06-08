@@ -95,11 +95,11 @@ class AuthHttpRepository(
      * @return [Result.Success] si la session est renouvelée, sinon
      * [AuthError.SessionExpired] (échec serveur) ou [AuthError.Network].
      */
-    override suspend fun refresh(): Result<Unit, AuthError> =
+    override suspend fun refresh(): Result<User, AuthError> =
         runCatching {
             val response = client.post("${config.baseUrl}/auth/refresh")
             if (response.status.isSuccess()) {
-                Result.Success(Unit)
+                Result.Success(mapper.toUser(response.body<AuthResponseDto>()))
             } else {
                 cookiesStorage.clearPersisted()
                 Result.Failure(AuthError.SessionExpired)

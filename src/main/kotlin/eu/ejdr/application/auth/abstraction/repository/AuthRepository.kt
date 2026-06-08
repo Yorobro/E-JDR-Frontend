@@ -34,9 +34,9 @@ interface AuthRepository {
      * Rafraîchit la session courante à partir des informations persistées
      * (renouvellement de jeton).
      *
-     * @return [Unit] si la session est renouvelée, ou une [AuthError] sinon
+     * @return l'[User] dont la session est renouvelée, ou une [AuthError] sinon
      */
-    suspend fun refresh(): Result<Unit, AuthError>
+    suspend fun refresh(): Result<User, AuthError>
 
     /**
      * Termine la session courante et invalide les informations persistées.

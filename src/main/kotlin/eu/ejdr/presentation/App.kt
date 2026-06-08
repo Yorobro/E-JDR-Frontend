@@ -70,8 +70,8 @@ fun App() {
 
         LaunchedEffect(Unit) {
             launch { updateInfo = checkUpdate() }
-            screen = when (restoreSession()) {
-                is Result.Success -> Screen.Home(user = null)
+            screen = when (val result = restoreSession()) {
+                is Result.Success -> Screen.Home(user = result.value)
                 is Result.Failure -> Screen.Login
             }
         }

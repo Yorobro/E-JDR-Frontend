@@ -122,6 +122,20 @@ class AuthHttpRepositoryTest {
         }
 
     @Test
+    fun `refresh success maps body to User`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(HttpStatusCode.OK, """{"userId":"u-1","email":"user@test.com"}"""),
+                )
+
+            val result = repo.refresh()
+
+            assertIs<Result.Success<*>>(result)
+            assertEquals("user@test.com", (result.value as eu.ejdr.domain.entities.auth.User).email)
+        }
+
+    @Test
     fun `refresh failure clears persisted session and returns SessionExpired`() =
         runTest {
             val repo = repository(clientReturning(HttpStatusCode.Unauthorized, """{"code":"x"}"""))
