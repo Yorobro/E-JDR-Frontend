@@ -11,3 +11,5 @@ local.properties
 *.keystore
 secure-cookies.enc
 .env
+
+node_modules

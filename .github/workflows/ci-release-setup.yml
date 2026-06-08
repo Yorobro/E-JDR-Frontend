@@ -1,4 +1,4 @@
-name: CI - release tooling checks
+name: Release - release tooling checks
 
 on:
   pull_request:
