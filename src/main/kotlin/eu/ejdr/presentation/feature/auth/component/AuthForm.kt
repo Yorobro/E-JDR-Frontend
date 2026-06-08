@@ -31,8 +31,29 @@ import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.theme.AppTheme
 
+/**
+ * Organisme de formulaire d'authentification (connexion ou inscription).
+ *
+ * Composant bête : reçoit tout l'état et les callbacks, ne détient rien.
+ * Les 4 chaînes variables ([subtitle], [submitLabel], [secondaryText], [secondaryActionLabel])
+ * permettent de partager la structure entre [LoginPage] et [RegisterPage].
+ *
+ * @param email Valeur courante du champ email.
+ * @param password Valeur courante du champ mot de passe.
+ * @param errorMessage Message d'erreur à afficher, ou `null` si aucun.
+ * @param loading Si vrai, désactive les champs et affiche un indicateur sur le bouton principal.
+ * @param onEmailChange Callback de mise à jour de l'email.
+ * @param onPasswordChange Callback de mise à jour du mot de passe.
+ * @param onSubmit Callback déclenché à la soumission du formulaire.
+ * @param onSecondaryAction Callback du lien de navigation secondaire (vers l'autre page auth).
+ * @param subtitle Texte descriptif sous le titre de l'application.
+ * @param submitLabel Libellé du bouton de soumission.
+ * @param secondaryText Texte d'accroche précédant le lien secondaire.
+ * @param secondaryActionLabel Libellé du lien de navigation secondaire.
+ * @param modifier Modifier Compose appliqué au composant.
+ */
 @Composable
-fun LoginForm(
+fun AuthForm(
     email: String,
     password: String,
     errorMessage: String?,
@@ -40,7 +61,11 @@ fun LoginForm(
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSubmit: () -> Unit,
-    onGoToRegister: () -> Unit,
+    onSecondaryAction: () -> Unit,
+    subtitle: String,
+    submitLabel: String,
+    secondaryText: String,
+    secondaryActionLabel: String,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -67,7 +92,7 @@ fun LoginForm(
                 )
                 Spacer(Modifier.height(AppTheme.dimens.xs))
                 AppText(
-                    text = "Connectez-vous pour continuer",
+                    text = subtitle,
                     style = AppTextStyle.Body,
                     color = AppTheme.colors.textSecondary,
                     textAlign = TextAlign.Center,
@@ -98,7 +123,7 @@ fun LoginForm(
                 Spacer(Modifier.height(AppTheme.dimens.sm))
 
                 AppButton(
-                    label = "Se connecter",
+                    label = submitLabel,
                     onClick = onSubmit,
                     loading = loading,
                     modifier = Modifier.fillMaxWidth(),
@@ -113,13 +138,13 @@ fun LoginForm(
                     horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
                 ) {
                     AppText(
-                        text = "Pas encore de compte ?",
+                        text = secondaryText,
                         style = AppTextStyle.Caption,
                         color = AppTheme.colors.textSecondary,
                     )
                     AppButton(
-                        label = "S'inscrire",
-                        onClick = onGoToRegister,
+                        label = secondaryActionLabel,
+                        onClick = onSecondaryAction,
                         variant = ButtonVariant.Text,
                         enabled = !loading,
                     )
