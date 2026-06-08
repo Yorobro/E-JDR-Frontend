@@ -38,8 +38,8 @@ jobs:
         with:
           name: app-build
           path: |
-            build/compose/binaries/main/exe/*.exe
-            build/compose/binaries/main/msi/*.msi
+            build/compose/binaries/**/exe/*.exe
+            build/compose/binaries/**/msi/*.msi
 
   release:
     name: Attach artifacts to GitHub Release
