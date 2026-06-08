@@ -94,7 +94,7 @@ auto-login, logout). À venir : WebSocket, feature Host, routes protégées
   de commit. Après avoir installé les dépendances, exécute:
 
 ```bash
-npm ci
+npm install
 npm run prepare   # installe les hooks husky (commit-msg)
 ```
 
