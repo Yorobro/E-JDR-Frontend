@@ -1,3 +1,10 @@
+## [1.1.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.0.2...v1.1.0) (2026-06-08)
+
+
+### Features
+
+* add in-app update checker via GitHub Releases API ([956c950](https://github.com/Yorobro/E-JDR-Frontend/commit/956c9500587130c37ebee2deae220488aca21a08))
+
 ## [1.0.2](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.0.1...v1.0.2) (2026-06-08)
 
 
