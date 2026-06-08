@@ -10,8 +10,14 @@ import eu.ejdr.application.auth.usecase.LoginUseCaseImpl
 import eu.ejdr.application.auth.usecase.LogoutUseCaseImpl
 import eu.ejdr.application.auth.usecase.RegisterUseCaseImpl
 import eu.ejdr.application.auth.usecase.RestoreSessionUseCaseImpl
+import eu.ejdr.application.settings.abstraction.usecase.GetThemeUseCase
+import eu.ejdr.application.settings.abstraction.usecase.SetThemeUseCase
+import eu.ejdr.application.settings.usecase.GetThemeUseCaseImpl
+import eu.ejdr.application.settings.usecase.SetThemeUseCaseImpl
 import eu.ejdr.application.update.CheckUpdateUseCaseImpl
+import eu.ejdr.application.update.DownloadAndInstallUpdateUseCaseImpl
 import eu.ejdr.application.update.abstraction.usecase.CheckUpdateUseCase
+import eu.ejdr.application.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
 import org.koin.dsl.module
 
 /**
@@ -31,4 +37,7 @@ val applicationModule = module {
     single<RestoreSessionUseCase> { RestoreSessionUseCaseImpl(get()) }
     single<LogoutUseCase> { LogoutUseCaseImpl(get()) }
     single<CheckUpdateUseCase> { CheckUpdateUseCaseImpl(get()) }
+    single<DownloadAndInstallUpdateUseCase> { DownloadAndInstallUpdateUseCaseImpl(get()) }
+    single<GetThemeUseCase> { GetThemeUseCaseImpl(get()) }
+    single<SetThemeUseCase> { SetThemeUseCaseImpl(get()) }
 }

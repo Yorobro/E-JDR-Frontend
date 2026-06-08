@@ -10,7 +10,7 @@ import eu.ejdr.application.auth.abstraction.usecase.LoginUseCase
 import eu.ejdr.application.common.Result
 import eu.ejdr.domain.entities.auth.Credentials
 import eu.ejdr.domain.entities.auth.User
-import eu.ejdr.presentation.feature.auth.component.LoginForm
+import eu.ejdr.presentation.feature.auth.component.AuthForm
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -20,7 +20,7 @@ import org.koin.compose.koinInject
  * Seul endroit de la feature auth qui injecte et appelle le [LoginUseCase] (via [koinInject]).
  * Elle détient l'état local du formulaire (email, mot de passe, erreur, chargement), orchestre
  * l'appel au use case dans une coroutine, et traduit l'erreur domaine ([Result.Failure]) en
- * message UI. Le rendu est délégué au composant bête [LoginForm].
+ * message UI. Le rendu est délégué au composant bête [AuthForm].
  *
  * @param onAuthenticated Callback appelé en cas de connexion réussie, portant l'utilisateur connecté.
  * @param onGoToRegister Callback de navigation vers la page d'inscription.
@@ -38,14 +38,18 @@ fun LoginPage(
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
 
-    LoginForm(
+    AuthForm(
         email = email,
         password = password,
         errorMessage = error,
         loading = loading,
         onEmailChange = { email = it; error = null },
         onPasswordChange = { password = it; error = null },
-        onGoToRegister = onGoToRegister,
+        onSecondaryAction = onGoToRegister,
+        subtitle = "Connectez-vous pour continuer",
+        submitLabel = "Se connecter",
+        secondaryText = "Pas encore de compte ?",
+        secondaryActionLabel = "S'inscrire",
         onSubmit = {
             loading = true
             error = null

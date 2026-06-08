@@ -1,6 +1,7 @@
 package eu.ejdr.di
 
 import eu.ejdr.application.auth.abstraction.repository.AuthRepository
+import eu.ejdr.application.settings.abstraction.repository.ThemeRepository
 import eu.ejdr.application.update.abstraction.repository.UpdateRepository
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.KtorClientFactory
@@ -10,6 +11,7 @@ import eu.ejdr.infrastructure.http.update.UpdateHttpRepository
 import eu.ejdr.infrastructure.security.CookieCipher
 import eu.ejdr.infrastructure.security.KeyStoreProvider
 import eu.ejdr.infrastructure.security.SecureCookiesStorage
+import eu.ejdr.infrastructure.settings.ThemeFileRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
 import org.koin.dsl.module
@@ -35,4 +37,5 @@ val infrastructureModule = module {
     single { AuthHttpMapper() }
     single<AuthRepository> { AuthHttpRepository(get(), get(), get(), get<SecureCookiesStorage>()) }
     single<UpdateRepository> { UpdateHttpRepository(get()) }
+    single<ThemeRepository> { ThemeFileRepository(get<AppConfig>().dataDir) }
 }

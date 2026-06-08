@@ -48,3 +48,18 @@ fun lightColors(): AppColors = AppColors(
     danger = Color(0xFFA13D33),
     onDanger = Color(0xFFFFFFFF),
 )
+
+/** Palette sombre (même vibe gris/beige chaud, luminosité inversée). */
+fun darkColors(): AppColors = AppColors(
+    background = Color(0xFF1C1A16),
+    surface = Color(0xFF252119),
+    beige = Color(0xFF332E27),
+    border = Color(0xFF4A4540),
+    muted = Color(0xFF736D65),
+    textSecondary = Color(0xFFADA79E),
+    text = Color(0xFFEDE8E1),
+    primary = Color(0xFFB8AF9D),
+    onPrimary = Color(0xFF1C1A16),
+    danger = Color(0xFFC04D43),
+    onDanger = Color(0xFFFFFFFF),
+)

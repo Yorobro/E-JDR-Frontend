@@ -23,4 +23,11 @@ sealed interface Screen {
      */
     data class User(val user: eu.ejdr.domain.entities.auth.User?) : Screen
     // NB: nom qualifié pour lever l'ambiguïté avec le nom de la data class elle-même.
+
+    /**
+     * Écran des paramètres de l'application (thème, etc.).
+     *
+     * @property user Profil conservé pour pouvoir revenir sur [User] sans perte de contexte.
+     */
+    data class Settings(val user: eu.ejdr.domain.entities.auth.User?) : Screen
 }
