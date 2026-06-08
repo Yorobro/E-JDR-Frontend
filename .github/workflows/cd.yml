@@ -1,7 +1,6 @@
 name: CD
 
 on:
-  workflow_dispatch:
   release:
     types: [published]
 
@@ -14,7 +13,7 @@ concurrency:
 
 jobs:
   windows_build:
-    name: Build Windows EXE
+    name: Build and publish Windows binaries
     runs-on: windows-latest
 
     steps:
@@ -33,81 +32,9 @@ jobs:
       - name: Build EXE and MSI
         run: .\gradlew.bat packageDistributionForCurrentOS --no-daemon --stacktrace
 
-      - name: Upload ONLY app artifacts
-        uses: actions/upload-artifact@v4
+      - name: Attach binaries to release
+        uses: softprops/action-gh-release@v2
         with:
-          name: app-build
-          path: |
+          files: |
             build/compose/binaries/**/exe/*.exe
             build/compose/binaries/**/msi/*.msi
-
-  release:
-    name: Attach artifacts to GitHub Release
-    needs: windows_build
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: app-build
-          path: dist
-
-      - name: Show files (debug)
-        run: ls -R dist || true
-
-      - name: Upload assets to the published release
-        uses: actions/github-script@v6
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const dist = path.join(process.cwd(), 'dist');
-            if (!fs.existsSync(dist)) {
-              core.info('No dist directory found, nothing to upload.');
-              return;
-            }
-            function walk(dir) {
-              let results = [];
-              for (const f of fs.readdirSync(dir)) {
-                const p = path.join(dir, f);
-                const stat = fs.statSync(p);
-                if (stat.isDirectory()) results = results.concat(walk(p));
-                else results.push(p);
-              }
-              return results;
-            }
-            const files = walk(dist).filter(f => /\.(exe|msi|zip|tar|gz)$/.test(f));
-            if (files.length === 0) {
-              core.info('No release assets found to upload.');
-              return;
-            }
-            const owner = context.repo.owner;
-            const repo = context.repo.repo;
-            const tag = (context.payload && context.payload.release && context.payload.release.tag_name)
-              ? context.payload.release.tag_name
-              : (context.ref ? context.ref.replace('refs/tags/', '') : '');
-            if (!tag) {
-              core.info('No release tag found in the context; nothing to upload.');
-              return;
-            }
-            core.info(`Uploading ${files.length} asset(s) to release ${tag}`);
-            const release = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
-            const release_id = release.data.id;
-            for (const filePath of files) {
-              const name = path.basename(filePath);
-              const data = fs.readFileSync(filePath);
-              await github.rest.repos.uploadReleaseAsset({
-                owner,
-                repo,
-                release_id,
-                name,
-                data,
-                headers: {
-                  'content-type': 'application/octet-stream',
-                  'content-length': fs.statSync(filePath).size
-                }
-              });
-              core.info(`Uploaded ${name}`);
-            }
