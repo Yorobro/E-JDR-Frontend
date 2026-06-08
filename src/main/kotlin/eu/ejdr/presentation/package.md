@@ -54,7 +54,7 @@ Chaque fonctionnalité est isolée dans son dossier, avec deux sous-dossiers :
 ### Zone non-connectée vs zone connectée
 
 - **Non-connectée** (`Login` / `Register`) : pages rendues en **plein écran**.
-- **Connectée** (`User`) : rendue dans un `AppScaffold` avec une `AppTopBar` **présente partout**
-  (titre + Déconnexion). `Screen.User` porte l'`User` connecté (`null` si arrivé par auto-login
-  sans profil chargé) ; le bouton Déconnexion appelle `LogoutUseCase` puis revient à l'écran de
-  connexion.
+- **Connectée** (`Home` / `Settings`) : rendue dans un `AppScaffold` avec une `AppTopBar`
+  **présente partout** (titre + Déconnexion). `Screen.Home` porte l'`User` connecté (`null` si
+  arrivé par auto-login sans profil chargé) ; le bouton Déconnexion appelle `LogoutUseCase` puis
+  revient à l'écran de connexion.

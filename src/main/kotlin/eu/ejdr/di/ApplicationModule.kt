@@ -14,10 +14,10 @@ import eu.ejdr.application.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.settings.abstraction.usecase.SetThemeUseCase
 import eu.ejdr.application.settings.usecase.GetThemeUseCaseImpl
 import eu.ejdr.application.settings.usecase.SetThemeUseCaseImpl
-import eu.ejdr.application.update.CheckUpdateUseCaseImpl
-import eu.ejdr.application.update.DownloadAndInstallUpdateUseCaseImpl
 import eu.ejdr.application.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.application.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
+import eu.ejdr.application.update.usecase.CheckUpdateUseCaseImpl
+import eu.ejdr.application.update.usecase.DownloadAndInstallUpdateUseCaseImpl
 import org.koin.dsl.module
 
 /**

@@ -17,7 +17,7 @@ data class AppConfig(
             val appData = System.getenv("APPDATA")
                 ?: System.getProperty("user.home")
             val dataDir = File(appData, "E-JDR").apply { mkdirs() }
-            val logging = System.getenv("EJDR_HTTP_LOG")?.toBoolean() ?: true
+            val logging = System.getenv("EJDR_HTTP_LOG")?.toBoolean() ?: false
             return AppConfig(baseUrl = baseUrl, dataDir = dataDir, enableHttpLogging = logging)
         }
     }

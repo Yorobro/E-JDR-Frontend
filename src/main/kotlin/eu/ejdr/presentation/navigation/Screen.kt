@@ -1,5 +1,7 @@
 package eu.ejdr.presentation.navigation
 
+import eu.ejdr.domain.entities.auth.User
+
 /**
  * État de navigation de l'application.
  *
@@ -17,17 +19,16 @@ sealed interface Screen {
     data object Register : Screen
 
     /**
-     * Zone connectée : écran utilisateur affiché une fois l'utilisateur authentifié.
+     * Zone connectée : écran d'accueil affiché une fois l'utilisateur authentifié.
      *
      * @property user Profil connecté, ou `null` si arrivé par auto-login sans profil chargé.
      */
-    data class User(val user: eu.ejdr.domain.entities.auth.User?) : Screen
-    // NB: nom qualifié pour lever l'ambiguïté avec le nom de la data class elle-même.
+    data class Home(val user: User?) : Screen
 
     /**
      * Écran des paramètres de l'application (thème, etc.).
      *
-     * @property user Profil conservé pour pouvoir revenir sur [User] sans perte de contexte.
+     * @property user Profil conservé pour pouvoir revenir sur [Home] sans perte de contexte.
      */
-    data class Settings(val user: eu.ejdr.domain.entities.auth.User?) : Screen
+    data class Settings(val user: User?) : Screen
 }

@@ -40,11 +40,11 @@ import org.koin.compose.koinInject
  *
  * Charge le thème persisté avant de fournir le design system via [AppTheme], puis route par état
  * entre les écrans ([Screen]). Au démarrage, tente un auto-login via [RestoreSessionUseCase] :
- * succès → zone connectée ([Screen.User]), échec → connexion ([Screen.Login]).
+ * succès → zone connectée ([Screen.Home]), échec → connexion ([Screen.Login]).
  *
  * Deux zones distinctes :
  * - **non-connectée** (Login / Register) : rendue en plein écran ;
- * - **connectée** (User / Settings) : rendue dans un [AppScaffold] avec une [AppTopBar] présente
+ * - **connectée** (Home / Settings) : rendue dans un [AppScaffold] avec une [AppTopBar] présente
  *   partout, dont le bouton Déconnexion appelle [LogoutUseCase] avant de revenir à la connexion.
  */
 @Composable
@@ -66,10 +66,12 @@ fun App() {
         var screen by remember { mutableStateOf<Screen>(Screen.Splash) }
         var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
 
+        val onLogout: () -> Unit = { scope.launch { logout(); screen = Screen.Login } }
+
         LaunchedEffect(Unit) {
             launch { updateInfo = checkUpdate() }
             screen = when (restoreSession()) {
-                is Result.Success -> Screen.User(user = null)
+                is Result.Success -> Screen.Home(user = null)
                 is Result.Failure -> Screen.Login
             }
         }
@@ -81,25 +83,20 @@ fun App() {
             ) { CircularProgressIndicator(color = AppTheme.colors.primary) }
 
             Screen.Login -> LoginPage(
-                onAuthenticated = { user -> screen = Screen.User(user) },
+                onAuthenticated = { user -> screen = Screen.Home(user) },
                 onGoToRegister = { screen = Screen.Register },
             )
 
             Screen.Register -> RegisterPage(
-                onAuthenticated = { user -> screen = Screen.User(user) },
+                onAuthenticated = { user -> screen = Screen.Home(user) },
                 onGoToLogin = { screen = Screen.Login },
             )
 
-            is Screen.User -> AppScaffold(
+            is Screen.Home -> AppScaffold(
                 topBar = {
                     AppTopBar(
                         title = "E-JDR",
-                        onLogout = {
-                            scope.launch {
-                                logout()
-                                screen = Screen.Login
-                            }
-                        },
+                        onLogout = onLogout,
                         onSettings = { screen = Screen.Settings(current.user) },
                     )
                 },
@@ -111,13 +108,8 @@ fun App() {
                 topBar = {
                     AppTopBar(
                         title = "Paramètres",
-                        onLogout = {
-                            scope.launch {
-                                logout()
-                                screen = Screen.Login
-                            }
-                        },
-                        onBack = { screen = Screen.User(current.user) },
+                        onLogout = onLogout,
+                        onBack = { screen = Screen.Home(current.user) },
                     )
                 },
             ) {

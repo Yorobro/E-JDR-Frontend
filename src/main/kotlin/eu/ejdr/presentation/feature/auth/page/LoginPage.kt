@@ -1,26 +1,14 @@
 package eu.ejdr.presentation.feature.auth.page
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import eu.ejdr.application.auth.abstraction.usecase.LoginUseCase
-import eu.ejdr.application.common.Result
-import eu.ejdr.domain.entities.auth.Credentials
 import eu.ejdr.domain.entities.auth.User
-import eu.ejdr.presentation.feature.auth.component.AuthForm
-import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
 /**
  * Page de connexion (composant INTELLIGENT).
  *
- * Seul endroit de la feature auth qui injecte et appelle le [LoginUseCase] (via [koinInject]).
- * Elle détient l'état local du formulaire (email, mot de passe, erreur, chargement), orchestre
- * l'appel au use case dans une coroutine, et traduit l'erreur domaine ([Result.Failure]) en
- * message UI. Le rendu est délégué au composant bête [AuthForm].
+ * Injecte [LoginUseCase] et délègue tout l'état et la logique coroutine à [AuthPage].
  *
  * @param onAuthenticated Callback appelé en cas de connexion réussie, portant l'utilisateur connecté.
  * @param onGoToRegister Callback de navigation vers la page d'inscription.
@@ -31,35 +19,13 @@ fun LoginPage(
     onGoToRegister: () -> Unit,
 ) {
     val loginUseCase = koinInject<LoginUseCase>()
-    val scope = rememberCoroutineScope()
-
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var error by remember { mutableStateOf<String?>(null) }
-    var loading by remember { mutableStateOf(false) }
-
-    AuthForm(
-        email = email,
-        password = password,
-        errorMessage = error,
-        loading = loading,
-        onEmailChange = { email = it; error = null },
-        onPasswordChange = { password = it; error = null },
+    AuthPage(
+        submit = { credentials -> loginUseCase(credentials) },
+        onAuthenticated = onAuthenticated,
         onSecondaryAction = onGoToRegister,
         subtitle = "Connectez-vous pour continuer",
         submitLabel = "Se connecter",
         secondaryText = "Pas encore de compte ?",
         secondaryActionLabel = "S'inscrire",
-        onSubmit = {
-            loading = true
-            error = null
-            scope.launch {
-                when (val result = loginUseCase(Credentials(email.trim(), password))) {
-                    is Result.Success -> onAuthenticated(result.value)
-                    is Result.Failure -> error = result.error.message
-                }
-                loading = false
-            }
-        },
     )
 }

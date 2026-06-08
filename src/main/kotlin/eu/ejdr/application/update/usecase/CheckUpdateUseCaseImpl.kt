@@ -1,4 +1,4 @@
-package eu.ejdr.application.update
+package eu.ejdr.application.update.usecase
 
 import eu.ejdr.BuildConfig
 import eu.ejdr.application.update.abstraction.UpdateInfo
@@ -7,11 +7,12 @@ import eu.ejdr.application.update.abstraction.usecase.CheckUpdateUseCase
 
 class CheckUpdateUseCaseImpl(
     private val updateRepository: UpdateRepository,
+    private val currentVersion: String = BuildConfig.APP_VERSION,
 ) : CheckUpdateUseCase {
 
     override suspend fun invoke(): UpdateInfo? {
         val latest = updateRepository.fetchLatestRelease() ?: return null
-        return if (isNewer(latest.version, BuildConfig.APP_VERSION)) latest else null
+        return if (isNewer(latest.version, currentVersion)) latest else null
     }
 
     private fun isNewer(latest: String, current: String): Boolean {
