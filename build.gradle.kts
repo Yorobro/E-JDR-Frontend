@@ -131,6 +131,26 @@ kover {
     }
 }
 
+// ───────────────────────────────────────────────────────────────
+// Alignement local ↔ CI.
+//
+// La CI lance `detekt`, `build` puis `koverVerify`. Pour qu'une commande
+// locale unique reproduise EXACTEMENT ce que vérifie la CI (et éviter qu'un
+// problème ne passe inaperçu en dev pour n'apparaître qu'en CI), on rattache
+// ces vérifications à la tâche standard `check` et on expose l'alias `verify`.
+//
+// Désormais `./gradlew verify` (ou `check`) = ce que fait la CI.
+// ───────────────────────────────────────────────────────────────
+tasks.named("check") {
+    dependsOn("detekt", "test", "koverVerify")
+}
+
+tasks.register("verify") {
+    group = "verification"
+    description = "Reproduit localement les vérifications de la CI (detekt + tests + couverture)."
+    dependsOn("detekt", "build", "koverVerify")
+}
+
 // Utility task to expose the project version for CI
 tasks.register("printVersion") {
     doLast {

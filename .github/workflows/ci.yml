@@ -23,11 +23,7 @@ jobs:
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Static analysis (detekt)
-        run: ./gradlew detekt --no-daemon --stacktrace
-
-      - name: Build and run tests
-        run: ./gradlew build --no-daemon --stacktrace
-
-      - name: Verify coverage (Kover)
-        run: ./gradlew koverVerify --no-daemon --stacktrace
+      # `verify` regroupe detekt + build/tests + couverture (cf. build.gradle.kts).
+      # Identique à `./gradlew verify` en local : la CI et le poste de dev ne peuvent plus diverger.
+      - name: Verify (detekt + build + tests + coverage)
+        run: ./gradlew verify --no-daemon --stacktrace
