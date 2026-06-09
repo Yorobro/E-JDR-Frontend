@@ -85,42 +85,18 @@ fun AuthForm(
                     .padding(AppTheme.dimens.xl),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                AppText(
-                    text = "E-JDR",
-                    style = AppTextStyle.Title,
-                    textAlign = TextAlign.Center,
-                )
-                Spacer(Modifier.height(AppTheme.dimens.xs))
-                AppText(
-                    text = subtitle,
-                    style = AppTextStyle.Body,
-                    color = AppTheme.colors.textSecondary,
-                    textAlign = TextAlign.Center,
-                )
+                AuthFormHeader(subtitle = subtitle)
 
                 Spacer(Modifier.height(AppTheme.dimens.lg))
 
-                AppTextField(
-                    value = email,
-                    onValueChange = onEmailChange,
-                    label = "Email",
-                    enabled = !loading,
-                    leadingIcon = Icons.Outlined.Email,
-                    modifier = Modifier.fillMaxWidth(),
+                AuthFormFields(
+                    email = email,
+                    password = password,
+                    errorMessage = errorMessage,
+                    loading = loading,
+                    onEmailChange = onEmailChange,
+                    onPasswordChange = onPasswordChange,
                 )
-                Spacer(Modifier.height(AppTheme.dimens.sm))
-                AppPasswordField(
-                    value = password,
-                    onValueChange = onPasswordChange,
-                    label = "Mot de passe",
-                    enabled = !loading,
-                    leadingIcon = Icons.Outlined.Lock,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-
-                Spacer(Modifier.height(AppTheme.dimens.xs))
-                FormError(errorMessage)
-                Spacer(Modifier.height(AppTheme.dimens.sm))
 
                 AppButton(
                     label = submitLabel,
@@ -129,27 +105,93 @@ fun AuthForm(
                     modifier = Modifier.fillMaxWidth(),
                 )
 
-                Spacer(Modifier.height(AppTheme.dimens.md))
-                HorizontalDivider(color = AppTheme.colors.border)
-                Spacer(Modifier.height(AppTheme.dimens.xs))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
-                ) {
-                    AppText(
-                        text = secondaryText,
-                        style = AppTextStyle.Caption,
-                        color = AppTheme.colors.textSecondary,
-                    )
-                    AppButton(
-                        label = secondaryActionLabel,
-                        onClick = onSecondaryAction,
-                        variant = ButtonVariant.Text,
-                        enabled = !loading,
-                    )
-                }
+                AuthFormFooter(
+                    secondaryText = secondaryText,
+                    secondaryActionLabel = secondaryActionLabel,
+                    loading = loading,
+                    onSecondaryAction = onSecondaryAction,
+                )
             }
         }
+    }
+}
+
+/** Titre de l'application et sous-titre descriptif, centrés en haut du formulaire. */
+@Composable
+private fun AuthFormHeader(subtitle: String) {
+    AppText(
+        text = "E-JDR",
+        style = AppTextStyle.Title,
+        textAlign = TextAlign.Center,
+    )
+    Spacer(Modifier.height(AppTheme.dimens.xs))
+    AppText(
+        text = subtitle,
+        style = AppTextStyle.Body,
+        color = AppTheme.colors.textSecondary,
+        textAlign = TextAlign.Center,
+    )
+}
+
+/** Champs email et mot de passe suivis du message d'erreur éventuel. */
+@Composable
+private fun AuthFormFields(
+    email: String,
+    password: String,
+    errorMessage: String?,
+    loading: Boolean,
+    onEmailChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit,
+) {
+    AppTextField(
+        value = email,
+        onValueChange = onEmailChange,
+        label = "Email",
+        enabled = !loading,
+        leadingIcon = Icons.Outlined.Email,
+        modifier = Modifier.fillMaxWidth(),
+    )
+    Spacer(Modifier.height(AppTheme.dimens.sm))
+    AppPasswordField(
+        value = password,
+        onValueChange = onPasswordChange,
+        label = "Mot de passe",
+        enabled = !loading,
+        leadingIcon = Icons.Outlined.Lock,
+        modifier = Modifier.fillMaxWidth(),
+    )
+
+    Spacer(Modifier.height(AppTheme.dimens.xs))
+    FormError(errorMessage)
+    Spacer(Modifier.height(AppTheme.dimens.sm))
+}
+
+/** Séparateur et lien de navigation vers l'autre page d'authentification. */
+@Composable
+private fun AuthFormFooter(
+    secondaryText: String,
+    secondaryActionLabel: String,
+    loading: Boolean,
+    onSecondaryAction: () -> Unit,
+) {
+    Spacer(Modifier.height(AppTheme.dimens.md))
+    HorizontalDivider(color = AppTheme.colors.border)
+    Spacer(Modifier.height(AppTheme.dimens.xs))
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+    ) {
+        AppText(
+            text = secondaryText,
+            style = AppTextStyle.Caption,
+            color = AppTheme.colors.textSecondary,
+        )
+        AppButton(
+            label = secondaryActionLabel,
+            onClick = onSecondaryAction,
+            variant = ButtonVariant.Text,
+            enabled = !loading,
+        )
     }
 }

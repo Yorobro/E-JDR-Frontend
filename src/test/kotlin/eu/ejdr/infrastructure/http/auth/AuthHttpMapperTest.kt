@@ -7,7 +7,7 @@ import kotlin.test.assertEquals
 
 class AuthHttpMapperTest {
 
-    private val mapper = AuthHttpMapper()
+    private val mapper = AuthHttpMapper
 
     @Test
     fun `401 maps to InvalidCredentials`() {
