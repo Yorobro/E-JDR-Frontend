@@ -1,3 +1,10 @@
+## [1.3.2](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.3.1...v1.3.2) (2026-06-09)
+
+
+### Bug Fixes
+
+* **ci:** unblock frontend build (detekt + broken test) ([2002e8a](https://github.com/Yorobro/E-JDR-Frontend/commit/2002e8ab71697837cb101ee08cb4e094658f0dcd))
+
 ## [1.3.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.3.0...v1.3.1) (2026-06-09)
 
 
