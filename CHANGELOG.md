@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.3.0...v1.3.1) (2026-06-09)
+
+
+### Bug Fixes
+
+* **auth:** populate user on auto-login and activate 401 silent refresh ([02bd422](https://github.com/Yorobro/E-JDR-Frontend/commit/02bd4221588df69c7b560903ef51b13fbfca3d23))
+
 ## [1.3.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.2.0...v1.3.0) (2026-06-08)
 
 
