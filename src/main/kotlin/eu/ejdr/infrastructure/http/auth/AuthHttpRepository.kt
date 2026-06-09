@@ -1,6 +1,7 @@
 package eu.ejdr.infrastructure.http.auth
 
 import eu.ejdr.application.auth.abstraction.repository.AuthRepository
+import eu.ejdr.application.auth.abstraction.service.SessionPersistence
 import eu.ejdr.application.common.Result
 import eu.ejdr.domain.entities.auth.Credentials
 import eu.ejdr.domain.entities.auth.User
@@ -9,7 +10,6 @@ import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.auth.dto.ApiErrorDto
 import eu.ejdr.infrastructure.http.auth.dto.AuthRequestDto
 import eu.ejdr.infrastructure.http.auth.dto.AuthResponseDto
-import eu.ejdr.infrastructure.security.SecureCookiesStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
@@ -34,14 +34,14 @@ import io.ktor.http.isSuccess
  * @property client Client HTTP configuré (cookies + JSON).
  * @property config Configuration applicative (URL de base).
  * @property mapper Traducteur DTO/statut HTTP vers le domaine.
- * @property cookiesStorage Stockage des cookies, sollicité pour effacer la
- * session persistée lors d'un refresh échoué ou d'une déconnexion.
+ * @property sessionPersistence Port de persistance de session, sollicité pour effacer
+ * le refresh_token lors d'un refresh échoué ou d'une déconnexion.
  */
 class AuthHttpRepository(
     private val client: HttpClient,
     private val config: AppConfig,
     private val mapper: AuthHttpMapper,
-    private val cookiesStorage: SecureCookiesStorage,
+    private val sessionPersistence: SessionPersistence,
 ) : AuthRepository {
 
     /**
@@ -101,7 +101,7 @@ class AuthHttpRepository(
             if (response.status.isSuccess()) {
                 Result.Success(mapper.toUser(response.body<AuthResponseDto>()))
             } else {
-                cookiesStorage.clearPersisted()
+                sessionPersistence.clearPersisted()
                 Result.Failure(AuthError.SessionExpired)
             }
         }.getOrElse { Result.Failure(AuthError.Network) }
@@ -118,10 +118,10 @@ class AuthHttpRepository(
     override suspend fun logout(): Result<Unit, AuthError> =
         runCatching {
             client.post("${config.baseUrl}/auth/logout")
-            cookiesStorage.clearPersisted()
+            sessionPersistence.clearPersisted()
             Result.Success(Unit)
         }.getOrElse {
-            cookiesStorage.clearPersisted()
+            sessionPersistence.clearPersisted()
             Result.Success(Unit)
         }
 
@@ -130,5 +130,5 @@ class AuthHttpRepository(
      *
      * @return `true` si un refresh_token a été persisté, sinon `false`.
      */
-    override fun hasPersistedSession(): Boolean = cookiesStorage.hasPersistedSession()
+    override fun hasPersistedSession(): Boolean = sessionPersistence.hasPersistedSession()
 }

@@ -10,6 +10,7 @@ import eu.ejdr.application.common.Result
 import eu.ejdr.domain.entities.auth.Credentials
 import eu.ejdr.domain.entities.auth.User
 import eu.ejdr.domain.error.DomainError
+import eu.ejdr.domain.error.entities.auth.AuthError
 import eu.ejdr.presentation.feature.auth.component.AuthForm
 import kotlinx.coroutines.launch
 
@@ -53,15 +54,30 @@ internal fun AuthPage(
         secondaryText = secondaryText,
         secondaryActionLabel = secondaryActionLabel,
         onSubmit = {
-            loading = true
-            error = null
-            scope.launch {
-                when (val result = submit(Credentials(email.trim(), password))) {
-                    is Result.Success -> onAuthenticated(result.value)
-                    is Result.Failure -> error = result.error.message
+            val trimmedEmail = email.trim()
+            if (trimmedEmail.isEmpty() || password.isEmpty()) {
+                error = "Veuillez remplir tous les champs."
+            } else {
+                loading = true
+                error = null
+                scope.launch {
+                    try {
+                        when (val result = submit(Credentials(trimmedEmail, password))) {
+                            is Result.Success -> onAuthenticated(result.value)
+                            is Result.Failure -> error = toMessage(result.error)
+                        }
+                    } finally {
+                        loading = false
+                    }
                 }
-                loading = false
             }
         },
     )
+}
+
+private fun toMessage(error: DomainError): String = when (error) {
+    is AuthError.InvalidCredentials -> "Identifiants invalides."
+    is AuthError.EmailAlreadyUsed -> "Cet email est déjà utilisé."
+    is AuthError.Network -> "Erreur réseau, vérifiez votre connexion."
+    else -> "Une erreur inattendue s'est produite."
 }

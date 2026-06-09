@@ -10,7 +10,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -62,7 +61,7 @@ fun AppButton(
                 if (leadingIcon != null) {
                     Icon(leadingIcon, contentDescription = null, tint = contentColor, modifier = Modifier.size(AppTheme.dimens.iconSize))
                 }
-                Text(label)
+                AppText(text = label, style = AppTextStyle.Label, color = contentColor)
             }
         }
     }

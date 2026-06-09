@@ -10,9 +10,9 @@ import io.ktor.http.HttpStatusCode
  *
  * C'est la frontière qui isole la couche application des détails du protocole :
  * les réponses brutes deviennent des entités ([User]) et les échecs deviennent
- * des erreurs métier ([AuthError]).
+ * des erreurs métier ([AuthError]). Sans état, toutes les opérations sont pures.
  */
-class AuthHttpMapper {
+object AuthHttpMapper {
 
     /**
      * Convertit la réponse d'authentification reçue en entité domaine.

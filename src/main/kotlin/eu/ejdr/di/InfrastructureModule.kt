@@ -1,6 +1,7 @@
 package eu.ejdr.di
 
 import eu.ejdr.application.auth.abstraction.repository.AuthRepository
+import eu.ejdr.application.auth.abstraction.service.SessionPersistence
 import eu.ejdr.application.settings.abstraction.repository.ThemeRepository
 import eu.ejdr.application.update.abstraction.repository.UpdateRepository
 import eu.ejdr.infrastructure.config.AppConfig
@@ -33,9 +34,10 @@ val infrastructureModule = module {
     single { KeyStoreProvider(get<AppConfig>().dataDir) }
     single { CookieCipher(get()) }
     single { SecureCookiesStorage(get<AppConfig>().dataDir, get(), AcceptAllCookiesStorage()) }
+    single<SessionPersistence> { get<SecureCookiesStorage>() }
     single<HttpClient> { KtorClientFactory(get(), get<SecureCookiesStorage>()).create() }
-    single { AuthHttpMapper() }
-    single<AuthRepository> { AuthHttpRepository(get(), get(), get(), get<SecureCookiesStorage>()) }
+    single { AuthHttpMapper }
+    single<AuthRepository> { AuthHttpRepository(get(), get(), get(), get<SessionPersistence>()) }
     single<UpdateRepository> { UpdateHttpRepository(get()) }
     single<ThemeRepository> { ThemeFileRepository(get<AppConfig>().dataDir) }
 }

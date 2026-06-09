@@ -6,17 +6,16 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.ejdr.presentation.shared.component.atomic.AppButton
+import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
@@ -42,11 +41,10 @@ fun AppTopBar(
     onSettings: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null,
 ) {
-    val colors = AppTheme.colors
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(colors.surface)
+            .background(AppTheme.colors.surface)
             .heightIn(min = 56.dp)
             .padding(horizontal = AppTheme.dimens.lg, vertical = AppTheme.dimens.sm),
         verticalAlignment = Alignment.CenterVertically,
@@ -58,11 +56,9 @@ fun AppTopBar(
         ) {
             if (onBack != null) {
                 IconButton(onClick = onBack) {
-                    Icon(
+                    AppIcon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Retour",
-                        tint = colors.text,
-                        modifier = Modifier.size(AppTheme.dimens.iconSize),
                     )
                 }
             }
@@ -72,11 +68,9 @@ fun AppTopBar(
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (onSettings != null) {
                 IconButton(onClick = onSettings) {
-                    Icon(
+                    AppIcon(
                         imageVector = Icons.Default.Settings,
                         contentDescription = "Paramètres",
-                        tint = colors.text,
-                        modifier = Modifier.size(AppTheme.dimens.iconSize),
                     )
                 }
             }

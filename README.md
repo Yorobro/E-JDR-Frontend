@@ -33,7 +33,7 @@ Sous Windows PowerShell, utiliser `.\gradlew.bat run`, etc.
 | Variable d'env   | Défaut                  | Rôle                                              |
 |------------------|-------------------------|---------------------------------------------------|
 | `EJDR_API_URL`   | `http://localhost:3000` | URL de base de l'API d'authentification.          |
-| `EJDR_HTTP_LOG`  | `true`                  | Active/désactive le logging HTTP Ktor.            |
+| `EJDR_HTTP_LOG`  | `false`                 | Active/désactive le logging HTTP Ktor.            |
 
 Les secrets et le KeyStore sont stockés dans `%APPDATA%/E-JDR/` (jamais commités).
 

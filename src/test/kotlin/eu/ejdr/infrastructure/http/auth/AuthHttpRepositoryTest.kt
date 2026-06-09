@@ -75,7 +75,7 @@ class AuthHttpRepositoryTest {
         }
     }
 
-    private fun repository(client: HttpClient) = AuthHttpRepository(client, config, AuthHttpMapper(), cookiesStorage)
+    private fun repository(client: HttpClient) = AuthHttpRepository(client, config, AuthHttpMapper, cookiesStorage)
 
     private val creds = Credentials("user@test.com", "password123")
 

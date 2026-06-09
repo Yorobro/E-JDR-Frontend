@@ -78,10 +78,10 @@ fun AppTextField(
             ),
         )
         if (isError) {
-            Text(
-                text = errorMessage,
+            AppText(
+                text = errorMessage!!,
+                style = AppTextStyle.Caption,
                 color = colors.danger,
-                style = AppTheme.typography.caption,
             )
         }
     }
