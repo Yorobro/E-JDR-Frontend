@@ -12,8 +12,10 @@ import eu.ejdr.infrastructure.http.auth.dto.AuthRequestDto
 import eu.ejdr.infrastructure.http.auth.dto.AuthResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.http.HttpStatusCode
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -124,6 +126,32 @@ class AuthHttpRepository(
             sessionPersistence.clearPersisted()
             Result.Success(Unit)
         }
+
+    /**
+     * Récupère le profil courant via `GET /me` (route protégée).
+     *
+     * Si un 401 arrive ici, c'est que l'intercepteur de refresh silencieux a déjà
+     * échoué (il a alors effacé la session persistée) : on traduit en
+     * [AuthError.SessionExpired] pour que la présentation ramène à la connexion.
+     *
+     * @return [Result.Success] avec l'[User] courant, sinon une [AuthError].
+     */
+    override suspend fun me(): Result<User, AuthError> =
+        runCatching {
+            val response = client.get("${config.baseUrl}/me")
+            when {
+                response.status.isSuccess() ->
+                    Result.Success(mapper.toUser(response.body<AuthResponseDto>()))
+
+                response.status == HttpStatusCode.Unauthorized ->
+                    Result.Failure(AuthError.SessionExpired)
+
+                else -> {
+                    val err = runCatching { response.body<ApiErrorDto>() }.getOrNull()
+                    Result.Failure(mapper.toAuthError(response.status, err?.code, err?.message))
+                }
+            }
+        }.getOrElse { Result.Failure(AuthError.Network) }
 
     /**
      * Indique si une session restaurable (refresh_token chiffré) existe sur disque.

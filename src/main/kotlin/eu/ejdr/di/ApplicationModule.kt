@@ -1,11 +1,13 @@
 package eu.ejdr.di
 
 import eu.ejdr.application.auth.abstraction.service.SessionService
+import eu.ejdr.application.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.auth.abstraction.usecase.LoginUseCase
 import eu.ejdr.application.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.auth.abstraction.usecase.RegisterUseCase
 import eu.ejdr.application.auth.abstraction.usecase.RestoreSessionUseCase
 import eu.ejdr.application.auth.service.SessionServiceImpl
+import eu.ejdr.application.auth.usecase.GetCurrentUserUseCaseImpl
 import eu.ejdr.application.auth.usecase.LoginUseCaseImpl
 import eu.ejdr.application.auth.usecase.LogoutUseCaseImpl
 import eu.ejdr.application.auth.usecase.RegisterUseCaseImpl
@@ -36,6 +38,7 @@ val applicationModule = module {
     single<RegisterUseCase> { RegisterUseCaseImpl(get()) }
     single<RestoreSessionUseCase> { RestoreSessionUseCaseImpl(get()) }
     single<LogoutUseCase> { LogoutUseCaseImpl(get()) }
+    single<GetCurrentUserUseCase> { GetCurrentUserUseCaseImpl(get()) }
     single<CheckUpdateUseCase> { CheckUpdateUseCaseImpl(get()) }
     single<DownloadAndInstallUpdateUseCase> { DownloadAndInstallUpdateUseCaseImpl(get()) }
     single<GetThemeUseCase> { GetThemeUseCaseImpl(get()) }

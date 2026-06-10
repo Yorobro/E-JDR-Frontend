@@ -101,7 +101,10 @@ fun App() {
                     )
                 },
             ) {
-                UserPage(user = current.user)
+                UserPage(
+                    user = current.user,
+                    onSessionExpired = { screen = Screen.Login },
+                )
             }
 
             is Screen.Settings -> AppScaffold(
