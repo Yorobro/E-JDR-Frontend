@@ -46,6 +46,18 @@ interface AuthRepository {
     suspend fun logout(): Result<Unit, AuthError>
 
     /**
+     * Récupère le profil de l'utilisateur courant auprès du serveur (`GET /me`).
+     *
+     * Première route protégée : un 401 éventuel est d'abord traité par l'intercepteur
+     * de rafraîchissement silencieux du client HTTP ; s'il parvient jusqu'ici, la
+     * session est réellement expirée.
+     *
+     * @return l'[User] courant, ou une [AuthError] ([AuthError.SessionExpired] si la
+     * session n'est plus valide)
+     */
+    suspend fun me(): Result<User, AuthError>
+
+    /**
      * Indique si une session est persistée localement (sans la valider auprès du serveur).
      *
      * @return `true` si des informations de session existent localement, `false` sinon

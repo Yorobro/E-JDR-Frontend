@@ -172,4 +172,61 @@ class AuthHttpRepositoryTest {
             assertIs<Result.Failure<AuthError>>(result)
             assertEquals(AuthError.Network, result.error)
         }
+
+    @Test
+    fun `me success maps body to User`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(
+                        HttpStatusCode.OK,
+                        """{"userId":"u-1","email":"user@test.com","createdAt":"2026-06-10T08:00:00.000Z"}""",
+                    ),
+                )
+
+            val result = repo.me()
+
+            assertIs<Result.Success<*>>(result)
+            assertEquals("user@test.com", (result.value as eu.ejdr.domain.entities.auth.User).email)
+        }
+
+    @Test
+    fun `me 401 maps to SessionExpired`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(
+                        HttpStatusCode.Unauthorized,
+                        """{"code":"UNAUTHENTICATED","message":"Authentification requise."}""",
+                    ),
+                )
+
+            val result = repo.me()
+
+            assertIs<Result.Failure<*>>(result)
+            assertEquals(AuthError.SessionExpired, result.error)
+        }
+
+    @Test
+    fun `me network failure maps to Network`() =
+        runTest {
+            val engine = MockEngine { throw java.io.IOException("connexion refusée") }
+            val client =
+                HttpClient(engine) {
+                    install(HttpCookies) { storage = cookiesStorage }
+                    install(ContentNegotiation) {
+                        json(
+                            Json {
+                                ignoreUnknownKeys = true
+                                isLenient = true
+                            },
+                        )
+                    }
+                }
+
+            val result = repository(client).me()
+
+            assertIs<Result.Failure<*>>(result)
+            assertEquals(AuthError.Network, result.error)
+        }
 }
