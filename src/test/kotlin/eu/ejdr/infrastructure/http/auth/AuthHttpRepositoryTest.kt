@@ -208,6 +208,23 @@ class AuthHttpRepositoryTest {
         }
 
     @Test
+    fun `me 401 USER_NOT_FOUND (compte supprime) maps to SessionExpired`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(
+                        HttpStatusCode.Unauthorized,
+                        """{"code":"USER_NOT_FOUND","message":"Utilisateur introuvable."}""",
+                    ),
+                )
+
+            val result = repo.me()
+
+            assertIs<Result.Failure<*>>(result)
+            assertEquals(AuthError.SessionExpired, result.error)
+        }
+
+    @Test
     fun `me network failure maps to Network`() =
         runTest {
             val engine = MockEngine { throw java.io.IOException("connexion refusée") }
