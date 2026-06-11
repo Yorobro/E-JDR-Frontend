@@ -1,3 +1,12 @@
+## [1.4.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.3.2...v1.4.0) (2026-06-10)
+
+
+### Features
+
+* **auth:** add GetCurrentUserUseCase wired through Koin ([df0c1df](https://github.com/Yorobro/E-JDR-Frontend/commit/df0c1df27ab2d91c7f487cb122dbbb5ceea57b55))
+* **auth:** add me() to AuthRepository for protected GET /me ([572a237](https://github.com/Yorobro/E-JDR-Frontend/commit/572a2374670d7bc29a6e9f5e4f5f7002e58fe9b0))
+* **home:** load current user profile from protected GET /me ([8fdcc10](https://github.com/Yorobro/E-JDR-Frontend/commit/8fdcc102013ced07ccbff4e5352596c64f9b97f7))
+
 ## [1.3.2](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.3.1...v1.3.2) (2026-06-09)
 
 
