@@ -61,8 +61,10 @@ concernée — la structure est donc prévisible et auto-documentée.
   `KtorClientFactory` (transverse) à la racine, et un repository HTTP par feature
   sous `http/features/<feature>/` (DTO, mappers, repositories).
 - **`presentation/`** — `shared/component/{atomic,molecule,organism}` (atomic design
-  réutilisable) ; `features/<feature>/{page,component}`. Seules les **pages**
-  appellent les use cases ; les **composants** sont bêtes (props + callbacks).
+  réutilisable) ; `features/<feature>/` avec un **ViewModel** (état + use cases
+  injectés), `page/` (pages fines qui créent et observent le VM) et `component/`
+  (composants bêtes : props + callbacks). Navigation par **back-stack possédé par
+  l'app** (Navigation 3, `navigation/`), ViewModels retenus par destination.
 
 L'injection de dépendances est gérée par **Koin** (`di/`).
 

@@ -39,32 +39,57 @@ isolée dans son dossier, avec deux sous-dossiers :
 - `component/` : composants **bêtes** (stateless) propres à la feature.
 - `page/` : pages **intelligentes** qui orchestrent la feature.
 
+Chaque feature regroupe, sous `features/<feature>/` :
+
+- `<Feature>ViewModel.kt` : le ViewModel (à la **racine** de la feature, pas dans
+  `page/`). Il détient l'état (`StateFlow<…UiState>`), porte la logique dans son
+  `viewModelScope`, et reçoit ses **use cases par constructeur**.
+- `page/` : pages **intelligentes** — fines. Elles créent le ViewModel (retenu par
+  destination) et observent son état.
+- `component/` (au besoin) : composants **bêtes** pilotés par props/callbacks.
+
 ### Ajouter une feature à la présentation
 
-Créer `features/<feature>/` avec `page/` (composants intelligents qui injectent les
-use cases via `koinInject` et détiennent l'état) et, au besoin, `component/`
-(composants bêtes pilotés par props/callbacks). Réutiliser les briques de
-`shared/component/` et les jetons `AppTheme` ; brancher l'écran dans la navigation
-par état (`Screen` + `AppRouter`).
+1. Définir une route dans `navigation/Routes.kt` : `@Serializable data … : Route`
+   (les arguments d'écran voyagent dans la clé).
+2. Créer `features/<feature>/<Feature>ViewModel.kt` : `class … : ViewModel()`, état
+   en `StateFlow`, événements one-shot (navigation) via un `Channel`, use cases
+   injectés au constructeur.
+3. Créer `features/<feature>/page/<Feature>Page.kt` : `koinInject` les use cases, crée
+   le VM via `viewModel { <Feature>ViewModel(useCase) }`, observe l'état avec
+   `collectAsStateWithLifecycle`, collecte les événements one-shot dans un
+   `LaunchedEffect` pour naviguer.
+4. Brancher la route dans `navigation/AppNavDisplay.kt` (`entry<Route.X> { … }`).
 
-## Composants bêtes vs pages intelligentes
+## Composants bêtes vs pages intelligentes vs ViewModels
 
-- **Composants (bêtes)** : ils ne détiennent aucun état et n'appellent **aucun** use case. Ils
-  reçoivent leurs valeurs en paramètres et remontent les événements via des callbacks.
-- **Pages (intelligentes)** : seul endroit qui injecte et appelle les use cases (via `koinInject`),
-  détient l'état local, et traduit les erreurs domaine (`Result.Failure`) en messages UI.
+- **Composants (bêtes)** : aucun état, aucun use case. Valeurs en paramètres,
+  événements via callbacks. Préservés tels quels (préviewables).
+- **Pages (intelligentes)** : créent et observent le ViewModel ; ne détiennent plus
+  d'état métier en `remember`. Elles traduisent les événements one-shot du VM en
+  appels de navigation.
+- **ViewModels** : détiennent l'état (`StateFlow`), exécutent la logique dans le
+  `viewModelScope` (annulation propre à la destruction de l'écran), et exposent le
+  message d'erreur via `error.message` (source unique, cf. couche domaine).
 
-## Navigation et démarrage
+## Navigation et démarrage (Navigation 3)
 
-- La **navigation se fait par état** : l'écran courant est une valeur de l'interface scellée
-  `Screen` (Splash / Login / Register / User), et changer d'écran revient à modifier cet état.
-- `App` est le composable racine : il fournit le design system (`AppTheme`), tente un
-  **auto-login** (`RestoreSessionUseCase`) au démarrage, puis effectue le routing par état.
+- La navigation repose sur un **back-stack possédé par `App`**
+  (`rememberNavBackStack`, une `SnapshotStateList<NavKey>`). Naviguer = empiler
+  (`backStack.add(Route.X)`), revenir = dépiler (`removeLastOrNull`). Le retour
+  multi-niveaux est donc natif. `App` délègue le mapping route → écran à
+  `navigation/AppNavDisplay` (`NavDisplay` + `entryProvider`).
+- Les **ViewModels sont retenus par destination** via le décorateur
+  `rememberViewModelStoreNavEntryDecorator` : leur état survit à la recomposition et à
+  un aller-retour de navigation.
+- `App` fournit le design system (`AppTheme`), tente un **auto-login**
+  (`RestoreSessionUseCase`) au démarrage, puis remplace l'écran `Splash` par `Home`
+  ou `Login` (`backStack.clear()` + `add`, ce qui efface l'historique d'avant-auth).
 
 ### Zone non-connectée vs zone connectée
 
 - **Non-connectée** (`Login` / `Register`) : pages rendues en **plein écran**.
-- **Connectée** (`Home` / `Settings`) : rendue dans un `AppScaffold` avec une `AppTopBar`
-  **présente partout** (titre + Déconnexion). `Screen.Home` porte l'`User` connecté (`null` si
-  arrivé par auto-login sans profil chargé) ; le bouton Déconnexion appelle `LogoutUseCase` puis
-  revient à l'écran de connexion.
+- **Connectée** (`Home` / `Settings`) : rendue dans un `AppScaffold` avec une
+  `AppTopBar` **présente partout** (titre + Déconnexion). Le profil `User` n'est plus
+  transporté dans la route : `UserViewModel` le charge via `GetCurrentUserUseCase`. Le
+  bouton Déconnexion appelle `LogoutUseCase` puis réinitialise la pile sur `Login`.
