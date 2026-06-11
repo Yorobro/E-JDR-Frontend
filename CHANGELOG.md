@@ -1,3 +1,10 @@
+## [1.6.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.5.0...v1.6.0) (2026-06-11)
+
+
+### Features
+
+* **presentation:** add reusable form state-holder pattern ([b4d2cdf](https://github.com/Yorobro/E-JDR-Frontend/commit/b4d2cdfb0f0d00bb4d97bd01167492abf529155c))
+
 ## [1.5.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.4.0...v1.5.0) (2026-06-11)
 
 
