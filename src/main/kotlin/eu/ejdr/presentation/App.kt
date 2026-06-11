@@ -7,17 +7,18 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.savedstate.serialization.SavedStateConfiguration
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
-import eu.ejdr.application.shared.Result
 import eu.ejdr.application.features.settings.abstraction.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.update.abstraction.UpdateInfo
 import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
-import eu.ejdr.presentation.navigation.AppRouter
-import eu.ejdr.presentation.navigation.NavActions
-import eu.ejdr.presentation.navigation.Screen
+import eu.ejdr.application.shared.Result
+import eu.ejdr.presentation.navigation.AppNavDisplay
+import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.shared.component.organism.UpdateDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.theme.darkColors
@@ -28,16 +29,13 @@ import org.koin.compose.koinInject
 /**
  * Composable racine de l'application.
  *
- * Charge le thème persisté avant de fournir le design system via [AppTheme], puis orchestre le
- * démarrage (auto-login via [RestoreSessionUseCase], vérification de mise à jour via
- * [CheckUpdateUseCase]) et maintient l'état de navigation ([Screen]). Le rendu de chaque écran
- * est délégué à [AppRouter].
+ * Responsabilités : fournir le design system ([AppTheme]), orchestrer le démarrage
+ * (auto-login via [RestoreSessionUseCase], vérification de mise à jour via
+ * [CheckUpdateUseCase]) et **posséder le back-stack de navigation**
+ * ([rememberNavBackStack]). Le mapping route → écran est délégué à [AppNavDisplay].
  *
- * Deux zones distinctes :
- * - **non-connectée** (Login / Register) : rendue en plein écran ;
- * - **connectée** (Home / Settings) : rendue dans un [eu.ejdr.presentation.shared.component.organism.AppScaffold]
- *   avec une [eu.ejdr.presentation.shared.component.organism.AppTopBar] présente partout, dont le
- *   bouton Déconnexion appelle [LogoutUseCase] avant de revenir à la connexion.
+ * Naviguer revient à empiler/dépiler une [Route] sur le back-stack ; les ViewModels
+ * des écrans sont retenus par destination (cf. [AppNavDisplay]).
  */
 @Composable
 fun App() {
@@ -55,35 +53,35 @@ fun App() {
         val checkUpdate = koinInject<CheckUpdateUseCase>()
         val downloadAndInstall = koinInject<DownloadAndInstallUpdateUseCase>()
         val scope = rememberCoroutineScope()
-        var screen by remember { mutableStateOf<Screen>(Screen.Splash) }
+
+        val backStack = rememberNavBackStack(SavedStateConfiguration.DEFAULT, Route.Splash)
         var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
 
-        LaunchedEffect(Unit) {
-            launch { updateInfo = checkUpdate() }
-            screen = when (val result = restoreSession()) {
-                is Result.Success -> Screen.Home(user = result.value)
-                is Result.Failure -> Screen.Login
-            }
+        // Remplace toute la pile par une seule destination (ex. après login/logout) :
+        // l'historique antérieur ne doit jamais permettre de « revenir » avant l'auth.
+        fun resetTo(route: Route) {
+            backStack.clear()
+            backStack.add(route)
         }
 
-        val actions = NavActions(
-            onAuthenticated = { user -> screen = Screen.Home(user) },
-            onGoToRegister = { screen = Screen.Register },
-            onGoToLogin = { screen = Screen.Login },
-            onLogout = { scope.launch { logout(); screen = Screen.Login } },
-            onSettings = {
-                val current = screen
-                if (current is Screen.Home) screen = Screen.Settings(current.user)
-            },
-            onBack = {
-                val current = screen
-                if (current is Screen.Settings) screen = Screen.Home(current.user)
-            },
-            onThemeChange = { themeVariant = it },
-            onSessionExpired = { screen = Screen.Login },
-        )
+        // Démarrage : vérifie les mises à jour et tente l'auto-login, puis remplace
+        // l'écran Splash par Home (succès) ou Login (échec).
+        LaunchedEffect(Unit) {
+            launch { updateInfo = checkUpdate() }
+            resetTo(
+                when (restoreSession()) {
+                    is Result.Success -> Route.Home
+                    is Result.Failure -> Route.Login
+                },
+            )
+        }
 
-        AppRouter(screen = screen, actions = actions)
+        AppNavDisplay(
+            backStack = backStack,
+            onLogout = { scope.launch { logout(); resetTo(Route.Login) } },
+            onThemeChange = { themeVariant = it },
+            resetTo = ::resetTo,
+        )
 
         updateInfo?.let { info ->
             UpdateDialog(

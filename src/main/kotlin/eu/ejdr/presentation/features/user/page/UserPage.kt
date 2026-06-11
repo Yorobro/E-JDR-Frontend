@@ -36,9 +36,9 @@ import org.koin.compose.koinInject
  */
 @Composable
 fun UserPage(
-    user: User?,
     onSessionExpired: () -> Unit,
     modifier: Modifier = Modifier,
+    user: User? = null,
 ) {
     val getCurrentUser = koinInject<GetCurrentUserUseCase>()
     var profile by remember { mutableStateOf(user) }
