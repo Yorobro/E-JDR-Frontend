@@ -43,6 +43,11 @@ dependencies {
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
 
+    // Navigation 3 (back-stack possédé par l'app) + ViewModels retenus par destination.
+    implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.1.1")
+    implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3:2.10.0")
+    implementation("org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
+
     // Tests
     testImplementation(kotlin("test"))
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.4")
