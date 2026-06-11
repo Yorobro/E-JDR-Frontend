@@ -7,15 +7,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
-import eu.ejdr.application.shared.Result
-import eu.ejdr.domain.features.auth.entities.User
-import eu.ejdr.domain.features.auth.error.AuthError
+import eu.ejdr.presentation.features.user.UserViewModel
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.theme.AppTheme
@@ -24,13 +21,10 @@ import org.koin.compose.koinInject
 /**
  * Page d'accueil affichée une fois l'utilisateur connecté (composant intelligent).
  *
- * Au montage, rafraîchit le profil via [GetCurrentUserUseCase] (`GET /me`) — première
- * route protégée : si l'access token a expiré, l'intercepteur du client HTTP tente un
- * refresh silencieux de façon transparente. Une [AuthError.SessionExpired] résiduelle
- * signifie que la session n'est plus restaurable : [onSessionExpired] est invoqué.
- * Sur une erreur réseau, le profil déjà connu (fourni par [user]) reste affiché.
+ * Crée un [UserViewModel] retenu par la destination (qui rafraîchit le profil via
+ * `GET /me` une seule fois) et observe son état. L'événement one-shot
+ * [UserViewModel.sessionExpired] déclenche [onSessionExpired].
  *
- * @param user Profil déjà connu (issu du login ou de l'auto-login), ou `null`.
  * @param onSessionExpired Callback de retour à l'écran de connexion.
  * @param modifier Modifier Compose appliqué à la page.
  */
@@ -38,20 +32,13 @@ import org.koin.compose.koinInject
 fun UserPage(
     onSessionExpired: () -> Unit,
     modifier: Modifier = Modifier,
-    user: User? = null,
 ) {
     val getCurrentUser = koinInject<GetCurrentUserUseCase>()
-    var profile by remember { mutableStateOf(user) }
+    val viewModel = viewModel { UserViewModel(getCurrentUser) }
+    val profile by viewModel.profile.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
-        when (val result = getCurrentUser()) {
-            is Result.Success -> profile = result.value
-            is Result.Failure ->
-                if (result.error == AuthError.SessionExpired) {
-                    onSessionExpired()
-                }
-            // Autres erreurs (réseau...) : on conserve le profil déjà connu.
-        }
+    LaunchedEffect(viewModel) {
+        viewModel.sessionExpired.collect { onSessionExpired() }
     }
 
     Column(

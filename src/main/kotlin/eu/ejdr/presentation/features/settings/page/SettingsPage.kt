@@ -5,13 +5,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ejdr.application.features.settings.abstraction.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.settings.abstraction.usecase.SetThemeUseCase
+import eu.ejdr.presentation.features.settings.SettingsViewModel
 import eu.ejdr.presentation.features.settings.component.SettingsForm
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
@@ -19,10 +19,10 @@ import org.koin.compose.koinInject
 /**
  * Page des paramètres (composant INTELLIGENT).
  *
- * Seul endroit de la feature settings qui injecte [GetThemeUseCase] et [SetThemeUseCase].
- * Elle détient l'état local du thème affiché, persiste le choix via le use case, et remonte
- * le changement à [App] via [onThemeChange] pour que [AppTheme] recompose avec les bonnes couleurs.
- * Le rendu est délégué au composant bête [SettingsForm].
+ * Crée un [SettingsViewModel] retenu par la destination (qui lit/persiste le thème via
+ * les use cases) et observe son état. Chaque changement est **persisté par le VM** puis
+ * remonté à [eu.ejdr.presentation.App] via [onThemeChange] pour recomposer le design
+ * system global. Le rendu est délégué au composant bête [SettingsForm].
  *
  * @param onThemeChange Callback appelé à chaque changement de thème, portant la nouvelle valeur.
  * @param modifier Modifier Compose appliqué à la page.
@@ -34,7 +34,8 @@ fun SettingsPage(
 ) {
     val getTheme = koinInject<GetThemeUseCase>()
     val setTheme = koinInject<SetThemeUseCase>()
-    var currentTheme by remember { mutableStateOf(getTheme()) }
+    val viewModel = viewModel { SettingsViewModel(getTheme, setTheme) }
+    val currentTheme by viewModel.currentTheme.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -44,8 +45,7 @@ fun SettingsPage(
         SettingsForm(
             currentTheme = currentTheme,
             onThemeChange = { newTheme ->
-                currentTheme = newTheme
-                setTheme(newTheme)
+                viewModel.onThemeSelected(newTheme)
                 onThemeChange(newTheme)
             },
         )
