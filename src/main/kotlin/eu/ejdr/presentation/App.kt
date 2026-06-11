@@ -8,7 +8,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.rememberNavBackStack
-import androidx.savedstate.serialization.SavedStateConfiguration
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
 import eu.ejdr.application.features.settings.abstraction.ThemeVariant
@@ -19,6 +18,7 @@ import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstal
 import eu.ejdr.application.shared.Result
 import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
+import eu.ejdr.presentation.navigation.appNavConfiguration
 import eu.ejdr.presentation.shared.component.organism.UpdateDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.theme.darkColors
@@ -54,7 +54,7 @@ fun App() {
         val downloadAndInstall = koinInject<DownloadAndInstallUpdateUseCase>()
         val scope = rememberCoroutineScope()
 
-        val backStack = rememberNavBackStack(SavedStateConfiguration.DEFAULT, Route.Splash)
+        val backStack = rememberNavBackStack(appNavConfiguration, Route.Splash)
         var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
 
         // Remplace toute la pile par une seule destination (ex. après login/logout) :

@@ -7,7 +7,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -47,7 +46,7 @@ fun AppNavDisplay(
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
-        entryDecorators = listOf(rememberViewModelStoreNavEntryDecorator()),
+        entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
         entryProvider = entryProvider {
             entry<Route.Splash> { SplashScreen() }
 

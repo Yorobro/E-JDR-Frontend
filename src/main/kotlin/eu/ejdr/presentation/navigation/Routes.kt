@@ -1,7 +1,11 @@
 package eu.ejdr.presentation.navigation
 
 import androidx.navigation3.runtime.NavKey
+import androidx.savedstate.serialization.SavedStateConfiguration
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.polymorphic
+import kotlinx.serialization.modules.subclass
 
 /**
  * Destinations de navigation de l'application (Navigation 3).
@@ -36,4 +40,26 @@ sealed interface Route : NavKey {
     /** Écran des paramètres (thème, etc.). */
     @Serializable
     data object Settings : Route
+}
+
+/**
+ * Configuration de sérialisation du back-stack Navigation 3.
+ *
+ * `rememberNavBackStack` persiste/restaure la pile en sérialisant des [NavKey] ; il
+ * exige donc un `serializersModule` déclarant le **polymorphisme ouvert** de [NavKey]
+ * avec chaque sous-type concret. Sans ça, l'app **plante au démarrage** (le défaut
+ * `SavedStateConfiguration.DEFAULT` ne connaît pas nos routes).
+ *
+ * Toute nouvelle [Route] doit être ajoutée ici via `subclass(...)`.
+ */
+val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
+    serializersModule = SerializersModule {
+        polymorphic(NavKey::class) {
+            subclass(Route.Splash::class)
+            subclass(Route.Login::class)
+            subclass(Route.Register::class)
+            subclass(Route.Home::class)
+            subclass(Route.Settings::class)
+        }
+    }
 }
