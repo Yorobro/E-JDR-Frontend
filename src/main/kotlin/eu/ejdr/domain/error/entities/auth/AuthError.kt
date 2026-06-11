@@ -22,6 +22,9 @@ sealed class AuthError(override val message: String) : DomainError {
     /** Aucune session persistée à restaurer (premier lancement, déconnexion). */
     data object NoPersistedSession : AuthError("Aucune session enregistrée.")
 
+    /** Compte temporairement verrouillé après trop de tentatives. */
+    data object AccountLocked : AuthError("Compte temporairement verrouillé. Réessayez dans quelques minutes.")
+
     /** Échec de communication avec le serveur (connectivité, timeout). */
     data object Network : AuthError("Erreur réseau, vérifiez votre connexion.")
 

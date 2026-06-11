@@ -17,7 +17,7 @@ class AuthHttpMapperTest {
 
     @Test
     fun `409 maps to EmailAlreadyUsed`() {
-        val error = mapper.toAuthError(HttpStatusCode.Conflict, code = "EMAIL_TAKEN", message = null)
+        val error = mapper.toAuthError(HttpStatusCode.Conflict, code = "EMAIL_ALREADY_USED", message = null)
         assertEquals(AuthError.EmailAlreadyUsed, error)
     }
 
@@ -33,5 +33,11 @@ class AuthHttpMapperTest {
         // le code prime sur le statut (un 401 nu resterait InvalidCredentials).
         val error = mapper.toAuthError(HttpStatusCode.Unauthorized, code = "INVALID_REFRESH_TOKEN", message = null)
         assertEquals(AuthError.SessionExpired, error)
+    }
+
+    @Test
+    fun `ACCOUNT_LOCKED code maps to AccountLocked`() {
+        val error = mapper.toAuthError(HttpStatusCode.TooManyRequests, code = "ACCOUNT_LOCKED", message = null)
+        assertEquals(AuthError.AccountLocked, error)
     }
 }
