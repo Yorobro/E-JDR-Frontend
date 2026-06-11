@@ -1,6 +1,6 @@
 package eu.ejdr.presentation.navigation
 
-import eu.ejdr.domain.entities.auth.User
+import eu.ejdr.domain.features.auth.entities.User
 
 /**
  * État de navigation de l'application.

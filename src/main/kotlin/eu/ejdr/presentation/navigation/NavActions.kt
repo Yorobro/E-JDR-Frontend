@@ -1,7 +1,7 @@
 package eu.ejdr.presentation.navigation
 
-import eu.ejdr.application.settings.abstraction.ThemeVariant
-import eu.ejdr.domain.entities.auth.User
+import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.auth.entities.User
 
 /**
  * Regroupe l'ensemble des callbacks de navigation passés à [AppRouter].

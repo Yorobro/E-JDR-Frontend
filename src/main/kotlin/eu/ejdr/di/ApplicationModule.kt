@@ -1,25 +1,25 @@
 package eu.ejdr.di
 
-import eu.ejdr.application.auth.abstraction.service.SessionService
-import eu.ejdr.application.auth.abstraction.usecase.GetCurrentUserUseCase
-import eu.ejdr.application.auth.abstraction.usecase.LoginUseCase
-import eu.ejdr.application.auth.abstraction.usecase.LogoutUseCase
-import eu.ejdr.application.auth.abstraction.usecase.RegisterUseCase
-import eu.ejdr.application.auth.abstraction.usecase.RestoreSessionUseCase
-import eu.ejdr.application.auth.service.SessionServiceImpl
-import eu.ejdr.application.auth.usecase.GetCurrentUserUseCaseImpl
-import eu.ejdr.application.auth.usecase.LoginUseCaseImpl
-import eu.ejdr.application.auth.usecase.LogoutUseCaseImpl
-import eu.ejdr.application.auth.usecase.RegisterUseCaseImpl
-import eu.ejdr.application.auth.usecase.RestoreSessionUseCaseImpl
-import eu.ejdr.application.settings.abstraction.usecase.GetThemeUseCase
-import eu.ejdr.application.settings.abstraction.usecase.SetThemeUseCase
-import eu.ejdr.application.settings.usecase.GetThemeUseCaseImpl
-import eu.ejdr.application.settings.usecase.SetThemeUseCaseImpl
-import eu.ejdr.application.update.abstraction.usecase.CheckUpdateUseCase
-import eu.ejdr.application.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
-import eu.ejdr.application.update.usecase.CheckUpdateUseCaseImpl
-import eu.ejdr.application.update.usecase.DownloadAndInstallUpdateUseCaseImpl
+import eu.ejdr.application.features.auth.abstraction.service.SessionService
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.features.auth.abstraction.usecase.LoginUseCase
+import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
+import eu.ejdr.application.features.auth.abstraction.usecase.RegisterUseCase
+import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
+import eu.ejdr.application.features.auth.service.SessionServiceImpl
+import eu.ejdr.application.features.auth.usecase.GetCurrentUserUseCaseImpl
+import eu.ejdr.application.features.auth.usecase.LoginUseCaseImpl
+import eu.ejdr.application.features.auth.usecase.LogoutUseCaseImpl
+import eu.ejdr.application.features.auth.usecase.RegisterUseCaseImpl
+import eu.ejdr.application.features.auth.usecase.RestoreSessionUseCaseImpl
+import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
+import eu.ejdr.application.features.settings.abstraction.usecase.SetThemeUseCase
+import eu.ejdr.application.features.settings.usecase.GetThemeUseCaseImpl
+import eu.ejdr.application.features.settings.usecase.SetThemeUseCaseImpl
+import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
+import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
+import eu.ejdr.application.features.update.usecase.CheckUpdateUseCaseImpl
+import eu.ejdr.application.features.update.usecase.DownloadAndInstallUpdateUseCaseImpl
 import org.koin.dsl.module
 
 /**

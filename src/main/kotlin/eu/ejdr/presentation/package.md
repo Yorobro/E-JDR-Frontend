@@ -30,12 +30,22 @@ au plus composé :
 
 Tout ce qui se trouve dans `shared/` est **réutilisable** et **sans dépendance** à une feature.
 
-## Organisation par feature (`feature/<feature>`)
+## Organisation par feature (`features/<feature>`)
 
-Chaque fonctionnalité est isolée dans son dossier, avec deux sous-dossiers :
+Comme les autres couches, la présentation sépare le transverse (`shared/`) du
+spécifique à une fonctionnalité (`features/<feature>/`). Chaque fonctionnalité est
+isolée dans son dossier, avec deux sous-dossiers :
 
 - `component/` : composants **bêtes** (stateless) propres à la feature.
 - `page/` : pages **intelligentes** qui orchestrent la feature.
+
+### Ajouter une feature à la présentation
+
+Créer `features/<feature>/` avec `page/` (composants intelligents qui injectent les
+use cases via `koinInject` et détiennent l'état) et, au besoin, `component/`
+(composants bêtes pilotés par props/callbacks). Réutiliser les briques de
+`shared/component/` et les jetons `AppTheme` ; brancher l'écran dans la navigation
+par état (`Screen` + `AppRouter`).
 
 ## Composants bêtes vs pages intelligentes
 

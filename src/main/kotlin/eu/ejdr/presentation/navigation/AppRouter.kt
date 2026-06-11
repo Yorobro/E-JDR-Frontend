@@ -7,10 +7,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import eu.ejdr.presentation.feature.auth.page.LoginPage
-import eu.ejdr.presentation.feature.auth.page.RegisterPage
-import eu.ejdr.presentation.feature.settings.page.SettingsPage
-import eu.ejdr.presentation.feature.user.page.UserPage
+import eu.ejdr.presentation.features.auth.page.LoginPage
+import eu.ejdr.presentation.features.auth.page.RegisterPage
+import eu.ejdr.presentation.features.settings.page.SettingsPage
+import eu.ejdr.presentation.features.user.page.UserPage
 import eu.ejdr.presentation.shared.component.organism.AppScaffold
 import eu.ejdr.presentation.shared.component.organism.AppTopBar
 import eu.ejdr.presentation.shared.theme.AppTheme

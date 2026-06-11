@@ -10,17 +10,28 @@ indépendamment de toute technologie (UI, réseau, persistance).
 
 ## Règle des entités pures
 
-Les entités (`entities/`) sont des **conteneurs de données purs** : aucune méthode
-métier, aucun comportement. La logique applicative vit dans les use cases de la
-couche `application`, jamais dans les entités elles-mêmes.
+Les entités sont des **conteneurs de données purs** : aucune méthode métier, aucun
+comportement. La logique applicative vit dans les use cases de la couche
+`application`, jamais dans les entités elles-mêmes.
 
 ## Organisation
 
-- `entities/` — entités métier (ex. `entities/auth/User`, `Credentials`).
-- `error/` — contrat des erreurs : `DomainError` (interface, non `sealed`).
-- `error/entities/<feature>/` — erreurs concrètes par feature, en `sealed class`
-  (ex. `error/entities/auth/AuthError`), pour une exhaustivité garantie au niveau
+Le code est rangé en deux familles : `shared/` (transverse, non lié à une feature)
+et `features/<feature>/` (tout ce qui appartient à une fonctionnalité).
+
+- `shared/error/` — contrat transverse des erreurs : `DomainError` (interface, non
+  `sealed`), implémenté par chaque erreur de feature.
+- `features/<feature>/entities/` — entités métier de la feature
+  (ex. `features/auth/entities/User`, `Credentials`).
+- `features/<feature>/error/` — erreurs concrètes de la feature, en `sealed class`
+  (ex. `features/auth/error/AuthError`), pour une exhaustivité garantie au niveau
   de chaque feature.
+
+### Ajouter une feature au domaine
+
+Créer `features/<feature>/` puis, selon les besoins, `entities/` (data classes
+pures) et `error/<Feature>Error.kt` (`sealed class … : DomainError`). Ne rien
+mettre dans `shared/` qui soit propre à une seule feature.
 
 ## Dépendances
 

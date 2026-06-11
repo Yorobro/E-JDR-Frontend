@@ -1,6 +1,6 @@
 package eu.ejdr.infrastructure.security
 
-import eu.ejdr.application.auth.abstraction.service.SessionPersistence
+import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url

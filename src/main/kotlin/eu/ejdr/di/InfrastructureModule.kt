@@ -1,14 +1,14 @@
 package eu.ejdr.di
 
-import eu.ejdr.application.auth.abstraction.repository.AuthRepository
-import eu.ejdr.application.auth.abstraction.service.SessionPersistence
-import eu.ejdr.application.settings.abstraction.repository.ThemeRepository
-import eu.ejdr.application.update.abstraction.repository.UpdateRepository
+import eu.ejdr.application.features.auth.abstraction.repository.AuthRepository
+import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
+import eu.ejdr.application.features.settings.abstraction.repository.ThemeRepository
+import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.KtorClientFactory
-import eu.ejdr.infrastructure.http.auth.AuthHttpMapper
-import eu.ejdr.infrastructure.http.auth.AuthHttpRepository
-import eu.ejdr.infrastructure.http.update.UpdateHttpRepository
+import eu.ejdr.infrastructure.http.features.auth.AuthHttpMapper
+import eu.ejdr.infrastructure.http.features.auth.AuthHttpRepository
+import eu.ejdr.infrastructure.http.features.update.UpdateHttpRepository
 import eu.ejdr.infrastructure.security.CookieCipher
 import eu.ejdr.infrastructure.security.KeyStoreProvider
 import eu.ejdr.infrastructure.security.SecureCookiesStorage

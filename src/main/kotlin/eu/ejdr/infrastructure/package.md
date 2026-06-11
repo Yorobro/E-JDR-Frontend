@@ -13,9 +13,19 @@ d'inversion des dépendances.
 - `security/` — primitives de sécurité locales : `KeyStoreProvider` (clé AES dans
   un KeyStore JCEKS), `CookieCipher` (chiffrement AES-GCM) et `SecureCookiesStorage`
   (stockage des cookies persistant le refresh_token chiffré).
-- `http/` — accès réseau via Ktor : `KtorClientFactory` (fabrique du `HttpClient`),
-  les DTO de transport (`http/auth/dto/`), le mapper DTO/HTTP -> domaine
-  (`AuthHttpMapper`) et l'implémentation HTTP des ports (`AuthHttpRepository`).
+- `http/` — accès réseau via Ktor. À la racine : `KtorClientFactory` (fabrique du
+  `HttpClient`, transverse). Les implémentations HTTP par feature vivent sous
+  `http/features/<feature>/` : DTO de transport (`http/features/auth/dto/`), mapper
+  DTO/HTTP -> domaine (`AuthHttpMapper`) et implémentation des ports
+  (`AuthHttpRepository`, `http/features/update/UpdateHttpRepository`).
+
+### Ajouter un accès HTTP pour une feature
+
+Créer `http/features/<feature>/` contenant le repository HTTP (implémentation d'un
+port déclaré dans `application/features/<feature>/abstraction/repository/`), ses
+`dto/` et, si besoin, un mapper DTO -> domaine. Réutiliser le `HttpClient` partagé
+fourni par `KtorClientFactory` (injecté via Koin). Lier ensuite le port à son
+implémentation dans `di/InfrastructureModule.kt`.
 
 ## Modèle d'authentification
 

@@ -1,7 +1,7 @@
 package eu.ejdr.infrastructure.settings
 
-import eu.ejdr.application.settings.abstraction.ThemeVariant
-import eu.ejdr.application.settings.abstraction.repository.ThemeRepository
+import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.application.features.settings.abstraction.repository.ThemeRepository
 import java.io.File
 import java.util.Properties
 
