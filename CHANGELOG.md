@@ -1,3 +1,15 @@
+## [1.7.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.6.0...v1.7.0) (2026-06-11)
+
+
+### Features
+
+* **realtime:** add WebSocket connection-manager (no consumer yet) ([0724465](https://github.com/Yorobro/E-JDR-Frontend/commit/0724465871d92b75debef079bf2d9c7d974d064a))
+
+
+### Bug Fixes
+
+* **navigation:** make Nav3 actually run on desktop (two runtime gaps) ([54317a3](https://github.com/Yorobro/E-JDR-Frontend/commit/54317a383aff1d475c39ecdc0892bb9b200a917e))
+
 ## [1.6.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.5.0...v1.6.0) (2026-06-11)
 
 
