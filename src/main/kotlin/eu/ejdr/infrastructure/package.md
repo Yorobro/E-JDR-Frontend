@@ -18,6 +18,17 @@ d'inversion des dépendances.
   `http/features/<feature>/` : DTO de transport (`http/features/auth/dto/`), mapper
   DTO/HTTP -> domaine (`AuthHttpMapper`) et implémentation des ports
   (`AuthHttpRepository`, `http/features/update/UpdateHttpRepository`).
+- `realtime/` — connexion **temps réel** (WebSocket), implémentation du port
+  `application/features/realtime/abstraction/RealtimeConnection`.
+  `KtorRealtimeConnection` porte la **machine à états de reconnexion** (backoff via
+  `ReconnectPolicy`) et délègue la mécanique du socket à un `RealtimeTransport`
+  (seam testable). `KtorWebSocketTransport` ouvre la session Ktor réelle avec
+  **auth-on-connect** (refresh proactif avant connexion, car une connexion longue
+  durée n'est PAS couverte par l'intercepteur 401 du client REST). Câblé dans
+  `di/RealtimeModule.kt`. Aucun écran ne le consomme encore (prêt pour la 1re feature
+  temps réel).
+- `system/` — effets de bord OS derrière des ports application : `WindowsSystemLauncher`
+  (lancement d'installeur + exit), implémentation de `SystemLauncher`.
 
 ### Ajouter un accès HTTP pour une feature
 

@@ -42,6 +42,7 @@ dependencies {
     implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
     implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
     implementation("io.ktor:ktor-client-logging:$ktorVersion")
+    implementation("io.ktor:ktor-client-websockets:$ktorVersion")
 
     // Navigation 3 (back-stack possédé par l'app) + ViewModels retenus par destination.
     implementation("org.jetbrains.androidx.navigation3:navigation3-ui:1.1.1")
