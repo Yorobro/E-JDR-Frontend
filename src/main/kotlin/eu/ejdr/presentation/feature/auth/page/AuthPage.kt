@@ -78,6 +78,7 @@ internal fun AuthPage(
 private fun toMessage(error: DomainError): String = when (error) {
     is AuthError.InvalidCredentials -> "Identifiants invalides."
     is AuthError.EmailAlreadyUsed -> "Cet email est déjà utilisé."
+    is AuthError.AccountLocked -> "Compte temporairement verrouillé. Réessayez dans quelques minutes."
     is AuthError.Network -> "Erreur réseau, vérifiez votre connexion."
     else -> "Une erreur inattendue s'est produite."
 }

@@ -34,4 +34,10 @@ class AuthHttpMapperTest {
         val error = mapper.toAuthError(HttpStatusCode.Unauthorized, code = "INVALID_REFRESH_TOKEN", message = null)
         assertEquals(AuthError.SessionExpired, error)
     }
+
+    @Test
+    fun `ACCOUNT_LOCKED code maps to AccountLocked`() {
+        val error = mapper.toAuthError(HttpStatusCode.TooManyRequests, code = "ACCOUNT_LOCKED", message = null)
+        assertEquals(AuthError.AccountLocked, error)
+    }
 }
