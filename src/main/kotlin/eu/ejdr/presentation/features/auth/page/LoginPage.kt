@@ -1,14 +1,18 @@
 package eu.ejdr.presentation.features.auth.page
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ejdr.application.features.auth.abstraction.usecase.LoginUseCase
 import eu.ejdr.domain.features.auth.entities.User
+import eu.ejdr.presentation.features.auth.AuthViewModel
 import org.koin.compose.koinInject
 
 /**
  * Page de connexion (composant INTELLIGENT).
  *
- * Injecte [LoginUseCase] et délègue tout l'état et la logique coroutine à [AuthPage].
+ * Crée un [AuthViewModel] **retenu par la destination** (via `viewModel { }`) en lui
+ * branchant le [LoginUseCase], puis délègue l'affichage à [AuthPage]. Le use case est
+ * résolu par Koin et passé au ViewModel ; le reste de la logique vit dans ce dernier.
  *
  * @param onAuthenticated Callback appelé en cas de connexion réussie, portant l'utilisateur connecté.
  * @param onGoToRegister Callback de navigation vers la page d'inscription.
@@ -19,8 +23,9 @@ fun LoginPage(
     onGoToRegister: () -> Unit,
 ) {
     val loginUseCase = koinInject<LoginUseCase>()
+    val viewModel = viewModel { AuthViewModel(submit = { credentials -> loginUseCase(credentials) }) }
     AuthPage(
-        submit = { credentials -> loginUseCase(credentials) },
+        viewModel = viewModel,
         onAuthenticated = onAuthenticated,
         onSecondaryAction = onGoToRegister,
         subtitle = "Connectez-vous pour continuer",
