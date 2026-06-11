@@ -4,6 +4,7 @@ import eu.ejdr.domain.features.auth.error.AuthError
 import io.ktor.http.HttpStatusCode
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class AuthHttpMapperTest {
 
@@ -22,9 +23,13 @@ class AuthHttpMapperTest {
     }
 
     @Test
-    fun `unknown status maps to Unknown with message`() {
+    fun `unknown status maps to Unknown keeping server detail out of the UI message`() {
         val error = mapper.toAuthError(HttpStatusCode.InternalServerError, code = null, message = "boom")
-        assertEquals("Erreur inattendue: boom", error.message)
+        assertIs<AuthError.Unknown>(error)
+        // Le détail serveur est conservé pour le diagnostic...
+        assertEquals("boom", error.detail)
+        // ...mais le message affiché reste générique : aucun texte serveur ne fuite dans l'UI.
+        assertEquals("Une erreur inattendue s'est produite.", error.message)
     }
 
     @Test

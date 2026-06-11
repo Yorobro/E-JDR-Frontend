@@ -1,15 +1,23 @@
 package eu.ejdr.application.features.update.usecase
 
+import eu.ejdr.application.features.update.abstraction.SystemLauncher
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
-import kotlin.system.exitProcess
 
+/**
+ * Implémentation de [DownloadAndInstallUpdateUseCase].
+ *
+ * Orchestration pure : télécharge l'installeur via l'[UpdateRepository] puis délègue
+ * le lancement et la fermeture de l'application au port [SystemLauncher]. Les effets
+ * de bord OS (processus externe, exit JVM) sont ainsi tenus hors de la couche
+ * application, ce qui rend ce use case testable (le launcher est mockable).
+ */
 class DownloadAndInstallUpdateUseCaseImpl(
     private val updateRepository: UpdateRepository,
+    private val systemLauncher: SystemLauncher,
 ) : DownloadAndInstallUpdateUseCase {
     override suspend fun invoke(downloadUrl: String, onProgress: (Float?) -> Unit) {
-        val file = updateRepository.downloadUpdate(downloadUrl, onProgress)
-        ProcessBuilder("cmd", "/c", "start", "", file.absolutePath).start()
-        exitProcess(0)
+        val installer = updateRepository.downloadUpdate(downloadUrl, onProgress)
+        systemLauncher.launchInstallerAndExit(installer)
     }
 }

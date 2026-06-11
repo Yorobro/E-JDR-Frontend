@@ -10,7 +10,6 @@ import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.auth.entities.Credentials
 import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.shared.error.DomainError
-import eu.ejdr.domain.features.auth.error.AuthError
 import eu.ejdr.presentation.features.auth.component.AuthForm
 import kotlinx.coroutines.launch
 
@@ -64,7 +63,9 @@ internal fun AuthPage(
                     try {
                         when (val result = submit(Credentials(trimmedEmail, password))) {
                             is Result.Success -> onAuthenticated(result.value)
-                            is Result.Failure -> error = toMessage(result.error)
+                            // Source unique de vérité : le message d'affichage est porté
+                            // par l'erreur de domaine elle-même (cf. DomainError.message).
+                            is Result.Failure -> error = result.error.message
                         }
                     } finally {
                         loading = false
@@ -73,12 +74,4 @@ internal fun AuthPage(
             }
         },
     )
-}
-
-private fun toMessage(error: DomainError): String = when (error) {
-    is AuthError.InvalidCredentials -> "Identifiants invalides."
-    is AuthError.EmailAlreadyUsed -> "Cet email est déjà utilisé."
-    is AuthError.AccountLocked -> "Compte temporairement verrouillé. Réessayez dans quelques minutes."
-    is AuthError.Network -> "Erreur réseau, vérifiez votre connexion."
-    else -> "Une erreur inattendue s'est produite."
 }

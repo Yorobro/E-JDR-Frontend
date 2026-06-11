@@ -3,6 +3,7 @@ package eu.ejdr.infrastructure.http.features.auth
 import eu.ejdr.application.features.auth.abstraction.repository.AuthRepository
 import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
 import eu.ejdr.application.shared.Result
+import eu.ejdr.application.shared.runCatchingCancellable
 import eu.ejdr.domain.features.auth.entities.Credentials
 import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.auth.error.AuthError
@@ -75,7 +76,7 @@ class AuthHttpRepository(
      * @return Le résultat typé de l'opération.
      */
     private suspend fun authenticate(path: String, credentials: Credentials): Result<User, AuthError> =
-        runCatching {
+        runCatchingCancellable {
             val response: HttpResponse = client.post("${config.baseUrl}$path") {
                 contentType(ContentType.Application.Json)
                 setBody(AuthRequestDto(credentials.email, credentials.password))
@@ -83,7 +84,7 @@ class AuthHttpRepository(
             if (response.status.isSuccess()) {
                 Result.Success(mapper.toUser(response.body<AuthResponseDto>()))
             } else {
-                val err = runCatching { response.body<ApiErrorDto>() }.getOrNull()
+                val err = runCatchingCancellable { response.body<ApiErrorDto>() }.getOrNull()
                 Result.Failure(mapper.toAuthError(response.status, err?.code, err?.message))
             }
         }.getOrElse { Result.Failure(AuthError.Network) }
@@ -98,7 +99,7 @@ class AuthHttpRepository(
      * [AuthError.SessionExpired] (échec serveur) ou [AuthError.Network].
      */
     override suspend fun refresh(): Result<User, AuthError> =
-        runCatching {
+        runCatchingCancellable {
             val response = client.post("${config.baseUrl}/auth/refresh")
             if (response.status.isSuccess()) {
                 Result.Success(mapper.toUser(response.body<AuthResponseDto>()))
@@ -117,15 +118,13 @@ class AuthHttpRepository(
      *
      * @return Toujours [Result.Success].
      */
-    override suspend fun logout(): Result<Unit, AuthError> =
-        runCatching {
-            client.post("${config.baseUrl}/auth/logout")
-            sessionPersistence.clearPersisted()
-            Result.Success(Unit)
-        }.getOrElse {
-            sessionPersistence.clearPersisted()
-            Result.Success(Unit)
-        }
+    override suspend fun logout(): Result<Unit, AuthError> {
+        // L'appel serveur est best-effort : on ignore tout échec réseau...
+        runCatchingCancellable { client.post("${config.baseUrl}/auth/logout") }
+        // ...mais l'effacement local doit TOUJOURS aboutir, d'où sa place hors du bloc.
+        sessionPersistence.clearPersisted()
+        return Result.Success(Unit)
+    }
 
     /**
      * Récupère le profil courant via `GET /me` (route protégée).
@@ -137,7 +136,7 @@ class AuthHttpRepository(
      * @return [Result.Success] avec l'[User] courant, sinon une [AuthError].
      */
     override suspend fun me(): Result<User, AuthError> =
-        runCatching {
+        runCatchingCancellable {
             val response = client.get("${config.baseUrl}/me")
             when {
                 response.status.isSuccess() ->
@@ -147,7 +146,7 @@ class AuthHttpRepository(
                     Result.Failure(AuthError.SessionExpired)
 
                 else -> {
-                    val err = runCatching { response.body<ApiErrorDto>() }.getOrNull()
+                    val err = runCatchingCancellable { response.body<ApiErrorDto>() }.getOrNull()
                     Result.Failure(mapper.toAuthError(response.status, err?.code, err?.message))
                 }
             }

@@ -29,9 +29,14 @@ sealed class AuthError(override val message: String) : DomainError {
     data object Network : AuthError("Erreur réseau, vérifiez votre connexion.")
 
     /**
-     * Erreur non catégorisée, conservant le détail technique d'origine.
+     * Erreur non catégorisée.
      *
-     * @property detail Précision technique remontée pour le diagnostic.
+     * Le [message] affiché est **générique** : le [detail] technique (souvent du
+     * texte serveur brut) n'est jamais montré à l'utilisateur — il est conservé
+     * à part, uniquement pour le diagnostic/journalisation, afin de ne pas faire
+     * fuiter de contenu serveur dans l'UI.
+     *
+     * @property detail Précision technique pour le log uniquement (non affichée).
      */
-    data class Unknown(val detail: String) : AuthError("Erreur inattendue: $detail")
+    data class Unknown(val detail: String) : AuthError("Une erreur inattendue s'est produite.")
 }

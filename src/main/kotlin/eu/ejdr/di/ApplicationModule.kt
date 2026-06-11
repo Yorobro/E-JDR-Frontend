@@ -40,7 +40,7 @@ val applicationModule = module {
     single<LogoutUseCase> { LogoutUseCaseImpl(get()) }
     single<GetCurrentUserUseCase> { GetCurrentUserUseCaseImpl(get()) }
     single<CheckUpdateUseCase> { CheckUpdateUseCaseImpl(get()) }
-    single<DownloadAndInstallUpdateUseCase> { DownloadAndInstallUpdateUseCaseImpl(get()) }
+    single<DownloadAndInstallUpdateUseCase> { DownloadAndInstallUpdateUseCaseImpl(get(), get()) }
     single<GetThemeUseCase> { GetThemeUseCaseImpl(get()) }
     single<SetThemeUseCase> { SetThemeUseCaseImpl(get()) }
 }
