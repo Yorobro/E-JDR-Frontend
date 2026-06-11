@@ -17,7 +17,7 @@ class AuthHttpMapperTest {
 
     @Test
     fun `409 maps to EmailAlreadyUsed`() {
-        val error = mapper.toAuthError(HttpStatusCode.Conflict, code = "EMAIL_TAKEN", message = null)
+        val error = mapper.toAuthError(HttpStatusCode.Conflict, code = "EMAIL_ALREADY_USED", message = null)
         assertEquals(AuthError.EmailAlreadyUsed, error)
     }
 
