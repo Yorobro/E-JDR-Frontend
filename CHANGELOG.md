@@ -1,3 +1,10 @@
+## [1.5.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.4.0...v1.5.0) (2026-06-11)
+
+
+### Features
+
+* **auth:** handle ACCOUNT_LOCKED error from backend ([624136c](https://github.com/Yorobro/E-JDR-Frontend/commit/624136cf8c2a81b28935de616a7a1ff7fa67041d))
+
 ## [1.4.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.3.2...v1.4.0) (2026-06-10)
 
 
