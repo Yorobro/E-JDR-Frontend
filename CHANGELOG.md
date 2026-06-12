@@ -1,3 +1,10 @@
+## [1.8.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.7.0...v1.8.0) (2026-06-12)
+
+
+### Features
+
+* **settings:** handle theme persistence failures via Result railway ([0633cb8](https://github.com/Yorobro/E-JDR-Frontend/commit/0633cb865e95c38be05f6c2dd9a33d17fcfe8493))
+
 ## [1.7.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.6.0...v1.7.0) (2026-06-11)
 
 
