@@ -56,6 +56,7 @@ class ResultTest {
         seen = null
         failure.onSuccess { seen = it }
         assertNull(seen)
+        assertEquals(success, success.onSuccess { })
     }
 
     @Test
@@ -66,5 +67,6 @@ class ResultTest {
         seen = null
         success.onFailure { seen = it.message }
         assertNull(seen)
+        assertEquals(failure, failure.onFailure { })
     }
 }
