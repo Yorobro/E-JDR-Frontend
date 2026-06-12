@@ -54,3 +54,60 @@ class JoinCampaignUseCase(private val repo: CampaignRepository) {
 
 Le frontend affiche l'erreur retournée (`CampaignFull`, `NotFound`, etc.) sans jamais
 décider lui-même si l'action est permise.
+
+## 2026-06-12 — Durcissement post-re-audit
+
+Un re-audit adversarial de l'architecture front a conduit à une série de corrections de
+cohérence et de scalabilité (toutes livrées sur `main`). Décisions retenues :
+
+### Contrats des use cases uniformisés
+Toutes les frontières use case/repository renvoient désormais `Result<_, DomainError>` et sont
+`suspend`, y compris quand l'implémentation est triviale. Fini les retours nus / nullable /
+`Boolean` / exceptions qui fuyaient :
+- `GetThemeUseCase`/`SetThemeUseCase` + `ThemeRepository` : `suspend` + `Result`, I/O sur
+  `Dispatchers.IO` (plus de lecture bloquante au constructeur du ViewModel).
+- `CheckUpdateUseCase` → `Result<UpdateInfoDto?, UpdateError>` ; `DownloadAndInstallUpdateUseCase`
+  → `Result<Unit, UpdateError>`. Nouvelle erreur domaine `UpdateError` (CheckFailed/DownloadFailed).
+
+### `Result` enrichi
+Le type railway `Result` expose maintenant `map`/`flatMap`/`mapError`/`getOrNull`/`getOrElse`/
+`onSuccess`/`onFailure` (en plus de `fold`), pour éviter le code verbeux de transformation.
+
+### Navigation distribuée par feature
+Le mapping route→écran n'est plus centralisé dans `AppNavDisplay`. Chaque feature expose une
+fonction `xxxEntries(actions: NavActions)` (`presentation/features/<feature>/<Feature>NavEntries.kt`)
+agrégée dans `AppNavDisplay`. **Rappel** : toute nouvelle `Route` doit être (1) ajoutée à
+`appNavConfiguration` via `subclass(...)` dans `Routes.kt` (sinon crash au démarrage) ET (2)
+rendue par une entry dans le `*NavEntries.kt` de sa feature.
+
+### DI par feature
+Les god-modules `applicationModule`/`infrastructureModule` sont remplacés par un module Koin
+**par feature** (`authModule`, `settingsModule`, `updateModule`), sur le modèle de `realtimeModule`.
+`infrastructureModule` ne garde que le socle transverse (config, sécurité, HttpClient). Ajouter
+une feature = ajouter son module dans `AppKoin`.
+
+### État applicatif global
+Le thème et le statut de session sont centralisés dans `RootState` (source de vérité unique),
+remplaçant les `mutableStateOf` ad-hoc et le state-lifting manuel de `App.kt`.
+
+### State-holders à la racine ≠ ViewModels androidx
+Les holders créés **hors de l'arbre de navigation** (`RootState`, `UpdateController`) sont de
+simples classes pilotées par un `CoroutineScope` injecté, PAS des `ViewModel` androidx : à la
+racine il n'existe aucun `ViewModelStoreOwner`, donc `viewModel { }`/`koinViewModel` y crasherait
+au runtime. Les ViewModels par destination (`AuthViewModel`, etc.) restent de vrais ViewModels
+retenus par le décorateur Nav3.
+
+### Intercepteur 401 désambiguïsé
+Le refresh silencieux n'efface la session persistée que sur un **401/403** (token réellement
+expiré). Sur une panne serveur (5xx) ou réseau, la session est conservée (panne transitoire).
+
+### Couverture honnête
+Kover ne compte plus l'UI Compose mais **compte désormais les ViewModels + RootState** (logique
+testée). Le plancher de 60 % s'applique à la vraie logique.
+
+### Release sécurisée
+Le workflow de release dépend d'une CI verte (`needs: ci`) : un commit dont les tests échouent
+ne peut plus produire de binaire publié.
+
+### Divers
+`FormState` (inutilisé) supprimé ; helper de cohérence.

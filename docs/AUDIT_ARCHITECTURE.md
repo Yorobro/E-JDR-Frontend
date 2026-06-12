@@ -9,6 +9,12 @@
 > points critiques.
 > **Date** : 2026-06-12.
 
+> **MàJ 2026-06-12** — Les findings de cet audit (et du re-audit adversarial qui a suivi :
+> release non gatée sur la CI, métrique Kover trompeuse, intercepteur 401 ambigu, contrats
+> use case hétérogènes, navigation/DI centralisées, état global ad-hoc, `FormState` mort) ont
+> été **traités**. Voir `docs/superpowers/plans/2026-06-12-reaudit-fixes.md` et les décisions
+> consignées dans `docs/ARCHITECTURE_DECISIONS.md` (§ « Durcissement post-re-audit »).
+
 ---
 
 ## 0. Verdict en une phrase
