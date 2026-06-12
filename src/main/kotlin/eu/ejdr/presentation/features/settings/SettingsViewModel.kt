@@ -1,26 +1,28 @@
 package eu.ejdr.presentation.features.settings
 
 import androidx.lifecycle.ViewModel
-import eu.ejdr.domain.features.settings.entities.ThemeVariant
+import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.settings.abstraction.usecase.SetThemeUseCase
 import eu.ejdr.application.shared.fold
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 /**
  * ViewModel de l'écran des paramètres.
  *
- * Détient le thème courant ([currentTheme]) initialisé depuis [GetThemeUseCase] et
- * persiste chaque changement via [SetThemeUseCase]. Le ViewModel étant retenu par la
- * destination, le thème affiché survit à la recomposition.
+ * Charge le thème courant ([currentTheme]) de façon **asynchrone** via [GetThemeUseCase]
+ * (l'I/O fichier ne bloque pas le thread UI) et persiste chaque changement via
+ * [SetThemeUseCase]. Le ViewModel étant retenu par la destination, l'état survit à la
+ * recomposition.
  *
- * La persistance peut **échouer** (disque indisponible) : dans ce cas l'état observé
- * n'est PAS modifié (pas de désynchronisation UI ↔ disque) et un message d'erreur est
- * exposé via [error]. La sélection d'un thème efface l'erreur précédente.
+ * La persistance peut **échouer** (disque indisponible) : dans ce cas l'état observé n'est
+ * PAS modifié (pas de désynchronisation UI ↔ disque) et un message est exposé via [error].
  *
- * @property getTheme Use case de lecture du thème persisté.
+ * @param getTheme Use case de lecture du thème persisté.
  * @property setTheme Use case de persistance du thème.
  */
 class SettingsViewModel(
@@ -28,32 +30,35 @@ class SettingsViewModel(
     private val setTheme: SetThemeUseCase,
 ) : ViewModel() {
 
-    private val _currentTheme = MutableStateFlow(getTheme())
+    private val _currentTheme = MutableStateFlow(ThemeVariant.LIGHT)
     val currentTheme: StateFlow<ThemeVariant> = _currentTheme.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    init {
+        viewModelScope.launch { _currentTheme.value = getTheme() }
+    }
+
     /**
      * Tente d'appliquer et de **persister** le thème choisi.
      *
-     * Met à jour l'état observé **uniquement si la persistance réussit**, afin que l'UI
-     * ne diverge jamais de ce qui est réellement enregistré.
+     * Met à jour l'état observé **uniquement si la persistance réussit**. [onApplied] est
+     * invoqué avec le thème en cas de succès (pour propager au design system global).
      *
      * @param theme Nouveau thème sélectionné.
-     * @return `true` si le thème a été persisté (l'appelant peut alors propager le
-     * changement au design system global), `false` en cas d'échec.
+     * @param onApplied Callback succès (thème persisté).
      */
-    fun onThemeSelected(theme: ThemeVariant): Boolean =
-        setTheme(theme).fold(
-            onSuccess = {
-                _error.value = null
-                _currentTheme.value = theme
-                true
-            },
-            onFailure = { settingsError ->
-                _error.value = settingsError.message
-                false
-            },
-        )
+    fun onThemeSelected(theme: ThemeVariant, onApplied: (ThemeVariant) -> Unit) {
+        viewModelScope.launch {
+            setTheme(theme).fold(
+                onSuccess = {
+                    _error.value = null
+                    _currentTheme.value = theme
+                    onApplied(theme)
+                },
+                onFailure = { settingsError -> _error.value = settingsError.message },
+            )
+        }
+    }
 }

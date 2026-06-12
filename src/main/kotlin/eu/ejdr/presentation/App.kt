@@ -40,7 +40,8 @@ import org.koin.compose.koinInject
 @Composable
 fun App() {
     val getTheme = koinInject<GetThemeUseCase>()
-    var themeVariant by remember { mutableStateOf(getTheme()) }
+    var themeVariant by remember { mutableStateOf(ThemeVariant.LIGHT) }
+    LaunchedEffect(Unit) { themeVariant = getTheme() }
 
     AppTheme(
         colors = when (themeVariant) {

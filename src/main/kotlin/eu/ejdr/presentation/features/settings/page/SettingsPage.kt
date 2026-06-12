@@ -45,10 +45,10 @@ fun SettingsPage(
     ) {
         SettingsForm(
             currentTheme = currentTheme,
-            // Ne propage le changement au design system global que si la persistance a réussi :
-            // sinon l'application resterait sur un thème non enregistré.
+            // Ne propage le changement au design system global que si la persistance a réussi
+            // (callback onApplied) : sinon l'application resterait sur un thème non enregistré.
             onThemeChange = { newTheme ->
-                if (viewModel.onThemeSelected(newTheme)) onThemeChange(newTheme)
+                viewModel.onThemeSelected(newTheme, onApplied = onThemeChange)
             },
         )
         FormError(message = error)
