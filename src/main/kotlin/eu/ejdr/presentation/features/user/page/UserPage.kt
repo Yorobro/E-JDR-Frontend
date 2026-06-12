@@ -10,13 +10,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.presentation.features.user.UserViewModel
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
-import org.koin.compose.koinInject
 
 /**
  * Page d'accueil affichée une fois l'utilisateur connecté (composant intelligent).
@@ -33,8 +32,7 @@ fun UserPage(
     onSessionExpired: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val getCurrentUser = koinInject<GetCurrentUserUseCase>()
-    val viewModel = viewModel { UserViewModel(getCurrentUser) }
+    val viewModel = koinViewModel { UserViewModel(get<GetCurrentUserUseCase>()) }
     val profile by viewModel.profile.collectAsStateWithLifecycle()
 
     LaunchedEffect(viewModel) {

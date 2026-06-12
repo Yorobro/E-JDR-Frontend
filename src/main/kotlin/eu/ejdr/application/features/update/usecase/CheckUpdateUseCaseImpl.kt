@@ -4,6 +4,7 @@ import eu.ejdr.BuildConfig
 import eu.ejdr.application.features.update.abstraction.UpdateInfo
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
 import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
+import eu.ejdr.domain.shared.version.SemanticVersion
 
 class CheckUpdateUseCaseImpl(
     private val updateRepository: UpdateRepository,
@@ -12,19 +13,8 @@ class CheckUpdateUseCaseImpl(
 
     override suspend fun invoke(): UpdateInfo? {
         val latest = updateRepository.fetchLatestRelease() ?: return null
-        return if (isNewer(latest.version, currentVersion)) latest else null
-    }
-
-    private fun isNewer(latest: String, current: String): Boolean {
-        fun parse(v: String) = v.removePrefix("v").split(".").map { it.toIntOrNull() ?: 0 }
-        val l = parse(latest)
-        val c = parse(current)
-        for (i in 0..2) {
-            val lv = l.getOrElse(i) { 0 }
-            val cv = c.getOrElse(i) { 0 }
-            if (lv > cv) return true
-            if (lv < cv) return false
-        }
-        return false
+        val isNewer = SemanticVersion.parse(latest.version)
+            .isNewerThan(SemanticVersion.parse(currentVersion))
+        return if (isNewer) latest else null
     }
 }

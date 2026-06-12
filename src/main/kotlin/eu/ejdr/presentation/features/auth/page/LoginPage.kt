@@ -1,11 +1,10 @@
 package eu.ejdr.presentation.features.auth.page
 
 import androidx.compose.runtime.Composable
-import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ejdr.application.features.auth.abstraction.usecase.LoginUseCase
 import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.presentation.features.auth.AuthViewModel
-import org.koin.compose.koinInject
+import eu.ejdr.presentation.shared.di.koinViewModel
 
 /**
  * Page de connexion (composant INTELLIGENT).
@@ -22,8 +21,10 @@ fun LoginPage(
     onAuthenticated: (User) -> Unit,
     onGoToRegister: () -> Unit,
 ) {
-    val loginUseCase = koinInject<LoginUseCase>()
-    val viewModel = viewModel { AuthViewModel(submit = { credentials -> loginUseCase(credentials) }) }
+    val viewModel = koinViewModel {
+        val loginUseCase = get<LoginUseCase>()
+        AuthViewModel(submit = { credentials -> loginUseCase(credentials) })
+    }
     AuthPage(
         viewModel = viewModel,
         onAuthenticated = onAuthenticated,

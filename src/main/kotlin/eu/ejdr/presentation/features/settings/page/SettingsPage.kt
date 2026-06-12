@@ -7,14 +7,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import eu.ejdr.application.features.settings.abstraction.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.settings.abstraction.usecase.SetThemeUseCase
 import eu.ejdr.presentation.features.settings.SettingsViewModel
 import eu.ejdr.presentation.features.settings.component.SettingsForm
+import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
-import org.koin.compose.koinInject
 
 /**
  * Page des paramètres (composant INTELLIGENT).
@@ -32,10 +32,11 @@ fun SettingsPage(
     onThemeChange: (ThemeVariant) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val getTheme = koinInject<GetThemeUseCase>()
-    val setTheme = koinInject<SetThemeUseCase>()
-    val viewModel = viewModel { SettingsViewModel(getTheme, setTheme) }
+    val viewModel = koinViewModel {
+        SettingsViewModel(get<GetThemeUseCase>(), get<SetThemeUseCase>())
+    }
     val currentTheme by viewModel.currentTheme.collectAsStateWithLifecycle()
+    val error by viewModel.error.collectAsStateWithLifecycle()
 
     Column(
         modifier = modifier
@@ -44,10 +45,12 @@ fun SettingsPage(
     ) {
         SettingsForm(
             currentTheme = currentTheme,
+            // Ne propage le changement au design system global que si la persistance a réussi :
+            // sinon l'application resterait sur un thème non enregistré.
             onThemeChange = { newTheme ->
-                viewModel.onThemeSelected(newTheme)
-                onThemeChange(newTheme)
+                if (viewModel.onThemeSelected(newTheme)) onThemeChange(newTheme)
             },
         )
+        FormError(message = error)
     }
 }

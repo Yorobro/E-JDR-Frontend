@@ -19,12 +19,11 @@ class ThemeFileRepository(dataDir: File) : ThemeRepository {
         }.getOrDefault(ThemeVariant.LIGHT)
     }
 
-    override fun setTheme(theme: ThemeVariant) {
+    override fun setTheme(theme: ThemeVariant): Boolean =
         runCatching {
             val props = Properties()
             if (file.exists()) file.inputStream().use { props.load(it) }
             props.setProperty("theme", theme.name)
             file.outputStream().use { props.store(it, null) }
-        }
-    }
+        }.isSuccess
 }
