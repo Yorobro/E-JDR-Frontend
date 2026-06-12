@@ -51,6 +51,8 @@ class RootState(
     /** Lance la restauration de session et publie le résultat dans [sessionStatus]. */
     fun restoreSession() {
         scope.launch {
+            // `val` intermédiaire requis : chaîner `.fold` directement sur l'appel du use case
+            // empêche Kotlin d'inférer la borne `E : DomainError` de `fold`.
             val result = restoreSession.invoke()
             _sessionStatus.value = result.fold(
                 onSuccess = { SessionStatus.Authenticated },
