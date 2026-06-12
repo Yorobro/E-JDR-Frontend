@@ -28,7 +28,7 @@ sealed interface DownloadState {
  * @property downloadAndInstall Use case de téléchargement + lancement de l'installeur.
  * @property scope Portée de coroutine qui pilote le téléchargement.
  */
-class UpdateViewModel(
+class UpdateController(
     private val downloadAndInstall: DownloadAndInstallUpdateUseCase,
     private val scope: CoroutineScope,
 ) {

@@ -8,11 +8,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 
-class UpdateViewModelTest {
+class UpdateControllerTest {
 
     @Test
     fun `starts idle`() = runTest {
-        val vm = UpdateViewModel(
+        val vm = UpdateController(
             DownloadAndInstallUpdateUseCase { _, _ -> Result.Success(Unit) },
             this,
         )
@@ -22,7 +22,7 @@ class UpdateViewModelTest {
     @Test
     fun `successful download keeps downloading state (launcher exits app)`() = runTest {
         var progressSeen = false
-        val vm = UpdateViewModel(
+        val vm = UpdateController(
             DownloadAndInstallUpdateUseCase { _, onProgress -> onProgress(0.5f); progressSeen = true; Result.Success(Unit) },
             this,
         )
@@ -34,7 +34,7 @@ class UpdateViewModelTest {
 
     @Test
     fun `failed download moves to Error`() = runTest {
-        val vm = UpdateViewModel(
+        val vm = UpdateController(
             DownloadAndInstallUpdateUseCase { _, _ -> Result.Failure(UpdateError.DownloadFailed) },
             this,
         )

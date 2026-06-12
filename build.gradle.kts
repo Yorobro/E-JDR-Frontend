@@ -143,8 +143,8 @@ kover {
                     "eu.ejdr.presentation.features.settings.SettingsNavEntriesKt",
                     "eu.ejdr.presentation.navigation.NavActions",
                 )
-                // N.B. : les ViewModels (AuthViewModel, UserViewModel, SettingsViewModel,
-                // UpdateViewModel) et RootState restent COMPTÉS — ils portent de la logique testée.
+                // N.B. : les ViewModels (AuthViewModel, UserViewModel, SettingsViewModel),
+                // UpdateController et RootState restent COMPTÉS — ils portent de la logique testée.
             }
         }
         verify {

@@ -17,7 +17,7 @@ import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstal
 import eu.ejdr.application.features.update.dto.UpdateInfoDto
 import eu.ejdr.application.shared.getOrNull
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
-import eu.ejdr.presentation.features.update.UpdateViewModel
+import eu.ejdr.presentation.features.update.UpdateController
 import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
@@ -99,7 +99,7 @@ fun App() {
         )
 
         updateInfo?.let { info ->
-            val updateController = remember { UpdateViewModel(downloadAndInstall, scope) }
+            val updateController = remember { UpdateController(downloadAndInstall, scope) }
             val downloadState by updateController.state.collectAsStateWithLifecycle()
             val startDownload: () -> Unit = { info.downloadUrl?.let(updateController::download) }
             UpdateDialog(
