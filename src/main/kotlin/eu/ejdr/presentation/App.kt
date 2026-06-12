@@ -15,7 +15,6 @@ import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
 import eu.ejdr.application.features.update.dto.UpdateInfoDto
-import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.getOrNull
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.features.update.UpdateViewModel
@@ -39,14 +38,20 @@ import org.koin.compose.koinInject
  * [CheckUpdateUseCase]) et **posséder le back-stack de navigation**
  * ([rememberNavBackStack]). Le mapping route → écran est délégué à [AppNavDisplay].
  *
+ * L'état transverse (thème + statut de session) est centralisé dans [RootState], source
+ * de vérité unique retenue ici par `remember` et pilotée par un [rememberCoroutineScope].
+ * `App` ne fait qu'**observer** ce state et le traduire en navigation (resetTo).
+ *
  * Naviguer revient à empiler/dépiler une [Route] sur le back-stack ; les ViewModels
  * des écrans sont retenus par destination (cf. [AppNavDisplay]).
  */
 @Composable
 fun App() {
+    val scope = rememberCoroutineScope()
     val getTheme = koinInject<GetThemeUseCase>()
-    var themeVariant by remember { mutableStateOf(ThemeVariant.LIGHT) }
-    LaunchedEffect(Unit) { themeVariant = getTheme() }
+    val restoreSession = koinInject<RestoreSessionUseCase>()
+    val rootState = remember { RootState(scope, getTheme, restoreSession) }
+    val themeVariant by rootState.theme.collectAsStateWithLifecycle()
 
     AppTheme(
         colors = when (themeVariant) {
@@ -54,14 +59,13 @@ fun App() {
             ThemeVariant.DARK -> darkColors()
         },
     ) {
-        val restoreSession = koinInject<RestoreSessionUseCase>()
         val logout = koinInject<LogoutUseCase>()
         val checkUpdate = koinInject<CheckUpdateUseCase>()
         val downloadAndInstall = koinInject<DownloadAndInstallUpdateUseCase>()
-        val scope = rememberCoroutineScope()
 
         val backStack = rememberNavBackStack(appNavConfiguration, Route.Splash)
         var updateInfo by remember { mutableStateOf<UpdateInfoDto?>(null) }
+        val sessionStatus by rootState.sessionStatus.collectAsStateWithLifecycle()
 
         // Remplace toute la pile par une seule destination (ex. après login/logout) :
         // l'historique antérieur ne doit jamais permettre de « revenir » avant l'auth.
@@ -70,22 +74,27 @@ fun App() {
             backStack.add(route)
         }
 
-        // Démarrage : vérifie les mises à jour et tente l'auto-login, puis remplace
-        // l'écran Splash par Home (succès) ou Login (échec).
+        // Démarrage : vérifie les mises à jour et lance l'auto-login. Le résultat de la
+        // restauration est publié dans rootState.sessionStatus, observé ci-dessous.
         LaunchedEffect(Unit) {
             launch { updateInfo = checkUpdate().getOrNull() }
-            resetTo(
-                when (restoreSession()) {
-                    is Result.Success -> Route.Home
-                    is Result.Failure -> Route.Login
-                },
-            )
+            rootState.restoreSession()
+        }
+
+        // Traduit le statut de session en navigation : remplace l'écran Splash par Home
+        // (session restaurée) ou Login (échec). Tant que le statut est Unknown, on attend.
+        LaunchedEffect(sessionStatus) {
+            when (sessionStatus) {
+                SessionStatus.Authenticated -> resetTo(Route.Home)
+                SessionStatus.Unauthenticated -> resetTo(Route.Login)
+                SessionStatus.Unknown -> Unit
+            }
         }
 
         AppNavDisplay(
             backStack = backStack,
             onLogout = { scope.launch { logout(); resetTo(Route.Login) } },
-            onThemeChange = { themeVariant = it },
+            onThemeChange = rootState::setTheme,
             resetTo = ::resetTo,
         )
 
