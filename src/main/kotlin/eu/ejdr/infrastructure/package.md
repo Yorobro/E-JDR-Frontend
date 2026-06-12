@@ -35,8 +35,10 @@ d'inversion des dépendances.
 Créer `http/features/<feature>/` contenant le repository HTTP (implémentation d'un
 port déclaré dans `application/features/<feature>/abstraction/repository/`), ses
 `dto/` et, si besoin, un mapper DTO -> domaine. Réutiliser le `HttpClient` partagé
-fourni par `KtorClientFactory` (injecté via Koin). Lier ensuite le port à son
-implémentation dans `di/InfrastructureModule.kt`.
+fourni par `KtorClientFactory` (injecté via Koin). Lier ensuite le port à son implémentation dans le module Koin de la feature :
+`di/<feature>Module.kt` (ex. `authModule`, `settingsModule`, `updateModule`).
+`infrastructureModule` est réservé au socle technique transverse (config,
+sécurité/coffre, HttpClient).
 
 ## Modèle d'authentification
 
