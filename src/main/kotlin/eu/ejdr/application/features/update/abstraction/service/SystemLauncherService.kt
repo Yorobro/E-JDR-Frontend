@@ -1,9 +1,9 @@
-package eu.ejdr.application.features.update.abstraction
+package eu.ejdr.application.features.update.abstraction.service
 
 import java.io.File
 
 /**
- * Port d'accès aux actions **système** liées à l'installation d'une mise à jour.
+ * Service d'accès aux actions **système** liées à l'installation d'une mise à jour.
  *
  * Isole les effets de bord dépendants de l'OS (lancement d'un processus externe,
  * terminaison de l'application) hors de la couche application. Un use case reste
@@ -11,7 +11,7 @@ import java.io.File
  * connaître *comment* (cmd Windows, exit JVM…), détail confié à l'implémentation
  * d'infrastructure.
  */
-interface SystemLauncher {
+interface SystemLauncherService {
     /**
      * Lance l'installeur téléchargé puis **termine** l'application courante pour
      * lui céder la place.

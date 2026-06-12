@@ -1,7 +1,7 @@
 package eu.ejdr.presentation.features.settings
 
 import androidx.lifecycle.ViewModel
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.settings.abstraction.usecase.SetThemeUseCase
 import eu.ejdr.application.shared.fold

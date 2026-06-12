@@ -1,7 +1,7 @@
 package eu.ejdr.application.features.update.usecase
 
-import eu.ejdr.application.features.update.abstraction.SystemLauncher
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
+import eu.ejdr.application.features.update.abstraction.service.SystemLauncherService
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
@@ -15,13 +15,13 @@ import kotlin.test.assertFailsWith
 
 /**
  * Démontre que le use case est désormais **testable** : l'effet de bord système
- * (lancement de l'installeur + exit JVM) passe par le port [SystemLauncher] mockable,
- * au lieu d'un `ProcessBuilder` + `exitProcess` qui tuerait le JVM de test.
+ * (lancement de l'installeur + exit JVM) passe par le service [SystemLauncherService]
+ * mockable, au lieu d'un `ProcessBuilder` + `exitProcess` qui tuerait le JVM de test.
  */
 class DownloadAndInstallUpdateUseCaseImplTest {
 
     private val repository = mockk<UpdateRepository>()
-    private val launcher = mockk<SystemLauncher>()
+    private val launcher = mockk<SystemLauncherService>()
     private val useCase = DownloadAndInstallUpdateUseCaseImpl(repository, launcher)
 
     /** Sentinelle simulant le fait que `launchInstallerAndExit` ne rend jamais la main. */

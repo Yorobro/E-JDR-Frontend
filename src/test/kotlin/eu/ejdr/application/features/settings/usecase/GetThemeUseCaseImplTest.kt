@@ -1,6 +1,6 @@
 package eu.ejdr.application.features.settings.usecase
 
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.repository.ThemeRepository
 import io.mockk.every
 import io.mockk.mockk

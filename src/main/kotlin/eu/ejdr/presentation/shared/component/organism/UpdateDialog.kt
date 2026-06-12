@@ -11,8 +11,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import eu.ejdr.application.features.update.abstraction.UpdateInfo
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
+import eu.ejdr.application.features.update.dto.UpdateInfoDto
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
@@ -30,7 +30,7 @@ private sealed interface DownloadState {
 
 @Composable
 fun UpdateDialog(
-    info: UpdateInfo,
+    info: UpdateInfoDto,
     onDismiss: () -> Unit,
     downloadAndInstall: DownloadAndInstallUpdateUseCase,
 ) {

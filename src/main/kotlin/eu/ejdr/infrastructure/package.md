@@ -27,8 +27,8 @@ d'inversion des dépendances.
   durée n'est PAS couverte par l'intercepteur 401 du client REST). Câblé dans
   `di/RealtimeModule.kt`. Aucun écran ne le consomme encore (prêt pour la 1re feature
   temps réel).
-- `system/` — effets de bord OS derrière des ports application : `WindowsSystemLauncher`
-  (lancement d'installeur + exit), implémentation de `SystemLauncher`.
+- `system/` — effets de bord OS derrière des services application : `WindowsSystemLauncher`
+  (lancement d'installeur + exit), implémentation de `SystemLauncherService`.
 
 ### Ajouter un accès HTTP pour une feature
 

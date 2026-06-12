@@ -11,7 +11,7 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.features.auth.page.LoginPage
 import eu.ejdr.presentation.features.auth.page.RegisterPage
 import eu.ejdr.presentation.features.settings.page.SettingsPage

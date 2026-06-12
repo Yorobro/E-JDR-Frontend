@@ -1,8 +1,8 @@
 package eu.ejdr.infrastructure.http.features.update
 
 import eu.ejdr.BuildConfig
-import eu.ejdr.application.features.update.abstraction.UpdateInfo
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
+import eu.ejdr.application.features.update.dto.UpdateInfoDto
 import eu.ejdr.infrastructure.http.features.update.dto.GitHubReleaseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -18,13 +18,13 @@ private const val GITHUB_API = "https://api.github.com/repos/${BuildConfig.GITHU
 
 class UpdateHttpRepository(private val client: HttpClient) : UpdateRepository {
 
-    override suspend fun fetchLatestRelease(): UpdateInfo? = runCatching {
+    override suspend fun fetchLatestRelease(): UpdateInfoDto? = runCatching {
         val response = client.get(GITHUB_API)
         if (!response.status.isSuccess()) return null
         val dto = response.body<GitHubReleaseDto>()
         val asset = dto.assets.firstOrNull { it.name.endsWith(".exe") }
             ?: dto.assets.firstOrNull { it.name.endsWith(".msi") }
-        UpdateInfo(version = dto.tagName, releaseUrl = dto.htmlUrl, downloadUrl = asset?.browserDownloadUrl)
+        UpdateInfoDto(version = dto.tagName, releaseUrl = dto.htmlUrl, downloadUrl = asset?.browserDownloadUrl)
     }.getOrNull()
 
     override suspend fun downloadUpdate(url: String, onProgress: (Float?) -> Unit): File {

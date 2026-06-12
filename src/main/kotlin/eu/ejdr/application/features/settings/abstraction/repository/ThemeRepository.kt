@@ -1,6 +1,6 @@
 package eu.ejdr.application.features.settings.abstraction.repository
 
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 
 interface ThemeRepository {
     /** Lit le thème persisté, avec un repli sûr si rien n'est enregistré ou en cas d'erreur. */

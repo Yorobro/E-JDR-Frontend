@@ -3,8 +3,8 @@ package eu.ejdr.di
 import eu.ejdr.application.features.auth.abstraction.repository.AuthRepository
 import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
 import eu.ejdr.application.features.settings.abstraction.repository.ThemeRepository
-import eu.ejdr.application.features.update.abstraction.SystemLauncher
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
+import eu.ejdr.application.features.update.abstraction.service.SystemLauncherService
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.KtorClientFactory
 import eu.ejdr.infrastructure.http.features.auth.AuthHttpMapper
@@ -41,6 +41,6 @@ val infrastructureModule = module {
     single { AuthHttpMapper }
     single<AuthRepository> { AuthHttpRepository(get(), get(), get(), get<SessionPersistence>()) }
     single<UpdateRepository> { UpdateHttpRepository(get()) }
-    single<SystemLauncher> { WindowsSystemLauncher() }
+    single<SystemLauncherService> { WindowsSystemLauncher() }
     single<ThemeRepository> { ThemeFileRepository(get<AppConfig>().dataDir) }
 }

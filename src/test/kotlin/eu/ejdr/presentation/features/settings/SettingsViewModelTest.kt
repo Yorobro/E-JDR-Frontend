@@ -1,6 +1,6 @@
 package eu.ejdr.presentation.features.settings
 
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.settings.abstraction.usecase.SetThemeUseCase
 import eu.ejdr.application.shared.Result

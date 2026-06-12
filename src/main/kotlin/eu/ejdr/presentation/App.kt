@@ -10,12 +10,12 @@ import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.rememberNavBackStack
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
-import eu.ejdr.application.features.update.abstraction.UpdateInfo
 import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
+import eu.ejdr.application.features.update.dto.UpdateInfoDto
 import eu.ejdr.application.shared.Result
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
@@ -55,7 +55,7 @@ fun App() {
         val scope = rememberCoroutineScope()
 
         val backStack = rememberNavBackStack(appNavConfiguration, Route.Splash)
-        var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
+        var updateInfo by remember { mutableStateOf<UpdateInfoDto?>(null) }
 
         // Remplace toute la pile par une seule destination (ex. après login/logout) :
         // l'historique antérieur ne doit jamais permettre de « revenir » avant l'auth.

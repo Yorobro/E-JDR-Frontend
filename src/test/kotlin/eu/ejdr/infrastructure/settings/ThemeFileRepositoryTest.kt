@@ -1,6 +1,6 @@
 package eu.ejdr.infrastructure.settings
 
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import java.io.File
 import java.nio.file.Files
 import kotlin.test.AfterTest

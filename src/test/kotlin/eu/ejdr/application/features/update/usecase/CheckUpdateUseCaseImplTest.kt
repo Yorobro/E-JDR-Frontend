@@ -1,7 +1,7 @@
 package eu.ejdr.application.features.update.usecase
 
-import eu.ejdr.application.features.update.abstraction.UpdateInfo
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
+import eu.ejdr.application.features.update.dto.UpdateInfoDto
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
@@ -15,7 +15,7 @@ class CheckUpdateUseCaseImplTest {
 
     private fun useCase(current: String) = CheckUpdateUseCaseImpl(repository, currentVersion = current)
 
-    private fun release(version: String) = UpdateInfo(version, "https://example.com/release", null)
+    private fun release(version: String) = UpdateInfoDto(version, "https://example.com/release", null)
 
     @Test
     fun `returns null when no release available`() = runTest {

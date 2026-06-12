@@ -7,7 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import eu.ejdr.application.features.settings.abstraction.ThemeVariant
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.settings.abstraction.usecase.SetThemeUseCase
 import eu.ejdr.presentation.features.settings.SettingsViewModel
