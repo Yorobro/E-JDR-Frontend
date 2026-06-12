@@ -23,7 +23,6 @@ import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
 import eu.ejdr.presentation.shared.component.organism.UpdateDialog
-import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.theme.darkColors
 import eu.ejdr.presentation.shared.theme.lightColors
@@ -91,13 +90,14 @@ fun App() {
         )
 
         updateInfo?.let { info ->
-            val updateViewModel = koinViewModel { UpdateViewModel(downloadAndInstall) }
-            val downloadState by updateViewModel.state.collectAsStateWithLifecycle()
+            val updateController = remember { UpdateViewModel(downloadAndInstall, scope) }
+            val downloadState by updateController.state.collectAsStateWithLifecycle()
+            val startDownload: () -> Unit = { info.downloadUrl?.let(updateController::download) }
             UpdateDialog(
                 info = info,
                 state = downloadState,
-                onInstall = { info.downloadUrl?.let(updateViewModel::download) },
-                onRetry = { info.downloadUrl?.let(updateViewModel::download) },
+                onInstall = startDownload,
+                onRetry = startDownload,
                 onOpenReleasePage = {
                     runCatching { Desktop.getDesktop().browse(URI(info.releaseUrl)) }
                     updateInfo = null

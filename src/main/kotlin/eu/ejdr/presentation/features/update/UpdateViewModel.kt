@@ -1,9 +1,8 @@
 package eu.ejdr.presentation.features.update
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
 import eu.ejdr.application.shared.fold
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -17,14 +16,22 @@ sealed interface DownloadState {
 }
 
 /**
- * ViewModel du dialog de mise à jour : porte la machine à états du téléchargement, hors du
- * composable (qui redevient « bête »). Persiste par destination via le décorateur Nav3.
+ * State-holder du dialog de mise à jour : porte la machine à états du téléchargement, hors
+ * du composable (qui reste « bête »).
+ *
+ * Contrairement aux ViewModels par destination (retenus via le décorateur Nav3), ce
+ * state-holder est **transitoire** : le dialog n'apparaît que ponctuellement (quand une MAJ
+ * est disponible), hors de l'arbre de navigation. Il est donc simplement retenu par
+ * `remember` côté composable et piloté par un [CoroutineScope] fourni (typiquement
+ * `rememberCoroutineScope()`), sans dépendre d'un `ViewModelStoreOwner` (absent à la racine).
  *
  * @property downloadAndInstall Use case de téléchargement + lancement de l'installeur.
+ * @property scope Portée de coroutine qui pilote le téléchargement.
  */
 class UpdateViewModel(
     private val downloadAndInstall: DownloadAndInstallUpdateUseCase,
-) : ViewModel() {
+    private val scope: CoroutineScope,
+) {
 
     private val _state = MutableStateFlow<DownloadState>(DownloadState.Idle)
     val state: StateFlow<DownloadState> = _state.asStateFlow()
@@ -32,7 +39,7 @@ class UpdateViewModel(
     /** Lance le téléchargement de l'installeur à [url], en publiant la progression dans [state]. */
     fun download(url: String) {
         _state.value = DownloadState.Downloading(null)
-        viewModelScope.launch {
+        scope.launch {
             downloadAndInstall(url) { progress -> _state.value = DownloadState.Downloading(progress) }
                 .fold(
                     onSuccess = { /* le launcher quitte l'app ; rien à faire */ },
