@@ -51,6 +51,10 @@ sealed interface Route : NavKey {
  * `SavedStateConfiguration.DEFAULT` ne connaît pas nos routes).
  *
  * Toute nouvelle [Route] doit être ajoutée ici via `subclass(...)`.
+ * Et son entry de rendu doit être ajoutée dans la fonction `xxxEntries()` de la feature
+ * correspondante (cf. `presentation/features/<feature>/<Feature>NavEntries.kt`), elle-même
+ * agrégée dans `AppNavDisplay`. Le mapping route→écran est ainsi distribué par feature ;
+ * seul l'enregistrement de sérialisation reste centralisé ici (un seul point de vérité).
  */
 val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
