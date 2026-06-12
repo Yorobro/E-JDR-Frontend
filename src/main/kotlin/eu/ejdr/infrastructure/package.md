@@ -49,7 +49,9 @@ En cas de refresh échoué ou de déconnexion, le cookie persisté est effacé.
 ## Injection de dépendances (`di/`)
 
 Le câblage est assuré par **Koin** (package `di/`, techniquement à part).
-`infrastructureModule` fournit les briques techniques et lie chaque port
-application à son implémentation infra (ex. `AuthRepository -> AuthHttpRepository`) ;
-`applicationModule` enregistre les services et use cases. `initKoin()` constitue la
-*composition root* et charge ces modules au démarrage.
+`infrastructureModule` fournit le **socle** technique transverse (configuration,
+sécurité/coffre, client HTTP). Chaque feature possède ensuite son module dédié
+(`authModule`, `settingsModule`, `updateModule`, `realtimeModule`) qui enregistre
+ses use cases, services et adaptateurs infra et lie chaque port application à son
+implémentation infra (ex. `AuthRepository -> AuthHttpRepository`). `initKoin()`
+constitue la *composition root* et charge ces modules au démarrage.

@@ -1,35 +1,19 @@
 package eu.ejdr.di
 
-import eu.ejdr.application.features.auth.abstraction.repository.AuthRepository
 import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
-import eu.ejdr.application.features.settings.abstraction.repository.ThemeRepository
-import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
-import eu.ejdr.application.features.update.abstraction.service.SystemLauncherService
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.KtorClientFactory
-import eu.ejdr.infrastructure.http.features.auth.AuthHttpMapper
-import eu.ejdr.infrastructure.http.features.auth.AuthHttpRepository
-import eu.ejdr.infrastructure.http.features.update.UpdateHttpRepository
 import eu.ejdr.infrastructure.security.CookieCipher
 import eu.ejdr.infrastructure.security.KeyStoreProvider
 import eu.ejdr.infrastructure.security.SecureCookiesStorage
-import eu.ejdr.infrastructure.settings.ThemeFileRepository
-import eu.ejdr.infrastructure.system.WindowsSystemLauncher
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
 import org.koin.dsl.module
 
 /**
- * Module Koin de la couche infrastructure.
- *
- * Il fournit les briques techniques (configuration, sécurité, accès réseau) et
- * câble les implémentations infra aux ports déclarés par la couche application.
- * En particulier, le port [AuthRepository] est lié à son implémentation HTTP
- * [AuthHttpRepository] : la présentation ne dépend ainsi que de l'interface.
- *
- * Composants exposés : [AppConfig], [KeyStoreProvider], [CookieCipher],
- * [SecureCookiesStorage], le [HttpClient] (via [KtorClientFactory]),
- * [AuthHttpMapper] et [AuthRepository].
+ * Module Koin **socle** de l'infrastructure : briques techniques transverses partagées par
+ * toutes les features (configuration, sécurité/coffre, client HTTP). Les bindings propres à
+ * une feature (auth, settings, update, realtime) vivent dans leur module dédié.
  */
 val infrastructureModule = module {
     single { AppConfig.load() }
@@ -38,9 +22,4 @@ val infrastructureModule = module {
     single { SecureCookiesStorage(get<AppConfig>().dataDir, get(), AcceptAllCookiesStorage()) }
     single<SessionPersistence> { get<SecureCookiesStorage>() }
     single<HttpClient> { KtorClientFactory(get(), get<SecureCookiesStorage>()).create() }
-    single { AuthHttpMapper }
-    single<AuthRepository> { AuthHttpRepository(get(), get(), get(), get<SessionPersistence>()) }
-    single<UpdateRepository> { UpdateHttpRepository(get()) }
-    single<SystemLauncherService> { WindowsSystemLauncher() }
-    single<ThemeRepository> { ThemeFileRepository(get<AppConfig>().dataDir) }
 }

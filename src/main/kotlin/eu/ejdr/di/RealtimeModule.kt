@@ -15,8 +15,8 @@ import org.koin.dsl.module
 /**
  * Module Koin de la couche temps réel (WebSocket).
  *
- * Amorce le découpage des modules **par feature** (au-delà des deux modules globaux
- * `infrastructureModule`/`applicationModule`). Fournit :
+ * Modèle du découpage des modules **par feature** (à côté du socle transverse
+ * `infrastructureModule`). Fournit :
  * - une portée de coroutine dédiée (non liée à un écran) pour la connexion ;
  * - le [RealtimeTransport] Ktor (auth-on-connect via [AuthRepository.refresh]) ;
  * - le [RealtimeConnection] (machine à états de reconnexion).
