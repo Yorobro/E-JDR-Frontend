@@ -32,10 +32,11 @@ private val RefreshRetryKey = AttributeKey<Unit>("RefreshRetry")
  * - [WebSockets] pour les connexions temps réel (cf. couche `realtime`) ;
  * - Intercepteur 401 : sur toute route hors `/auth/`, tente un rafraîchissement silencieux
  *   de session puis rejoue la requête originale. Si le refresh renvoie 401/403, la session
- *   persistée est effacée (token réellement expiré) ; sur tout autre échec (réseau, 5xx), la
- *   session est conservée (panne transitoire) et le 401 original est retourné tel quel.
- *   (N.B. cet intercepteur ne couvre PAS les connexions WebSocket longue durée : leur
- *   ré-authentification est gérée par la couche `realtime`.)
+ *   persistée est effacée (token réellement expiré) ; tout autre **code HTTP** d'échec (5xx)
+ *   conserve la session (panne transitoire). Une erreur **réseau** (timeout, DNS) lève une
+ *   exception qui sort de l'intercepteur et est gérée par l'appelant — la session n'est pas
+ *   effacée là non plus. (N.B. cet intercepteur ne couvre PAS les connexions WebSocket
+ *   longue durée : leur ré-authentification est gérée par la couche `realtime`.)
  *
  * `expectSuccess = false` laisse l'appelant inspecter lui-même les statuts d'échec.
  */
@@ -76,10 +77,12 @@ class KtorClientFactory(
             )
 
             if (!refreshCall.response.status.isSuccess()) {
-                // On distingue une vraie expiration de session d'une panne réseau/serveur :
-                // - 401/403 sur le refresh => le refresh_token est invalide : on efface la session.
-                // - tout autre échec (5xx, indisponibilité) => probablement transitoire : on NE
-                //   touche PAS à la session persistée pour permettre une nouvelle tentative.
+                // On distingue une vraie expiration de session d'une panne serveur (codes HTTP) :
+                // - 401/403 => refresh_token invalide : on efface la session.
+                // - autre code (5xx, etc.) => panne transitoire : on conserve la session.
+                // N.B. une erreur réseau (timeout, DNS) lève une exception AVANT d'atteindre ce
+                // bloc ; la session n'est pas effacée non plus, mais c'est l'appelant qui gère
+                // cette exception (cf. runCatchingCancellable dans AuthHttpRepository).
                 val refreshStatus = refreshCall.response.status
                 if (refreshStatus == HttpStatusCode.Unauthorized ||
                     refreshStatus == HttpStatusCode.Forbidden
