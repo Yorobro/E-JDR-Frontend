@@ -119,14 +119,32 @@ kover {
     reports {
         filters {
             excludes {
-                // Exclus : UI Compose (testée manuellement), DI, point d'entrée, DTO/erreurs déclaratifs.
+                // On compte la LOGIQUE de présentation (ViewModels, RootState) mais pas l'UI
+                // Compose pure (composables, thème, navigation), testée via `run`. Kover excluant
+                // récursivement par package, on cible les sous-packages UI + quelques classes UI
+                // qui cohabitent avec les ViewModels dans les packages de feature.
                 packages(
-                    "eu.ejdr.presentation",
+                    "eu.ejdr.presentation.shared.component",
+                    "eu.ejdr.presentation.shared.theme",
+                    "eu.ejdr.presentation.shared.di",
+                    "eu.ejdr.presentation.navigation",
+                    "eu.ejdr.presentation.features.auth.page",
+                    "eu.ejdr.presentation.features.auth.component",
+                    "eu.ejdr.presentation.features.settings.page",
+                    "eu.ejdr.presentation.features.settings.component",
+                    "eu.ejdr.presentation.features.user.page",
                     "eu.ejdr.di",
                 )
                 classes(
                     "eu.ejdr.MainKt",
+                    "eu.ejdr.presentation.AppKt",
+                    "eu.ejdr.presentation.features.auth.AuthNavEntriesKt",
+                    "eu.ejdr.presentation.features.user.UserNavEntriesKt",
+                    "eu.ejdr.presentation.features.settings.SettingsNavEntriesKt",
+                    "eu.ejdr.presentation.navigation.NavActions",
                 )
+                // N.B. : les ViewModels (AuthViewModel, UserViewModel, SettingsViewModel,
+                // UpdateViewModel) et RootState restent COMPTÉS — ils portent de la logique testée.
             }
         }
         verify {
