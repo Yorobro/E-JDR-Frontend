@@ -16,7 +16,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
  * Dialog « bête » de mise à jour : il affiche l'[state] fourni et émet des callbacks.
- * Toute la logique (téléchargement, progression, erreur) vit dans le ViewModel appelant.
+ * Toute la logique (téléchargement, progression, erreur) vit dans le state-holder `UpdateController` appelant.
  */
 @Composable
 fun UpdateDialog(

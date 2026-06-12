@@ -24,7 +24,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * Ce composable concentre **uniquement** le mapping route → écran et les transitions
  * de navigation ; l'orchestration du démarrage (auto-login, mise à jour) et l'état du
  * thème restent dans [eu.ejdr.presentation.App]. Le décorateur
- * [rememberViewModelStoreNavEntryDecorator] retient un ViewModel par destination.
+ * [rememberEjdrViewModelStoreNavEntryDecorator] retient un ViewModel par destination.
  *
  * Le mapping route → écran est **distribué par feature** : chaque feature expose une
  * extension `xxxEntries(actions)` sur le builder d'entries, agrégée ici. Seul l'écran de
