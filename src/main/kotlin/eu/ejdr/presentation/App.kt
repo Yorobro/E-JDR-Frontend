@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
@@ -15,14 +16,19 @@ import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCas
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
 import eu.ejdr.application.features.update.dto.UpdateInfoDto
 import eu.ejdr.application.shared.Result
+import eu.ejdr.application.shared.getOrNull
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
+import eu.ejdr.presentation.features.update.UpdateViewModel
 import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
 import eu.ejdr.presentation.shared.component.organism.UpdateDialog
+import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.theme.darkColors
 import eu.ejdr.presentation.shared.theme.lightColors
+import java.awt.Desktop
+import java.net.URI
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -68,7 +74,7 @@ fun App() {
         // Démarrage : vérifie les mises à jour et tente l'auto-login, puis remplace
         // l'écran Splash par Home (succès) ou Login (échec).
         LaunchedEffect(Unit) {
-            launch { updateInfo = checkUpdate() }
+            launch { updateInfo = checkUpdate().getOrNull() }
             resetTo(
                 when (restoreSession()) {
                     is Result.Success -> Route.Home
@@ -85,10 +91,18 @@ fun App() {
         )
 
         updateInfo?.let { info ->
+            val updateViewModel = koinViewModel { UpdateViewModel(downloadAndInstall) }
+            val downloadState by updateViewModel.state.collectAsStateWithLifecycle()
             UpdateDialog(
                 info = info,
+                state = downloadState,
+                onInstall = { info.downloadUrl?.let(updateViewModel::download) },
+                onRetry = { info.downloadUrl?.let(updateViewModel::download) },
+                onOpenReleasePage = {
+                    runCatching { Desktop.getDesktop().browse(URI(info.releaseUrl)) }
+                    updateInfo = null
+                },
                 onDismiss = { updateInfo = null },
-                downloadAndInstall = downloadAndInstall,
             )
         }
     }
