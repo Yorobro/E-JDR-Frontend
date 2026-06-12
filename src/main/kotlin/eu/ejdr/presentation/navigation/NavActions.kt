@@ -16,7 +16,7 @@ import eu.ejdr.domain.features.settings.entities.ThemeVariant
  * @property onThemeChange Propage le thème choisi à l'app pour recomposer le design system.
  * @property resetTo Remplace toute la pile par une destination unique (post-login/logout).
  */
-class NavActions(
+data class NavActions(
     val backStack: NavBackStack<NavKey>,
     val onLogout: () -> Unit,
     val onThemeChange: (ThemeVariant) -> Unit,
