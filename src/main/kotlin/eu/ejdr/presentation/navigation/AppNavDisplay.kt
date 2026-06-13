@@ -13,6 +13,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.features.auth.authEntries
+import eu.ejdr.presentation.features.campaign.campaignEntries
+import eu.ejdr.presentation.features.charactersheet.characterSheetEntries
 import eu.ejdr.presentation.features.settings.settingsEntries
 import eu.ejdr.presentation.features.user.userEntries
 import eu.ejdr.presentation.shared.theme.AppTheme
@@ -54,6 +56,8 @@ fun AppNavDisplay(
             authEntries(actions)
             userEntries(actions)
             settingsEntries(actions)
+            campaignEntries(actions)
+            characterSheetEntries(actions)
         },
     )
 }

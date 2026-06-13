@@ -6,11 +6,20 @@ import org.koin.core.context.startKoin
  * Composition root de l'application : démarre le conteneur Koin.
  *
  * Charge le socle transverse ([infrastructureModule]) puis un module **par feature**
- * ([authModule], [settingsModule], [updateModule], [realtimeModule]). Ajouter une feature
- * = ajouter son module ici, sans toucher aux autres. À appeler une seule fois au démarrage.
+ * ([authModule], [settingsModule], [updateModule], [realtimeModule], [campaignModule],
+ * [characterSheetModule]). Ajouter une feature = ajouter son module ici, sans toucher aux
+ * autres. À appeler une seule fois au démarrage.
  *
  * @return L'application Koin initialisée.
  */
 fun initKoin() = startKoin {
-    modules(infrastructureModule, authModule, settingsModule, updateModule, realtimeModule)
+    modules(
+        infrastructureModule,
+        authModule,
+        settingsModule,
+        updateModule,
+        realtimeModule,
+        campaignModule,
+        characterSheetModule,
+    )
 }

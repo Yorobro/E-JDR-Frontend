@@ -40,6 +40,23 @@ sealed interface Route : NavKey {
     /** Écran des paramètres (thème, etc.). */
     @Serializable
     data object Settings : Route
+
+    /** Liste des campagnes dont l'utilisateur est le maître du jeu. */
+    @Serializable
+    data object Campaigns : Route
+
+    /**
+     * Détail d'une campagne. Les arguments voyagent dans la clé elle-même.
+     *
+     * @property id Identifiant de la campagne.
+     * @property name Nom de la campagne (affiché en titre, évite un appel réseau).
+     */
+    @Serializable
+    data class CampaignDetail(val id: String, val name: String) : Route
+
+    /** Liste des fiches de personnage de l'utilisateur. */
+    @Serializable
+    data object CharacterSheets : Route
 }
 
 /**
@@ -64,6 +81,9 @@ val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
             subclass(Route.Register::class)
             subclass(Route.Home::class)
             subclass(Route.Settings::class)
+            subclass(Route.Campaigns::class)
+            subclass(Route.CampaignDetail::class)
+            subclass(Route.CharacterSheets::class)
         }
     }
 }

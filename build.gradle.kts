@@ -133,6 +133,10 @@ kover {
                     "eu.ejdr.presentation.features.settings.page",
                     "eu.ejdr.presentation.features.settings.component",
                     "eu.ejdr.presentation.features.user.page",
+                    "eu.ejdr.presentation.features.campaign.page",
+                    "eu.ejdr.presentation.features.campaign.component",
+                    "eu.ejdr.presentation.features.charactersheet.page",
+                    "eu.ejdr.presentation.features.charactersheet.component",
                     "eu.ejdr.di",
                 )
                 classes(
@@ -141,6 +145,8 @@ kover {
                     "eu.ejdr.presentation.features.auth.AuthNavEntriesKt",
                     "eu.ejdr.presentation.features.user.UserNavEntriesKt",
                     "eu.ejdr.presentation.features.settings.SettingsNavEntriesKt",
+                    "eu.ejdr.presentation.features.campaign.CampaignNavEntriesKt",
+                    "eu.ejdr.presentation.features.charactersheet.CharacterSheetNavEntriesKt",
                     "eu.ejdr.presentation.navigation.NavActions",
                 )
                 // N.B. : les ViewModels (AuthViewModel, UserViewModel, SettingsViewModel),

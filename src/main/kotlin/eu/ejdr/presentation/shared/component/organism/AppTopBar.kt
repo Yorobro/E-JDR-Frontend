@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -30,6 +32,8 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param title Titre affiché à gauche.
  * @param onLogout Callback déclenché au clic sur le bouton de déconnexion.
  * @param modifier Modifier Compose appliqué à la barre.
+ * @param onCampaigns Callback pour ouvrir les campagnes ; si `null`, l'icône est masquée.
+ * @param onCharacterSheets Callback pour ouvrir les fiches ; si `null`, l'icône est masquée.
  * @param onSettings Callback pour ouvrir les paramètres ; si `null`, l'icône est masquée.
  * @param onBack Callback pour revenir en arrière ; si `null`, le bouton est masqué.
  */
@@ -38,6 +42,8 @@ fun AppTopBar(
     title: String,
     onLogout: () -> Unit,
     modifier: Modifier = Modifier,
+    onCampaigns: (() -> Unit)? = null,
+    onCharacterSheets: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null,
 ) {
@@ -66,6 +72,22 @@ fun AppTopBar(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
+            if (onCampaigns != null) {
+                IconButton(onClick = onCampaigns) {
+                    AppIcon(
+                        imageVector = Icons.AutoMirrored.Filled.List,
+                        contentDescription = "Campagnes",
+                    )
+                }
+            }
+            if (onCharacterSheets != null) {
+                IconButton(onClick = onCharacterSheets) {
+                    AppIcon(
+                        imageVector = Icons.Default.Person,
+                        contentDescription = "Mes fiches",
+                    )
+                }
+            }
             if (onSettings != null) {
                 IconButton(onClick = onSettings) {
                     AppIcon(
