@@ -106,8 +106,10 @@ private fun ReadCell(label: String, value: String?) {
 fun ReadCellPublic(label: String, value: String?) = ReadCell(label, value)
 
 /**
- * Section Identité : Nom/Formation/Niveau en ligne, puis Peuple/Sexe/Taille-poids/Âge en ligne,
- * puis Apparence pleine largeur. Le titre et le cadre sont fournis par la carte englobante.
+ * Section Identité : une grille **régulière à 4 colonnes** (les deux lignes ont le même nombre de
+ * colonnes, donc elles s'alignent verticalement), puis Apparence pleine largeur. Une cellule vide
+ * complète la 2e ligne pour préserver l'alignement. Le titre et le cadre sont fournis par la carte
+ * englobante.
  */
 @Composable
 fun IdentiteSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
@@ -117,14 +119,15 @@ fun IdentiteSection(sheet: CharacterSheet, editing: Boolean, form: CharacterShee
                 { TextCell("Nom", editing, form.name, sheet.name) { form.name = it } },
                 { TextCell("Formation", editing, form.formation, sheet.formation) { form.formation = it } },
                 { NumberCell("Niveau", editing, form.niveau, sheet.niveau) { form.niveau = it } },
+                { TextCell("Peuple", editing, form.peuple, sheet.peuple) { form.peuple = it } },
             ),
         )
         ResponsiveColumns(
             columns = listOf(
-                { TextCell("Peuple", editing, form.peuple, sheet.peuple) { form.peuple = it } },
                 { SexCell(editing, form.sexe, sheet.sexe) { form.sexe = it } },
                 { TextCell("Taille / poids", editing, form.tailleEtPoids, sheet.tailleEtPoids) { form.tailleEtPoids = it } },
                 { NumberCell("Âge", editing, form.age, sheet.age) { form.age = it } },
+                {},
             ),
         )
         TextCell("Apparence", editing, form.apparence, sheet.apparence, multiline = true) {
