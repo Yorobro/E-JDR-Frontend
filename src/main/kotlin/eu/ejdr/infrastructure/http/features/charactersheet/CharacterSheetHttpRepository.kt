@@ -82,6 +82,20 @@ class CharacterSheetHttpRepository(
             }
         }.getOrElse { Result.Failure(CharacterSheetError.Network) }
 
+    override suspend fun listLinkableForCampaign(
+        campaignId: String,
+    ): Result<List<CharacterSheet>, CharacterSheetError> =
+        runCatchingCancellable {
+            val response =
+                client.get("${config.baseUrl}/campaigns/$campaignId/linkable-characters")
+            if (response.status.isSuccess()) {
+                val body = response.body<CampaignCharactersResponseDto>()
+                Result.Success(body.characters.map(CharacterSheetHttpMapper::toCharacterSheet))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(CharacterSheetError.Network) }
+
     override suspend fun linkToCampaign(
         campaignId: String,
         characterSheetId: String,

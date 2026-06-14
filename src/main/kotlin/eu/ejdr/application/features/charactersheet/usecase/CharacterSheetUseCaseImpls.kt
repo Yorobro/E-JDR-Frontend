@@ -6,6 +6,7 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
@@ -40,6 +41,15 @@ class ListCampaignCharactersUseCaseImpl(
     override suspend fun invoke(
         campaignId: String,
     ): Result<List<CharacterSheet>, CharacterSheetError> = repository.listForCampaign(campaignId)
+}
+
+class ListLinkableCharactersUseCaseImpl(
+    private val repository: CharacterSheetRepository,
+) : ListLinkableCharactersUseCase {
+    override suspend fun invoke(
+        campaignId: String,
+    ): Result<List<CharacterSheet>, CharacterSheetError> =
+        repository.listLinkableForCampaign(campaignId)
 }
 
 class LinkCharacterToCampaignUseCaseImpl(

@@ -26,6 +26,13 @@ fun interface ListCampaignCharactersUseCase {
     ): Result<List<CharacterSheet>, CharacterSheetError>
 }
 
+/** Use case : liste les fiches rattachables à une campagne (MJ uniquement, côté back). */
+fun interface ListLinkableCharactersUseCase {
+    suspend operator fun invoke(
+        campaignId: String,
+    ): Result<List<CharacterSheet>, CharacterSheetError>
+}
+
 /** Use case : rattache une fiche à une campagne. */
 fun interface LinkCharacterToCampaignUseCase {
     suspend operator fun invoke(

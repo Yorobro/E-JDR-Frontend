@@ -6,11 +6,13 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
 import eu.ejdr.application.features.charactersheet.usecase.CreateCharacterSheetUseCaseImpl
 import eu.ejdr.application.features.charactersheet.usecase.DeleteCharacterSheetUseCaseImpl
 import eu.ejdr.application.features.charactersheet.usecase.LinkCharacterToCampaignUseCaseImpl
 import eu.ejdr.application.features.charactersheet.usecase.ListCampaignCharactersUseCaseImpl
+import eu.ejdr.application.features.charactersheet.usecase.ListLinkableCharactersUseCaseImpl
 import eu.ejdr.application.features.charactersheet.usecase.ListCharacterSheetsUseCaseImpl
 import eu.ejdr.application.features.charactersheet.usecase.UnlinkCharacterFromCampaignUseCaseImpl
 import eu.ejdr.infrastructure.http.features.charactersheet.CharacterSheetHttpRepository
@@ -27,6 +29,7 @@ val characterSheetModule = module {
     single<CreateCharacterSheetUseCase> { CreateCharacterSheetUseCaseImpl(get()) }
     single<DeleteCharacterSheetUseCase> { DeleteCharacterSheetUseCaseImpl(get()) }
     single<ListCampaignCharactersUseCase> { ListCampaignCharactersUseCaseImpl(get()) }
+    single<ListLinkableCharactersUseCase> { ListLinkableCharactersUseCaseImpl(get()) }
     single<LinkCharacterToCampaignUseCase> { LinkCharacterToCampaignUseCaseImpl(get()) }
     single<UnlinkCharacterFromCampaignUseCase> { UnlinkCharacterFromCampaignUseCaseImpl(get()) }
 }

@@ -23,6 +23,11 @@ interface CharacterSheetRepository {
     /** Liste les fiches rattachées à une campagne. */
     suspend fun listForCampaign(campaignId: String): Result<List<CharacterSheet>, CharacterSheetError>
 
+    /** Liste les fiches rattachables à une campagne (toutes sauf celles du MJ, hors déjà liées). */
+    suspend fun listLinkableForCampaign(
+        campaignId: String,
+    ): Result<List<CharacterSheet>, CharacterSheetError>
+
     /** Rattache une fiche à une campagne. */
     suspend fun linkToCampaign(
         campaignId: String,
