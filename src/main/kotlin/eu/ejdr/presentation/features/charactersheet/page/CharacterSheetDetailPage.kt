@@ -15,9 +15,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.presentation.features.charactersheet.CharacterSheetDetailViewModel
+import eu.ejdr.presentation.features.charactersheet.component.CampagnesTab
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetFormState
 import eu.ejdr.presentation.features.charactersheet.component.CombatTab
 import eu.ejdr.presentation.features.charactersheet.component.IdentiteTab
@@ -31,14 +34,14 @@ import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 
-private val TabTitles = listOf("Identité", "Combat", "Inventaire")
+private val TabTitles = listOf("Identité", "Combat", "Inventaire", "Campagnes")
 
 /**
  * Page détail d'une fiche de personnage (composant INTELLIGENT).
  *
- * Charge la fiche via [CharacterSheetDetailViewModel] et l'affiche en TROIS onglets
- * (Identité / Combat / Inventaire). L'en-tête (titre + barre d'action) et la barre d'onglets
- * restent FIXES ; seul le contenu de l'onglet défile. Édition et état de formulaire GLOBAUX :
+ * Charge la fiche via [CharacterSheetDetailViewModel] et l'affiche en QUATRE onglets
+ * (Identité / Combat / Inventaire / Campagnes). L'en-tête (titre + barre d'action) et la barre
+ * d'onglets restent FIXES ; seul le contenu de l'onglet défile. Édition et état de formulaire GLOBAUX :
  * éditer dans un onglet puis changer d'onglet conserve les modifications ; Enregistrer persiste
  * toute la fiche.
  *
@@ -57,9 +60,11 @@ fun CharacterSheetDetailPage(
             sheetId = id,
             getById = get<GetCharacterSheetUseCase>(),
             update = get<UpdateCharacterSheetUseCase>(),
+            getCampaigns = get<GetSheetCampaignsUseCase>(),
         )
     }
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
+    val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()
     val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
@@ -74,6 +79,7 @@ fun CharacterSheetDetailPage(
         sheet?.let { loaded ->
             CharacterSheetDetailContent(
                 sheet = loaded,
+                campaigns = campaigns,
                 isEditing = isEditing,
                 isSaving = isLoading,
                 onStartEdit = viewModel::startEdit,
@@ -93,6 +99,7 @@ fun CharacterSheetDetailPage(
 @Composable
 private fun CharacterSheetDetailContent(
     sheet: CharacterSheet,
+    campaigns: List<SheetCampaign>,
     isEditing: Boolean,
     isSaving: Boolean,
     onStartEdit: () -> Unit,
@@ -119,7 +126,13 @@ private fun CharacterSheetDetailContent(
         Column(
             modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
         ) {
-            TabContent(selectedTab = selectedTab, sheet = sheet, isEditing = isEditing, form = form)
+            TabContent(
+                selectedTab = selectedTab,
+                sheet = sheet,
+                campaigns = campaigns,
+                isEditing = isEditing,
+                form = form,
+            )
         }
     }
 }
@@ -155,12 +168,14 @@ private fun DetailActionBar(
 private fun TabContent(
     selectedTab: Int,
     sheet: CharacterSheet,
+    campaigns: List<SheetCampaign>,
     isEditing: Boolean,
     form: CharacterSheetFormState,
 ) {
     when (selectedTab) {
         0 -> IdentiteTab(sheet, isEditing, form)
         1 -> CombatTab(sheet, isEditing, form)
-        else -> InventaireTab(sheet, isEditing, form)
+        2 -> InventaireTab(sheet, isEditing, form)
+        else -> CampagnesTab(campaigns)
     }
 }

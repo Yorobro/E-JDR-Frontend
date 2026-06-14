@@ -4,6 +4,7 @@ import eu.ejdr.application.features.charactersheet.abstraction.repository.Charac
 import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.runCatchingCancellable
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.features.auth.dto.ApiErrorDto
@@ -12,6 +13,7 @@ import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetListResponseDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CreateCharacterSheetRequestDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.LinkCharacterRequestDto
+import eu.ejdr.infrastructure.http.features.charactersheet.dto.SheetCampaignsResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -142,6 +144,19 @@ class CharacterSheetHttpRepository(
             val response =
                 client.delete("${config.baseUrl}/campaigns/$campaignId/characters/$characterSheetId")
             if (response.status.isSuccess()) Result.Success(Unit) else failure(response)
+        }.getOrElse { Result.Failure(CharacterSheetError.Network) }
+
+    override suspend fun getCampaignsForSheet(
+        id: String,
+    ): Result<List<SheetCampaign>, CharacterSheetError> =
+        runCatchingCancellable {
+            val response = client.get("${config.baseUrl}/character-sheets/$id/campaigns")
+            if (response.status.isSuccess()) {
+                val body = response.body<SheetCampaignsResponseDto>()
+                Result.Success(body.campaigns.map(CharacterSheetHttpMapper::toSheetCampaign))
+            } else {
+                failure(response)
+            }
         }.getOrElse { Result.Failure(CharacterSheetError.Network) }
 
     /** Lit le corps d'erreur (best-effort) et le traduit via le mapper. */

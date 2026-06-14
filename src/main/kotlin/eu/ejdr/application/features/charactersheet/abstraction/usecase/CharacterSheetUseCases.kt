@@ -2,6 +2,7 @@ package eu.ejdr.application.features.charactersheet.abstraction.usecase
 
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 
 /** Use case : liste les fiches de l'utilisateur courant. */
@@ -57,4 +58,9 @@ fun interface UnlinkCharacterFromCampaignUseCase {
         campaignId: String,
         characterSheetId: String,
     ): Result<Unit, CharacterSheetError>
+}
+
+/** Use case : liste les campagnes d'une fiche (lecture seule, avec pseudo MJ). */
+fun interface GetSheetCampaignsUseCase {
+    suspend operator fun invoke(id: String): Result<List<SheetCampaign>, CharacterSheetError>
 }

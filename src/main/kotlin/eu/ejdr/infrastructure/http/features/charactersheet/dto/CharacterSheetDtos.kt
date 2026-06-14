@@ -96,3 +96,15 @@ data class CampaignCharactersResponseDto(val characters: List<CharacterSheetDto>
 /** Corps de requête de rattachement (`POST /campaigns/:id/characters`). */
 @Serializable
 data class LinkCharacterRequestDto(val characterSheetId: String)
+
+/** Une campagne rattachée à une fiche, avec le pseudo du MJ (`GET /character-sheets/:id/campaigns`). */
+@Serializable
+data class SheetCampaignDto(
+    val campaignId: String,
+    val campaignName: String,
+    val gameMasterPseudo: String,
+)
+
+/** Réponse de `GET /character-sheets/:id/campaigns`. */
+@Serializable
+data class SheetCampaignsResponseDto(val campaigns: List<SheetCampaignDto>)

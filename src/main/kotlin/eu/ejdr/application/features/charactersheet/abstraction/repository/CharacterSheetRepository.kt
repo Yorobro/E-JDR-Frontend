@@ -2,6 +2,7 @@ package eu.ejdr.application.features.charactersheet.abstraction.repository
 
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 
 /**
@@ -45,4 +46,7 @@ interface CharacterSheetRepository {
         campaignId: String,
         characterSheetId: String,
     ): Result<Unit, CharacterSheetError>
+
+    /** Liste les campagnes auxquelles une fiche est rattachée (avec le pseudo du MJ). */
+    suspend fun getCampaignsForSheet(id: String): Result<List<SheetCampaign>, CharacterSheetError>
 }

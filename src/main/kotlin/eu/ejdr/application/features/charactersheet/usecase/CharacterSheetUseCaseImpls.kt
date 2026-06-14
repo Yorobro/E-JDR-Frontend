@@ -4,6 +4,7 @@ import eu.ejdr.application.features.charactersheet.abstraction.repository.Charac
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
@@ -12,6 +13,7 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinka
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 
 /** Implémentations triviales déléguant au [CharacterSheetRepository]. */
@@ -86,4 +88,11 @@ class UnlinkCharacterFromCampaignUseCaseImpl(
         characterSheetId: String,
     ): Result<Unit, CharacterSheetError> =
         repository.unlinkFromCampaign(campaignId, characterSheetId)
+}
+
+class GetSheetCampaignsUseCaseImpl(
+    private val repository: CharacterSheetRepository,
+) : GetSheetCampaignsUseCase {
+    override suspend fun invoke(id: String): Result<List<SheetCampaign>, CharacterSheetError> =
+        repository.getCampaignsForSheet(id)
 }

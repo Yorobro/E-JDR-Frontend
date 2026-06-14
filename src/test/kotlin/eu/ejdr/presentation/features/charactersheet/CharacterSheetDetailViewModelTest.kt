@@ -1,9 +1,11 @@
 package eu.ejdr.presentation.features.charactersheet
 
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -44,6 +46,7 @@ class CharacterSheetDetailViewModelTest {
             sheetId = "s-1",
             getById = GetCharacterSheetUseCase { Result.Success(sheet(vigueur = 6)) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         )
         advanceUntilIdle()
 
@@ -59,6 +62,7 @@ class CharacterSheetDetailViewModelTest {
             sheetId = "s-1",
             getById = GetCharacterSheetUseCase { Result.Failure(CharacterSheetError.NotFound) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         )
         advanceUntilIdle()
 
@@ -72,6 +76,7 @@ class CharacterSheetDetailViewModelTest {
             sheetId = "s-1",
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         )
         advanceUntilIdle()
 
@@ -88,6 +93,7 @@ class CharacterSheetDetailViewModelTest {
             sheetId = "s-1",
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         )
         advanceUntilIdle()
         vm.startEdit()
@@ -107,6 +113,7 @@ class CharacterSheetDetailViewModelTest {
             sheetId = "s-1",
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Failure(CharacterSheetError.Network) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         )
         advanceUntilIdle()
         vm.startEdit()
@@ -116,5 +123,34 @@ class CharacterSheetDetailViewModelTest {
 
         assertEquals(CharacterSheetError.Network.message, vm.error.value)
         assertTrue(vm.isEditing.value)
+    }
+
+    @Test
+    fun `loads the linked campaigns at init`() = runTest {
+        val campaigns = listOf(SheetCampaign("c-1", "Donjon", "MJ"))
+        val vm = CharacterSheetDetailViewModel(
+            sheetId = "s-1",
+            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
+            update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(campaigns) },
+        )
+        advanceUntilIdle()
+
+        assertEquals(campaigns, vm.campaigns.value)
+    }
+
+    @Test
+    fun `campaigns failure leaves the list empty without overwriting the sheet`() = runTest {
+        val vm = CharacterSheetDetailViewModel(
+            sheetId = "s-1",
+            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
+            update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Failure(CharacterSheetError.Network) },
+        )
+        advanceUntilIdle()
+
+        assertTrue(vm.campaigns.value.isEmpty())
+        assertEquals("Aragorn", vm.sheet.value?.name)
+        assertNull(vm.error.value)
     }
 }

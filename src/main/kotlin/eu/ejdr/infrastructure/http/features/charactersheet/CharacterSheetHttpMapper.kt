@@ -2,9 +2,11 @@ package eu.ejdr.infrastructure.http.features.charactersheet
 
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.Purse
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.PurseDto
+import eu.ejdr.infrastructure.http.features.charactersheet.dto.SheetCampaignDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.UpdateCharacterSheetRequestDto
 import io.ktor.http.HttpStatusCode
 
@@ -44,6 +46,10 @@ object CharacterSheetHttpMapper {
             sortsEtMiracles = dto.sortsEtMiracles,
             notes = dto.notes,
         )
+
+    /** Convertit une campagne rattachée reçue de l'API en vue domaine (onglet Campagnes). */
+    fun toSheetCampaign(dto: SheetCampaignDto): SheetCampaign =
+        SheetCampaign(dto.campaignId, dto.campaignName, dto.gameMasterPseudo)
 
     /** Construit le corps de mise à jour (`PUT`) à partir d'une fiche du domaine. */
     fun toUpdateRequest(sheet: CharacterSheet): UpdateCharacterSheetRequestDto =

@@ -3,6 +3,7 @@ package eu.ejdr.infrastructure.http.features.charactersheet
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.Purse
+import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.config.AppConfig
 import io.ktor.client.HttpClient
@@ -186,6 +187,16 @@ class CharacterSheetHttpRepositoryTest {
         val result =
             repository(clientReturning(HttpStatusCode.NoContent, "")).unlinkFromCampaign("c-1", "s-1")
         assertIs<Result.Success<Unit>>(result)
+    }
+
+    @Test
+    fun `getCampaignsForSheet success maps the campaigns`() = runTest {
+        val body =
+            """{"campaigns":[{"campaignId":"c-1","campaignName":"Donjon","gameMasterPseudo":"MJ"}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).getCampaignsForSheet("s-1")
+
+        assertIs<Result.Success<List<SheetCampaign>>>(result)
+        assertEquals(listOf(SheetCampaign("c-1", "Donjon", "MJ")), result.value)
     }
 
     @Test
