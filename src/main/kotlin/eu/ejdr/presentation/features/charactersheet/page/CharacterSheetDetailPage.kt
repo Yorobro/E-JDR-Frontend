@@ -9,23 +9,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.features.charactersheet.CharacterSheetDetailViewModel
-import eu.ejdr.presentation.features.charactersheet.component.CaracteristiquesSection
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetFormState
-import eu.ejdr.presentation.features.charactersheet.component.CombatSection
-import eu.ejdr.presentation.features.charactersheet.component.IdentiteSection
-import eu.ejdr.presentation.features.charactersheet.component.LongTextBody
-import eu.ejdr.presentation.features.charactersheet.component.PurseSection
-import eu.ejdr.presentation.features.charactersheet.component.ResponsiveColumns
-import eu.ejdr.presentation.features.charactersheet.component.SheetCard
-import eu.ejdr.presentation.features.charactersheet.component.StatBlockRow
+import eu.ejdr.presentation.features.charactersheet.component.CombatTab
+import eu.ejdr.presentation.features.charactersheet.component.IdentiteTab
+import eu.ejdr.presentation.features.charactersheet.component.InventaireTab
 import eu.ejdr.presentation.shared.component.atomic.AppButton
+import eu.ejdr.presentation.shared.component.atomic.AppTabs
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
@@ -33,13 +31,16 @@ import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 
+private val TabTitles = listOf("Identité", "Combat", "Inventaire")
+
 /**
  * Page détail d'une fiche de personnage (composant INTELLIGENT).
  *
- * Charge la fiche complète par son identifiant via [CharacterSheetDetailViewModel] et l'affiche
- * par sections fidèles à la fiche papier. Un bouton « Modifier » bascule en édition (champs
- * éditables) ; « Enregistrer » persiste via le use case de mise à jour. Le rendu des sections
- * est délégué à des composants bêtes.
+ * Charge la fiche via [CharacterSheetDetailViewModel] et l'affiche en TROIS onglets
+ * (Identité / Combat / Inventaire). L'en-tête (titre + barre d'action) et la barre d'onglets
+ * restent FIXES ; seul le contenu de l'onglet défile. Édition et état de formulaire GLOBAUX :
+ * éditer dans un onglet puis changer d'onglet conserve les modifications ; Enregistrer persiste
+ * toute la fiche.
  *
  * @param id Identifiant de la fiche (sert au chargement).
  * @param name Nom de la fiche (affiché en titre, évite d'attendre le chargement).
@@ -64,10 +65,7 @@ fun CharacterSheetDetailPage(
     val error by viewModel.error.collectAsStateWithLifecycle()
 
     Column(
-        modifier = modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(AppTheme.dimens.xl),
+        modifier = modifier.fillMaxSize().padding(AppTheme.dimens.xl),
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
     ) {
         AppText(text = name, style = AppTextStyle.Title)
@@ -87,10 +85,10 @@ fun CharacterSheetDetailPage(
 }
 
 /**
- * Contenu de la fiche : barre d'actions (Modifier/Annuler/Enregistrer) + sections.
+ * Contenu de la fiche : en-tête fixe (barre d'action + onglets) puis contenu d'onglet défilant.
  *
- * Tient l'état d'édition local ([CharacterSheetFormState]), réamorcé à chaque nouvelle [sheet]
- * (sortie d'édition, rechargement). Extrait de la page pour la garder concise.
+ * Le [CharacterSheetFormState] (réamorcé à chaque nouvelle [sheet]) et l'onglet sélectionné sont
+ * tenus ICI, au-dessus du switch d'onglet, pour que les éditions persistent d'un onglet à l'autre.
  */
 @Composable
 private fun CharacterSheetDetailContent(
@@ -102,61 +100,67 @@ private fun CharacterSheetDetailContent(
     onSave: (CharacterSheet) -> Unit,
 ) {
     val form = remember(sheet) { CharacterSheetFormState(sheet) }
+    var selectedTab by remember { mutableStateOf(0) }
 
     Column(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
     ) {
-        if (isEditing) {
-            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary)
-        } else {
-            AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
-        }
-
-        SheetCard("Identité") { IdentiteSection(sheet, isEditing, form) }
-        StatBlockRow(
-            left = { m -> SheetCard("Caractéristiques", m) { CaracteristiquesSection(sheet, isEditing, form) } },
-            middleTop = { m -> SheetCard("Combat", m) { CombatSection(sheet, isEditing, form) } },
-            middleBottom = { m -> SheetCard("Bourse", m) { PurseSection(sheet, isEditing, form) } },
-            rightTop = { m -> SheetCard("Armures", m) { LongTextBody(isEditing, form.armures, sheet.armures) { form.armures = it } } },
-            rightBottom = { m -> SheetCard("Armes", m) { LongTextBody(isEditing, form.armes, sheet.armes) { form.armes = it } } },
+        DetailActionBar(
+            isEditing = isEditing,
+            isSaving = isSaving,
+            canSave = form.isNameValid,
+            onStartEdit = onStartEdit,
+            onCancelEdit = onCancelEdit,
+            onSave = { onSave(form.toCharacterSheet()) },
         )
-        TextZones(sheet = sheet, isEditing = isEditing, form = form)
+        AppTabs(tabs = TabTitles, selectedIndex = selectedTab, onSelect = { selectedTab = it })
 
-        if (isEditing) {
-            AppButton(
-                label = "Enregistrer",
-                onClick = { onSave(form.toCharacterSheet()) },
-                enabled = form.isNameValid,
-                loading = isSaving,
-                modifier = Modifier.fillMaxWidth(),
-            )
+        Column(
+            modifier = Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()),
+        ) {
+            TabContent(selectedTab = selectedTab, sheet = sheet, isEditing = isEditing, form = form)
         }
     }
 }
 
-/**
- * Deux rangées responsives de deux cartes de texte long (50/50) : [Compétences · Équipement],
- * [Sorts & Miracles · Notes]. (Armures · Armes vivent dans la rangée des caractéristiques.)
- * Extrait pour garder le contenu concis.
- */
+/** Barre d'action globale : Modifier/Annuler + Enregistrer (visible en édition). */
 @Composable
-private fun TextZones(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFormState) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
-    ) {
-        ResponsiveColumns(
-            columns = listOf(
-                { SheetCard("Compétences") { LongTextBody(isEditing, form.competences, sheet.competences) { form.competences = it } } },
-                { SheetCard("Équipement") { LongTextBody(isEditing, form.equipement, sheet.equipement) { form.equipement = it } } },
-            ),
-        )
-        ResponsiveColumns(
-            columns = listOf(
-                { SheetCard("Sorts & Miracles") { LongTextBody(isEditing, form.sortsEtMiracles, sheet.sortsEtMiracles) { form.sortsEtMiracles = it } } },
-                { SheetCard("Notes") { LongTextBody(isEditing, form.notes, sheet.notes) { form.notes = it } } },
-            ),
-        )
+private fun DetailActionBar(
+    isEditing: Boolean,
+    isSaving: Boolean,
+    canSave: Boolean,
+    onStartEdit: () -> Unit,
+    onCancelEdit: () -> Unit,
+    onSave: () -> Unit,
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
+        if (isEditing) {
+            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary)
+            AppButton(
+                label = "Enregistrer",
+                onClick = onSave,
+                enabled = canSave,
+                loading = isSaving,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        } else {
+            AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
+        }
+    }
+}
+
+/** Aiguille vers le contenu de l'onglet sélectionné (form partagé → édition persistante). */
+@Composable
+private fun TabContent(
+    selectedTab: Int,
+    sheet: CharacterSheet,
+    isEditing: Boolean,
+    form: CharacterSheetFormState,
+) {
+    when (selectedTab) {
+        0 -> IdentiteTab(sheet, isEditing, form)
+        1 -> CombatTab(sheet, isEditing, form)
+        else -> InventaireTab(sheet, isEditing, form)
     }
 }
