@@ -2,6 +2,10 @@ package eu.ejdr.infrastructure.http.features.charactersheet.dto
 
 import kotlinx.serialization.Serializable
 
+/** Bourse JSON (pièces brutes). */
+@Serializable
+data class PurseDto(val gold: Int = 0, val silver: Int = 0, val copper: Int = 0)
+
 /**
  * Représentation JSON d'une fiche renvoyée par l'API.
  *
@@ -21,11 +25,11 @@ data class CharacterSheetDto(
     val name: String,
     val createdAt: String,
     val formation: String? = null,
-    val niveau: String? = null,
+    val niveau: Int? = null,
     val peuple: String? = null,
     val sexe: String? = null,
     val tailleEtPoids: String? = null,
-    val age: String? = null,
+    val age: Int? = null,
     val apparence: String? = null,
     val dexterite: Int? = null,
     val intelligence: Int? = null,
@@ -35,7 +39,8 @@ data class CharacterSheetDto(
     val pointsDeVie: Int? = null,
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
-    val monnaie: Int? = null,
+    val competences: String? = null,
+    val purse: PurseDto? = null,
     val armes: String? = null,
     val armures: String? = null,
     val equipement: String? = null,
@@ -57,11 +62,11 @@ data class CreateCharacterSheetRequestDto(val name: String)
 data class UpdateCharacterSheetRequestDto(
     val name: String,
     val formation: String? = null,
-    val niveau: String? = null,
+    val niveau: Int? = null,
     val peuple: String? = null,
     val sexe: String? = null,
     val tailleEtPoids: String? = null,
-    val age: String? = null,
+    val age: Int? = null,
     val apparence: String? = null,
     val dexterite: Int? = null,
     val intelligence: Int? = null,
@@ -71,7 +76,8 @@ data class UpdateCharacterSheetRequestDto(
     val pointsDeVie: Int? = null,
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
-    val monnaie: Int? = null,
+    val competences: String? = null,
+    val purse: PurseDto? = null,
     val armes: String? = null,
     val armures: String? = null,
     val equipement: String? = null,

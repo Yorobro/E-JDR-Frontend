@@ -1,8 +1,10 @@
 package eu.ejdr.infrastructure.http.features.charactersheet
 
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.Purse
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetDto
+import eu.ejdr.infrastructure.http.features.charactersheet.dto.PurseDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.UpdateCharacterSheetRequestDto
 import io.ktor.http.HttpStatusCode
 
@@ -34,7 +36,8 @@ object CharacterSheetHttpMapper {
             pointsDeVie = dto.pointsDeVie,
             pointsDeMagie = dto.pointsDeMagie,
             protection = dto.protection,
-            monnaie = dto.monnaie,
+            competences = dto.competences,
+            purse = dto.purse?.let { Purse(it.gold, it.silver, it.copper) },
             armes = dto.armes,
             armures = dto.armures,
             equipement = dto.equipement,
@@ -61,7 +64,8 @@ object CharacterSheetHttpMapper {
             pointsDeVie = sheet.pointsDeVie,
             pointsDeMagie = sheet.pointsDeMagie,
             protection = sheet.protection,
-            monnaie = sheet.monnaie,
+            competences = sheet.competences,
+            purse = sheet.purse?.let { PurseDto(it.gold, it.silver, it.copper) },
             armes = sheet.armes,
             armures = sheet.armures,
             equipement = sheet.equipement,

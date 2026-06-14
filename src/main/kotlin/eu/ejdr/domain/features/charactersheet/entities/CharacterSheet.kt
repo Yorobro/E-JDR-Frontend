@@ -14,11 +14,11 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property name Nom affiché de la fiche.
  * @property createdAt Date de création au format ISO 8601 (telle que renvoyée par l'API).
  * @property formation Formation du personnage.
- * @property niveau Niveau du personnage.
+ * @property niveau Niveau du personnage (entier).
  * @property peuple Peuple du personnage.
- * @property sexe Sexe du personnage.
+ * @property sexe Sexe du personnage (M/F/NB).
  * @property tailleEtPoids Taille et poids du personnage.
- * @property age Âge du personnage.
+ * @property age Âge du personnage (entier).
  * @property apparence Description de l'apparence.
  * @property dexterite Caractéristique de dextérité.
  * @property intelligence Caractéristique d'intelligence.
@@ -28,7 +28,8 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property pointsDeVie Points de vie.
  * @property pointsDeMagie Points de magie.
  * @property protection Valeur de protection / armure.
- * @property monnaie Monnaie possédée.
+ * @property competences Compétences du personnage (texte libre).
+ * @property purse Bourse du personnage (pièces d'or, d'argent et de cuivre).
  * @property armes Description des armes.
  * @property armures Description des armures.
  * @property equipement Description de l'équipement.
@@ -41,11 +42,11 @@ data class CharacterSheet(
     val name: String,
     val createdAt: String,
     val formation: String? = null,
-    val niveau: String? = null,
+    val niveau: Int? = null,
     val peuple: String? = null,
     val sexe: String? = null,
     val tailleEtPoids: String? = null,
-    val age: String? = null,
+    val age: Int? = null,
     val apparence: String? = null,
     val dexterite: Int? = null,
     val intelligence: Int? = null,
@@ -55,7 +56,8 @@ data class CharacterSheet(
     val pointsDeVie: Int? = null,
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
-    val monnaie: Int? = null,
+    val competences: String? = null,
+    val purse: Purse? = null,
     val armes: String? = null,
     val armures: String? = null,
     val equipement: String? = null,
