@@ -29,6 +29,8 @@ fun AppFab(
         containerColor = AppTheme.colors.primary,
         contentColor = AppTheme.colors.onPrimary,
     ) {
+        // `tint` explicite obligatoire : `AppIcon` ne lit pas `LocalContentColor`
+        // (il retombe sur `colors.text`), donc le `contentColor` du FAB ne suffit pas.
         AppIcon(
             imageVector = Icons.Filled.Add,
             contentDescription = contentDescription,
