@@ -2,6 +2,7 @@ package eu.ejdr.presentation.shared.component.atomic
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,7 +19,9 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param imageVector Icône vectorielle à afficher.
  * @param contentDescription Description d'accessibilité ; `null` si l'icône est décorative.
  * @param modifier Modifier Compose appliqué à l'icône.
- * @param tint Teinte explicite ; si `null`, utilise la couleur de texte du thème.
+ * @param tint Teinte explicite ; si `null`, utilise [LocalContentColor] (héritage Compose).
+ *   Par défaut `AppTheme` la fixe à `colors.text` ; les conteneurs Material (FAB, bouton…)
+ *   la surchargent localement par leur `contentColor`, propagé automatiquement.
  * @param size Taille de l'icône (défaut : `AppTheme.dimens.iconSize`).
  */
 @Composable
@@ -33,6 +36,6 @@ fun AppIcon(
         imageVector = imageVector,
         contentDescription = contentDescription,
         modifier = modifier.size(size),
-        tint = tint ?: AppTheme.colors.text,
+        tint = tint ?: LocalContentColor.current,
     )
 }
