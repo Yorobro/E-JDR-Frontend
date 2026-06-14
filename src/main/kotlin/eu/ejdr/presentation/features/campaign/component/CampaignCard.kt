@@ -24,6 +24,8 @@ import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.theme.AppTheme
 
+private val CardHeight = 140.dp
+
 /**
  * Tuile d'une campagne dans la grille (composant bête).
  *
@@ -47,7 +49,7 @@ fun CampaignCard(
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .height(140.dp)
+            .height(CardHeight)
             .clip(shape)
             .background(AppTheme.colors.surface)
             .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape)
