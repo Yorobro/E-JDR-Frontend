@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
@@ -16,19 +16,20 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel de la page détail d'une campagne.
  *
- * Charge les fiches rattachées à la campagne ([characters]) et les fiches de l'utilisateur
- * ([mySheets], pour proposer un rattachement). Expose le rattachement et le détachement.
+ * Charge les fiches rattachées à la campagne ([characters]) et les fiches rattachables
+ * ([linkableSheets], filtrées côté back, pour proposer un rattachement). Expose le rattachement
+ * et le détachement.
  *
  * @param campaignId Identifiant de la campagne affichée.
  * @property listCampaignCharacters Use case de listing des fiches rattachées.
- * @property listMySheets Use case de listing de mes fiches.
+ * @property listLinkable Use case de listing des fiches rattachables à la campagne.
  * @property linkCharacter Use case de rattachement.
  * @property unlinkCharacter Use case de détachement.
  */
 class CampaignDetailViewModel(
     private val campaignId: String,
     private val listCampaignCharacters: ListCampaignCharactersUseCase,
-    private val listMySheets: ListCharacterSheetsUseCase,
+    private val listLinkable: ListLinkableCharactersUseCase,
     private val linkCharacter: LinkCharacterToCampaignUseCase,
     private val unlinkCharacter: UnlinkCharacterFromCampaignUseCase,
 ) : ViewModel() {
@@ -36,8 +37,8 @@ class CampaignDetailViewModel(
     private val _characters = MutableStateFlow<List<CharacterSheet>>(emptyList())
     val characters: StateFlow<List<CharacterSheet>> = _characters.asStateFlow()
 
-    private val _mySheets = MutableStateFlow<List<CharacterSheet>>(emptyList())
-    val mySheets: StateFlow<List<CharacterSheet>> = _mySheets.asStateFlow()
+    private val _linkableSheets = MutableStateFlow<List<CharacterSheet>>(emptyList())
+    val linkableSheets: StateFlow<List<CharacterSheet>> = _linkableSheets.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
@@ -46,15 +47,15 @@ class CampaignDetailViewModel(
         load()
     }
 
-    /** Recharge les fiches rattachées et mes fiches. */
+    /** Recharge les fiches rattachées et les fiches rattachables. */
     fun load() {
         viewModelScope.launch {
             listCampaignCharacters(campaignId).fold(
                 onSuccess = { _characters.value = it; _error.value = null },
                 onFailure = { _error.value = it.message },
             )
-            listMySheets().fold(
-                onSuccess = { _mySheets.value = it },
+            listLinkable(campaignId).fold(
+                onSuccess = { _linkableSheets.value = it },
                 onFailure = { _error.value = it.message },
             )
         }

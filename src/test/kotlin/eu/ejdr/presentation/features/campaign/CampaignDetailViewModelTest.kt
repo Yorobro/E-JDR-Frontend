@@ -2,7 +2,7 @@ package eu.ejdr.presentation.features.campaign
 
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
@@ -33,18 +33,18 @@ class CampaignDetailViewModelTest {
         CharacterSheet(id = id, ownerId = "u-1", name = "S-$id", createdAt = "2026-06-13T10:00:00.000Z")
 
     @Test
-    fun `loads campaign characters and my sheets at init`() = runTest {
+    fun `loads campaign characters and linkable sheets at init`() = runTest {
         val vm = CampaignDetailViewModel(
             campaignId = "camp-1",
             listCampaignCharacters = ListCampaignCharactersUseCase { Result.Success(listOf(sheet("a"))) },
-            listMySheets = ListCharacterSheetsUseCase { Result.Success(listOf(sheet("a"), sheet("b"))) },
+            listLinkable = ListLinkableCharactersUseCase { Result.Success(listOf(sheet("a"), sheet("b"))) },
             linkCharacter = LinkCharacterToCampaignUseCase { _, _ -> Result.Success(Unit) },
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
         )
         advanceUntilIdle()
 
         assertEquals(1, vm.characters.value.size)
-        assertEquals(2, vm.mySheets.value.size)
+        assertEquals(2, vm.linkableSheets.value.size)
         assertNull(vm.error.value)
     }
 
@@ -54,7 +54,7 @@ class CampaignDetailViewModelTest {
         val vm = CampaignDetailViewModel(
             campaignId = "camp-1",
             listCampaignCharacters = ListCampaignCharactersUseCase { Result.Success(linked) },
-            listMySheets = ListCharacterSheetsUseCase { Result.Success(listOf(sheet("a"))) },
+            listLinkable = ListLinkableCharactersUseCase { Result.Success(listOf(sheet("a"))) },
             linkCharacter = LinkCharacterToCampaignUseCase { _, id ->
                 linked = listOf(sheet(id))
                 Result.Success(Unit)
@@ -75,7 +75,7 @@ class CampaignDetailViewModelTest {
         val vm = CampaignDetailViewModel(
             campaignId = "camp-1",
             listCampaignCharacters = ListCampaignCharactersUseCase { Result.Success(emptyList()) },
-            listMySheets = ListCharacterSheetsUseCase { Result.Success(listOf(sheet("a"))) },
+            listLinkable = ListLinkableCharactersUseCase { Result.Success(listOf(sheet("a"))) },
             linkCharacter = LinkCharacterToCampaignUseCase { _, _ ->
                 Result.Failure(CharacterSheetError.GmCannotJoinOwnCampaign)
             },

@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
 import eu.ejdr.presentation.features.campaign.CampaignDetailViewModel
 import eu.ejdr.presentation.features.campaign.component.LinkCharacterDialog
@@ -54,13 +54,13 @@ fun CampaignDetailPage(
         CampaignDetailViewModel(
             campaignId = id,
             listCampaignCharacters = get<ListCampaignCharactersUseCase>(),
-            listMySheets = get<ListCharacterSheetsUseCase>(),
+            listLinkable = get<ListLinkableCharactersUseCase>(),
             linkCharacter = get<LinkCharacterToCampaignUseCase>(),
             unlinkCharacter = get<UnlinkCharacterFromCampaignUseCase>(),
         )
     }
     val characters by viewModel.characters.collectAsStateWithLifecycle()
-    val mySheets by viewModel.mySheets.collectAsStateWithLifecycle()
+    val mySheets by viewModel.linkableSheets.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
 
     var showLink by remember { mutableStateOf(false) }
