@@ -24,6 +24,7 @@ import eu.ejdr.presentation.features.charactersheet.component.LongTextBody
 import eu.ejdr.presentation.features.charactersheet.component.PurseSection
 import eu.ejdr.presentation.features.charactersheet.component.ResponsiveColumns
 import eu.ejdr.presentation.features.charactersheet.component.SheetCard
+import eu.ejdr.presentation.features.charactersheet.component.StatBlockRow
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
@@ -113,12 +114,12 @@ private fun CharacterSheetDetailContent(
         }
 
         SheetCard("Identité") { IdentiteSection(sheet, isEditing, form) }
-        ResponsiveColumns(
-            columns = listOf(
-                { SheetCard("Caractéristiques") { CaracteristiquesSection(sheet, isEditing, form) } },
-                { SheetCard("Combat") { CombatSection(sheet, isEditing, form) } },
-                { SheetCard("Bourse") { PurseSection(sheet, isEditing, form) } },
-            ),
+        StatBlockRow(
+            left = { m -> SheetCard("Caractéristiques", m) { CaracteristiquesSection(sheet, isEditing, form) } },
+            middleTop = { m -> SheetCard("Combat", m) { CombatSection(sheet, isEditing, form) } },
+            middleBottom = { m -> SheetCard("Bourse", m) { PurseSection(sheet, isEditing, form) } },
+            rightTop = { m -> SheetCard("Armures", m) { LongTextBody(isEditing, form.armures, sheet.armures) { form.armures = it } } },
+            rightBottom = { m -> SheetCard("Armes", m) { LongTextBody(isEditing, form.armes, sheet.armes) { form.armes = it } } },
         )
         TextZones(sheet = sheet, isEditing = isEditing, form = form)
 
@@ -135,8 +136,9 @@ private fun CharacterSheetDetailContent(
 }
 
 /**
- * Trois rangées responsives de deux cartes de texte long (50/50) : [Armures · Armes],
- * [Compétences · Équipement], [Sorts & Miracles · Notes]. Extrait pour garder le contenu concis.
+ * Deux rangées responsives de deux cartes de texte long (50/50) : [Compétences · Équipement],
+ * [Sorts & Miracles · Notes]. (Armures · Armes vivent dans la rangée des caractéristiques.)
+ * Extrait pour garder le contenu concis.
  */
 @Composable
 private fun TextZones(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFormState) {
@@ -144,12 +146,6 @@ private fun TextZones(sheet: CharacterSheet, isEditing: Boolean, form: Character
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
     ) {
-        ResponsiveColumns(
-            columns = listOf(
-                { SheetCard("Armures") { LongTextBody(isEditing, form.armures, sheet.armures) { form.armures = it } } },
-                { SheetCard("Armes") { LongTextBody(isEditing, form.armes, sheet.armes) { form.armes = it } } },
-            ),
-        )
         ResponsiveColumns(
             columns = listOf(
                 { SheetCard("Compétences") { LongTextBody(isEditing, form.competences, sheet.competences) { form.competences = it } } },
