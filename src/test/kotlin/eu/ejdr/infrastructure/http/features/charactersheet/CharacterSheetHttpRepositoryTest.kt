@@ -20,6 +20,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 
 class CharacterSheetHttpRepositoryTest {
     private val tmpDir = Files.createTempDirectory("ejdr-sheet-test").toFile()
@@ -67,6 +68,67 @@ class CharacterSheetHttpRepositoryTest {
 
         assertIs<Result.Success<CharacterSheet>>(result)
         assertEquals("s-1", result.value.id)
+    }
+
+    @Test
+    fun `list response without detail fields still deserializes (defaults null)`() = runTest {
+        // La liste est une projection nom-seul : les clés détaillées sont ABSENTES.
+        // Les défauts du DTO doivent permettre la désérialisation (ignoreUnknownKeys ne couvre
+        // que les clés EN TROP, pas les manquantes).
+        val body =
+            """{"characterSheets":[{"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z"}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).list()
+
+        assertIs<Result.Success<List<CharacterSheet>>>(result)
+        val sheet = result.value.first()
+        assertEquals("Aragorn", sheet.name)
+        assertNull(sheet.peuple)
+        assertNull(sheet.vigueur)
+        assertNull(sheet.notes)
+    }
+
+    @Test
+    fun `getById success maps the full sheet`() = runTest {
+        val body = """
+            {"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z",
+             "peuple":"Dúnedain","vigueur":6,"notes":"Garde du Nord"}
+        """.trimIndent()
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).getById("s-1")
+
+        assertIs<Result.Success<CharacterSheet>>(result)
+        assertEquals("Dúnedain", result.value.peuple)
+        assertEquals(6, result.value.vigueur)
+        assertEquals("Garde du Nord", result.value.notes)
+        assertNull(result.value.formation)
+    }
+
+    @Test
+    fun `getById 404 maps to NotFound`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.NotFound, """{"code":"CHARACTER_SHEET_NOT_FOUND"}"""),
+        ).getById("ghost")
+        assertIs<Result.Failure<CharacterSheetError>>(result)
+        assertEquals(CharacterSheetError.NotFound, result.error)
+    }
+
+    @Test
+    fun `update success maps the returned sheet`() = runTest {
+        val body = """
+            {"id":"s-1","ownerId":"u-1","name":"Strider","createdAt":"2026-06-13T10:00:00.000Z",
+             "vigueur":7}
+        """.trimIndent()
+        val sheet = CharacterSheet(
+            id = "s-1",
+            ownerId = "u-1",
+            name = "Strider",
+            createdAt = "2026-06-13T10:00:00.000Z",
+            vigueur = 7,
+        )
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).update(sheet)
+
+        assertIs<Result.Success<CharacterSheet>>(result)
+        assertEquals("Strider", result.value.name)
+        assertEquals(7, result.value.vigueur)
     }
 
     @Test

@@ -3,6 +3,8 @@ package eu.ejdr.application.features.charactersheet.usecase
 import eu.ejdr.application.features.charactersheet.abstraction.repository.CharacterSheetRepository
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
@@ -26,6 +28,21 @@ class CreateCharacterSheetUseCaseImpl(
 ) : CreateCharacterSheetUseCase {
     override suspend fun invoke(name: String): Result<CharacterSheet, CharacterSheetError> =
         repository.create(name)
+}
+
+class GetCharacterSheetUseCaseImpl(
+    private val repository: CharacterSheetRepository,
+) : GetCharacterSheetUseCase {
+    override suspend fun invoke(id: String): Result<CharacterSheet, CharacterSheetError> =
+        repository.getById(id)
+}
+
+class UpdateCharacterSheetUseCaseImpl(
+    private val repository: CharacterSheetRepository,
+) : UpdateCharacterSheetUseCase {
+    override suspend fun invoke(
+        sheet: CharacterSheet,
+    ): Result<CharacterSheet, CharacterSheetError> = repository.update(sheet)
 }
 
 class DeleteCharacterSheetUseCaseImpl(

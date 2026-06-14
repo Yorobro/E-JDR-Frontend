@@ -17,6 +17,12 @@ interface CharacterSheetRepository {
     /** Crée une fiche appartenant à l'utilisateur courant. */
     suspend fun create(name: String): Result<CharacterSheet, CharacterSheetError>
 
+    /** Récupère le détail complet d'une fiche par son identifiant. */
+    suspend fun getById(id: String): Result<CharacterSheet, CharacterSheetError>
+
+    /** Met à jour une fiche (nom + champs détaillés) et renvoie la version persistée. */
+    suspend fun update(sheet: CharacterSheet): Result<CharacterSheet, CharacterSheetError>
+
     /** Supprime une fiche de l'utilisateur courant. */
     suspend fun delete(id: String): Result<Unit, CharacterSheetError>
 

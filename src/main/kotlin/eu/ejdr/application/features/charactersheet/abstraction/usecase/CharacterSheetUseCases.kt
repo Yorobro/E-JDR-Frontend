@@ -14,6 +14,16 @@ fun interface CreateCharacterSheetUseCase {
     suspend operator fun invoke(name: String): Result<CharacterSheet, CharacterSheetError>
 }
 
+/** Use case : récupère le détail complet d'une fiche par son identifiant. */
+fun interface GetCharacterSheetUseCase {
+    suspend operator fun invoke(id: String): Result<CharacterSheet, CharacterSheetError>
+}
+
+/** Use case : met à jour une fiche (nom + champs détaillés). */
+fun interface UpdateCharacterSheetUseCase {
+    suspend operator fun invoke(sheet: CharacterSheet): Result<CharacterSheet, CharacterSheetError>
+}
+
 /** Use case : supprime une fiche de l'utilisateur courant. */
 fun interface DeleteCharacterSheetUseCase {
     suspend operator fun invoke(id: String): Result<Unit, CharacterSheetError>

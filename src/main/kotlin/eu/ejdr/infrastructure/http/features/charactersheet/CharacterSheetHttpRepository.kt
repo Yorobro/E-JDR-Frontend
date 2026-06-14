@@ -17,6 +17,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
@@ -55,6 +56,31 @@ class CharacterSheetHttpRepository(
             val response = client.post("${config.baseUrl}/character-sheets") {
                 contentType(ContentType.Application.Json)
                 setBody(CreateCharacterSheetRequestDto(name))
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(CharacterSheetHttpMapper.toCharacterSheet(response.body<CharacterSheetDto>()))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(CharacterSheetError.Network) }
+
+    override suspend fun getById(id: String): Result<CharacterSheet, CharacterSheetError> =
+        runCatchingCancellable {
+            val response = client.get("${config.baseUrl}/character-sheets/$id")
+            if (response.status.isSuccess()) {
+                Result.Success(CharacterSheetHttpMapper.toCharacterSheet(response.body<CharacterSheetDto>()))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(CharacterSheetError.Network) }
+
+    override suspend fun update(
+        sheet: CharacterSheet,
+    ): Result<CharacterSheet, CharacterSheetError> =
+        runCatchingCancellable {
+            val response = client.put("${config.baseUrl}/character-sheets/${sheet.id}") {
+                contentType(ContentType.Application.Json)
+                setBody(CharacterSheetHttpMapper.toUpdateRequest(sheet))
             }
             if (response.status.isSuccess()) {
                 Result.Success(CharacterSheetHttpMapper.toCharacterSheet(response.body<CharacterSheetDto>()))

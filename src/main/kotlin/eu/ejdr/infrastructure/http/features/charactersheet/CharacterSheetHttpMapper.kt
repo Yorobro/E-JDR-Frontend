@@ -3,6 +3,7 @@ package eu.ejdr.infrastructure.http.features.charactersheet
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetDto
+import eu.ejdr.infrastructure.http.features.charactersheet.dto.UpdateCharacterSheetRequestDto
 import io.ktor.http.HttpStatusCode
 
 /**
@@ -11,9 +12,62 @@ import io.ktor.http.HttpStatusCode
  */
 object CharacterSheetHttpMapper {
 
-    /** Convertit une fiche reçue de l'API en entité domaine. */
+    /** Convertit une fiche reçue de l'API en entité domaine (tous les champs détaillés inclus). */
     fun toCharacterSheet(dto: CharacterSheetDto): CharacterSheet =
-        CharacterSheet(id = dto.id, ownerId = dto.ownerId, name = dto.name, createdAt = dto.createdAt)
+        CharacterSheet(
+            id = dto.id,
+            ownerId = dto.ownerId,
+            name = dto.name,
+            createdAt = dto.createdAt,
+            formation = dto.formation,
+            niveau = dto.niveau,
+            peuple = dto.peuple,
+            sexe = dto.sexe,
+            tailleEtPoids = dto.tailleEtPoids,
+            age = dto.age,
+            apparence = dto.apparence,
+            dexterite = dto.dexterite,
+            intelligence = dto.intelligence,
+            perception = dto.perception,
+            social = dto.social,
+            vigueur = dto.vigueur,
+            pointsDeVie = dto.pointsDeVie,
+            pointsDeMagie = dto.pointsDeMagie,
+            protection = dto.protection,
+            monnaie = dto.monnaie,
+            armes = dto.armes,
+            armures = dto.armures,
+            equipement = dto.equipement,
+            sortsEtMiracles = dto.sortsEtMiracles,
+            notes = dto.notes,
+        )
+
+    /** Construit le corps de mise à jour (`PUT`) à partir d'une fiche du domaine. */
+    fun toUpdateRequest(sheet: CharacterSheet): UpdateCharacterSheetRequestDto =
+        UpdateCharacterSheetRequestDto(
+            name = sheet.name,
+            formation = sheet.formation,
+            niveau = sheet.niveau,
+            peuple = sheet.peuple,
+            sexe = sheet.sexe,
+            tailleEtPoids = sheet.tailleEtPoids,
+            age = sheet.age,
+            apparence = sheet.apparence,
+            dexterite = sheet.dexterite,
+            intelligence = sheet.intelligence,
+            perception = sheet.perception,
+            social = sheet.social,
+            vigueur = sheet.vigueur,
+            pointsDeVie = sheet.pointsDeVie,
+            pointsDeMagie = sheet.pointsDeMagie,
+            protection = sheet.protection,
+            monnaie = sheet.monnaie,
+            armes = sheet.armes,
+            armures = sheet.armures,
+            equipement = sheet.equipement,
+            sortsEtMiracles = sheet.sortsEtMiracles,
+            notes = sheet.notes,
+        )
 
     /**
      * Traduit un échec HTTP en erreur métier. Le code applicatif prime ; à défaut, le statut.
