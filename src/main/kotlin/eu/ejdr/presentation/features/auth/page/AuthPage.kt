@@ -19,6 +19,7 @@ import eu.ejdr.presentation.features.auth.component.AuthForm
  * @param viewModel ViewModel d'authentification de l'écran (login ou register).
  * @param onAuthenticated Navigation à effectuer une fois authentifié, avec l'utilisateur.
  * @param onSecondaryAction Navigation vers la page complémentaire.
+ * @param showPseudo Si vrai (inscription), affiche le champ pseudo dans le formulaire.
  */
 @Composable
 internal fun AuthPage(
@@ -29,6 +30,7 @@ internal fun AuthPage(
     submitLabel: String,
     secondaryText: String,
     secondaryActionLabel: String,
+    showPseudo: Boolean = false,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -39,10 +41,13 @@ internal fun AuthPage(
     AuthForm(
         email = state.email,
         password = state.password,
+        pseudo = state.pseudo,
+        showPseudo = showPseudo,
         errorMessage = state.error,
         loading = state.loading,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
+        onPseudoChange = viewModel::onPseudoChange,
         onSubmit = viewModel::onSubmit,
         onSecondaryAction = onSecondaryAction,
         subtitle = subtitle,

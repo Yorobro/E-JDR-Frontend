@@ -15,6 +15,10 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class AuthRequestDto(val email: String, val password: String)
 
+/** Corps de requête d'inscription (`/auth/register`) : ajoute le pseudo (nom d'affichage). */
+@Serializable
+data class RegisterRequestDto(val email: String, val password: String, val pseudo: String)
+
 /**
  * Corps de réponse renvoyé par le serveur en cas d'authentification réussie.
  *

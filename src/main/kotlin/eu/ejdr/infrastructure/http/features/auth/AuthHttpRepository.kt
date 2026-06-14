@@ -11,6 +11,7 @@ import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.features.auth.dto.ApiErrorDto
 import eu.ejdr.infrastructure.http.features.auth.dto.AuthRequestDto
 import eu.ejdr.infrastructure.http.features.auth.dto.AuthResponseDto
+import eu.ejdr.infrastructure.http.features.auth.dto.RegisterRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -59,11 +60,25 @@ class AuthHttpRepository(
     /**
      * Crée un compte puis ouvre la session via `/auth/register`.
      *
-     * @param credentials Identifiants du nouveau compte.
+     * Contrairement à [login], l'inscription poste un [RegisterRequestDto] incluant le
+     * pseudo (nom d'affichage requis par le backend à la création de compte).
+     *
+     * @param credentials Identifiants du nouveau compte (pseudo inclus).
      * @return [Result.Success] avec l'[User] créé, sinon une [AuthError].
      */
     override suspend fun register(credentials: Credentials): Result<User, AuthError> =
-        authenticate("/auth/register", credentials)
+        runCatchingCancellable {
+            val response: HttpResponse = client.post("${config.baseUrl}/auth/register") {
+                contentType(ContentType.Application.Json)
+                setBody(RegisterRequestDto(credentials.email, credentials.password, credentials.pseudo.orEmpty()))
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(mapper.toUser(response.body<AuthResponseDto>()))
+            } else {
+                val err = runCatchingCancellable { response.body<ApiErrorDto>() }.getOrNull()
+                Result.Failure(mapper.toAuthError(response.status, err?.code, err?.message))
+            }
+        }.getOrElse { Result.Failure(AuthError.Network) }
 
     /**
      * Logique commune de login/register : poste les identifiants, puis traduit

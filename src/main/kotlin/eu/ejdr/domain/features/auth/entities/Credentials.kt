@@ -8,8 +8,10 @@ package eu.ejdr.domain.features.auth.entities
  *
  * @property email Adresse email saisie.
  * @property password Mot de passe en clair, le temps de la requête d'authentification.
+ * @property pseudo Nom d'affichage, requis uniquement à l'inscription ; `null` à la connexion.
  */
 data class Credentials(
     val email: String,
     val password: String,
+    val pseudo: String? = null,
 )
