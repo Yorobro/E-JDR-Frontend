@@ -61,7 +61,7 @@ class CampaignDetailViewModel(
         }
     }
 
-    /** Rattache une de mes fiches à la campagne, puis recharge. */
+    /** Rattache la fiche d'un autre joueur à la campagne (MJ), puis recharge. */
     fun link(characterSheetId: String) {
         viewModelScope.launch {
             linkCharacter(campaignId, characterSheetId).fold(
