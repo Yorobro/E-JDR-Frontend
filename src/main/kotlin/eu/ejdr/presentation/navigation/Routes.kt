@@ -57,6 +57,15 @@ sealed interface Route : NavKey {
     /** Liste des fiches de personnage de l'utilisateur. */
     @Serializable
     data object CharacterSheets : Route
+
+    /**
+     * Détail d'une fiche de personnage. Les arguments voyagent dans la clé elle-même.
+     *
+     * @property id Identifiant de la fiche.
+     * @property name Nom de la fiche (affiché en titre, évite un appel réseau).
+     */
+    @Serializable
+    data class CharacterSheetDetail(val id: String, val name: String) : Route
 }
 
 /**
@@ -84,6 +93,7 @@ val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
             subclass(Route.Campaigns::class)
             subclass(Route.CampaignDetail::class)
             subclass(Route.CharacterSheets::class)
+            subclass(Route.CharacterSheetDetail::class)
         }
     }
 }
