@@ -75,43 +75,12 @@ fun MyCharacterSheetsPage(
             verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
         ) {
             FormError(message = error)
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                when {
-                    isLoading && sheets.isEmpty() ->
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = AppTheme.colors.primary,
-                        )
-
-                    sheets.isEmpty() ->
-                        AppText(
-                            text = "Aucune fiche pour le moment.",
-                            style = AppTextStyle.Body,
-                            color = AppTheme.colors.muted,
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-
-                    else -> LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = MinTileWidth),
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            top = AppTheme.dimens.sm,
-                            bottom = GridBottomPadding,
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-                        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-                    ) {
-                        items(sheets, key = { it.id }) { sheet ->
-                            CharacterSheetCard(
-                                sheet = sheet,
-                                onClick = { onOpenSheet(sheet.id, sheet.name) },
-                                onDelete = { pendingDelete = sheet },
-                            )
-                        }
-                    }
-                }
-            }
+            CharacterSheetGrid(
+                sheets = sheets,
+                isLoading = isLoading,
+                onOpenSheet = onOpenSheet,
+                onDeleteRequest = { pendingDelete = it },
+            )
         }
 
         AppFab(
@@ -142,5 +111,61 @@ fun MyCharacterSheetsPage(
             },
             onDismiss = { pendingDelete = null },
         )
+    }
+}
+
+/**
+ * Zone de contenu de la liste des fiches (composant bête).
+ *
+ * Affiche, selon l'état : un indicateur de chargement initial, un message si vide, ou la grille
+ * de tuiles adaptative. Extrait de [MyCharacterSheetsPage] pour garder cette dernière concise.
+ *
+ * @param sheets Fiches à afficher.
+ * @param isLoading Indique si un chargement est en cours.
+ * @param onOpenSheet Callback d'ouverture du détail d'une fiche (id + nom).
+ * @param onDeleteRequest Callback de demande de suppression d'une fiche.
+ */
+@Composable
+private fun CharacterSheetGrid(
+    sheets: List<CharacterSheet>,
+    isLoading: Boolean,
+    onOpenSheet: (id: String, name: String) -> Unit,
+    onDeleteRequest: (CharacterSheet) -> Unit,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            isLoading && sheets.isEmpty() ->
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = AppTheme.colors.primary,
+                )
+
+            sheets.isEmpty() ->
+                AppText(
+                    text = "Aucune fiche pour le moment.",
+                    style = AppTextStyle.Body,
+                    color = AppTheme.colors.muted,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+
+            else -> LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = MinTileWidth),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = AppTheme.dimens.sm,
+                    bottom = GridBottomPadding,
+                ),
+                horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+            ) {
+                items(sheets, key = { it.id }) { sheet ->
+                    CharacterSheetCard(
+                        sheet = sheet,
+                        onClick = { onOpenSheet(sheet.id, sheet.name) },
+                        onDelete = { onDeleteRequest(sheet) },
+                    )
+                }
+            }
+        }
     }
 }

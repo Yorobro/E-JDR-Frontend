@@ -75,43 +75,12 @@ fun CampaignListPage(
             verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
         ) {
             FormError(message = error)
-
-            Box(modifier = Modifier.fillMaxSize()) {
-                when {
-                    isLoading && campaigns.isEmpty() ->
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = AppTheme.colors.primary,
-                        )
-
-                    campaigns.isEmpty() ->
-                        AppText(
-                            text = "Aucune campagne pour le moment.",
-                            style = AppTextStyle.Body,
-                            color = AppTheme.colors.muted,
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-
-                    else -> LazyVerticalGrid(
-                        columns = GridCells.Adaptive(minSize = MinTileWidth),
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            top = AppTheme.dimens.sm,
-                            bottom = GridBottomPadding,
-                        ),
-                        horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-                        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-                    ) {
-                        items(campaigns, key = { it.id }) { campaign ->
-                            CampaignCard(
-                                campaign = campaign,
-                                onClick = { onOpenCampaign(campaign.id, campaign.name) },
-                                onDelete = { pendingDelete = campaign },
-                            )
-                        }
-                    }
-                }
-            }
+            CampaignGrid(
+                campaigns = campaigns,
+                isLoading = isLoading,
+                onOpenCampaign = onOpenCampaign,
+                onDeleteRequest = { pendingDelete = it },
+            )
         }
 
         AppFab(
@@ -142,5 +111,61 @@ fun CampaignListPage(
             },
             onDismiss = { pendingDelete = null },
         )
+    }
+}
+
+/**
+ * Zone de contenu de la liste des campagnes (composant bête).
+ *
+ * Affiche, selon l'état : un indicateur de chargement initial, un message si vide, ou la grille
+ * de tuiles adaptative. Extrait de [CampaignListPage] pour garder cette dernière concise.
+ *
+ * @param campaigns Campagnes à afficher.
+ * @param isLoading Indique si un chargement est en cours.
+ * @param onOpenCampaign Callback d'ouverture du détail d'une campagne (id + nom).
+ * @param onDeleteRequest Callback de demande de suppression d'une campagne.
+ */
+@Composable
+private fun CampaignGrid(
+    campaigns: List<Campaign>,
+    isLoading: Boolean,
+    onOpenCampaign: (id: String, name: String) -> Unit,
+    onDeleteRequest: (Campaign) -> Unit,
+) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        when {
+            isLoading && campaigns.isEmpty() ->
+                CircularProgressIndicator(
+                    modifier = Modifier.align(Alignment.Center),
+                    color = AppTheme.colors.primary,
+                )
+
+            campaigns.isEmpty() ->
+                AppText(
+                    text = "Aucune campagne pour le moment.",
+                    style = AppTextStyle.Body,
+                    color = AppTheme.colors.muted,
+                    modifier = Modifier.align(Alignment.Center),
+                )
+
+            else -> LazyVerticalGrid(
+                columns = GridCells.Adaptive(minSize = MinTileWidth),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(
+                    top = AppTheme.dimens.sm,
+                    bottom = GridBottomPadding,
+                ),
+                horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+            ) {
+                items(campaigns, key = { it.id }) { campaign ->
+                    CampaignCard(
+                        campaign = campaign,
+                        onClick = { onOpenCampaign(campaign.id, campaign.name) },
+                        onDelete = { onDeleteRequest(campaign) },
+                    )
+                }
+            }
+        }
     }
 }
