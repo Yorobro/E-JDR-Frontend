@@ -2,6 +2,7 @@ package eu.ejdr.infrastructure.http.features.charactersheet
 
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.Purse
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.config.AppConfig
 import io.ktor.client.HttpClient
@@ -100,6 +101,22 @@ class CharacterSheetHttpRepositoryTest {
         assertEquals(6, result.value.vigueur)
         assertEquals("Garde du Nord", result.value.notes)
         assertNull(result.value.formation)
+    }
+
+    @Test
+    fun `getById maps sexe niveau purse and competences`() = runTest {
+        val body = """
+            {"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z",
+             "sexe":"M","niveau":5,"competences":"Pistage",
+             "purse":{"gold":1,"silver":50,"copper":0}}
+        """.trimIndent()
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).getById("s-1")
+
+        assertIs<Result.Success<CharacterSheet>>(result)
+        assertEquals("M", result.value.sexe)
+        assertEquals(5, result.value.niveau)
+        assertEquals("Pistage", result.value.competences)
+        assertEquals(Purse(gold = 1, silver = 50, copper = 0), result.value.purse)
     }
 
     @Test
