@@ -27,7 +27,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * S'appuie sur `AlertDialog` directement (contenu = liste cliquable, pas le couple
  * confirmer/annuler standard d'`AppDialog`).
  *
- * @param sheets Fiches rattachables (mes fiches non encore dans la campagne).
+ * @param sheets Fiches rattachables renvoyées par le back (autres joueurs, non déjà liées).
  * @param onSelect Callback portant l'identifiant de la fiche choisie.
  * @param onDismiss Callback de fermeture.
  * @param modifier Modifier Compose appliqué au dialog.
@@ -46,7 +46,7 @@ fun LinkCharacterDialog(
         text = {
             if (sheets.isEmpty()) {
                 AppText(
-                    "Aucune fiche disponible. Créez-en une dans « Mes fiches ».",
+                    "Aucune fiche rattachable pour le moment.",
                     color = AppTheme.colors.muted,
                 )
             } else {

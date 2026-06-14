@@ -37,8 +37,8 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * Page détail d'une campagne (composant INTELLIGENT).
  *
  * Affiche le nom de la campagne, la liste des fiches rattachées (avec détachement), et permet
- * de rattacher une de ses propres fiches via un dialog de sélection. Le ViewModel charge les
- * fiches rattachées et mes fiches.
+ * au MJ de rattacher la fiche d'un autre joueur via un dialog de sélection. Le ViewModel charge
+ * les fiches rattachées et les fiches rattachables (filtrées côté back).
  *
  * @param id Identifiant de la campagne.
  * @param name Nom de la campagne (affiché en titre).
@@ -60,7 +60,7 @@ fun CampaignDetailPage(
         )
     }
     val characters by viewModel.characters.collectAsStateWithLifecycle()
-    val mySheets by viewModel.linkableSheets.collectAsStateWithLifecycle()
+    val linkableSheets by viewModel.linkableSheets.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
 
     var showLink by remember { mutableStateOf(false) }
@@ -113,10 +113,9 @@ fun CampaignDetailPage(
     }
 
     if (showLink) {
-        // Ne proposer que mes fiches qui ne sont pas déjà rattachées.
-        val linkedIds = characters.map { it.id }.toSet()
+        // Les fiches rattachables sont déjà filtrées côté back (autres joueurs, hors déjà liées).
         LinkCharacterDialog(
-            sheets = mySheets.filterNot { it.id in linkedIds },
+            sheets = linkableSheets,
             onSelect = { sheetId ->
                 showLink = false
                 viewModel.link(sheetId)
