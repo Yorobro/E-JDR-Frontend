@@ -4,6 +4,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.Purse
 
 /**
  * État éditable d'une fiche, tenu en mémoire par l'écran détail pendant l'édition.
@@ -22,11 +23,11 @@ class CharacterSheetFormState(source: CharacterSheet) {
 
     var name by mutableStateOf(source.name)
     var formation by mutableStateOf(source.formation.orEmpty())
-    var niveau by mutableStateOf(source.niveau.orEmpty())
+    var niveau by mutableStateOf(source.niveau.toFieldText())
     var peuple by mutableStateOf(source.peuple.orEmpty())
     var sexe by mutableStateOf(source.sexe.orEmpty())
     var tailleEtPoids by mutableStateOf(source.tailleEtPoids.orEmpty())
-    var age by mutableStateOf(source.age.orEmpty())
+    var age by mutableStateOf(source.age.toFieldText())
     var apparence by mutableStateOf(source.apparence.orEmpty())
     var dexterite by mutableStateOf(source.dexterite.toFieldText())
     var intelligence by mutableStateOf(source.intelligence.toFieldText())
@@ -36,7 +37,10 @@ class CharacterSheetFormState(source: CharacterSheet) {
     var pointsDeVie by mutableStateOf(source.pointsDeVie.toFieldText())
     var pointsDeMagie by mutableStateOf(source.pointsDeMagie.toFieldText())
     var protection by mutableStateOf(source.protection.toFieldText())
-    var monnaie by mutableStateOf(source.monnaie.toFieldText())
+    var competences by mutableStateOf(source.competences.orEmpty())
+    var purseGold by mutableStateOf(source.purse?.gold.toFieldText())
+    var purseSilver by mutableStateOf(source.purse?.silver.toFieldText())
+    var purseCopper by mutableStateOf(source.purse?.copper.toFieldText())
     var armes by mutableStateOf(source.armes.orEmpty())
     var armures by mutableStateOf(source.armures.orEmpty())
     var equipement by mutableStateOf(source.equipement.orEmpty())
@@ -53,11 +57,11 @@ class CharacterSheetFormState(source: CharacterSheet) {
         name = name.trim(),
         createdAt = createdAt,
         formation = formation.toNullableText(),
-        niveau = niveau.toNullableText(),
+        niveau = niveau.toNullableInt(),
         peuple = peuple.toNullableText(),
         sexe = sexe.toNullableText(),
         tailleEtPoids = tailleEtPoids.toNullableText(),
-        age = age.toNullableText(),
+        age = age.toNullableInt(),
         apparence = apparence.toNullableText(),
         dexterite = dexterite.toNullableInt(),
         intelligence = intelligence.toNullableInt(),
@@ -67,13 +71,23 @@ class CharacterSheetFormState(source: CharacterSheet) {
         pointsDeVie = pointsDeVie.toNullableInt(),
         pointsDeMagie = pointsDeMagie.toNullableInt(),
         protection = protection.toNullableInt(),
-        monnaie = monnaie.toNullableInt(),
+        competences = competences.toNullableText(),
+        purse = buildPurse(),
         armes = armes.toNullableText(),
         armures = armures.toNullableText(),
         equipement = equipement.toNullableText(),
         sortsEtMiracles = sortsEtMiracles.toNullableText(),
         notes = notes.toNullableText(),
     )
+
+    /** Construit la bourse depuis les 3 champs ; null si les 3 sont vides. */
+    private fun buildPurse(): Purse? {
+        val g = purseGold.toNullableInt()
+        val s = purseSilver.toNullableInt()
+        val c = purseCopper.toNullableInt()
+        return if (g == null && s == null && c == null) null
+        else Purse(gold = g ?: 0, silver = s ?: 0, copper = c ?: 0)
+    }
 }
 
 /** Représente un entier optionnel en texte de champ (`null` → ""). */

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.presentation.shared.component.atomic.AppDropdown
 import eu.ejdr.presentation.shared.component.atomic.AppNumberField
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
@@ -13,17 +14,11 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /* ----------------------------------------------------------------------------------------- *
- * Sections d'affichage et d'édition d'une fiche, disposées en grille fidèle à la fiche papier
- * (identité multi-colonnes ; bloc caractéristiques à 3 colonnes ; zones de texte pleine largeur).
- * La grille se replie en pile sur fenêtre étroite (cf. [ResponsiveColumns]). Chaque cellule
- * bascule lecture/édition via [editing]. Extrait de la page pour la garder courte.
+ * Sections d'affichage et d'édition d'une fiche, disposées en grille fidèle à la fiche papier.
+ * Chaque section rend uniquement ses cellules : le titre et le cadre sont fournis par la carte
+ * [SheetCard] qui l'enveloppe dans la page. Chaque cellule bascule lecture/édition via [editing].
+ * Extrait de la page pour la garder courte.
  * ----------------------------------------------------------------------------------------- */
-
-/** Titre d'une section de la fiche. */
-@Composable
-fun SectionTitle(title: String, modifier: Modifier = Modifier) {
-    AppText(text = title, style = AppTextStyle.Subtitle, modifier = modifier)
-}
 
 /**
  * Cellule de champ texte court : libellé + valeur (lecture) ou champ (édition).
@@ -78,6 +73,22 @@ fun NumberCell(
     }
 }
 
+/** Cellule sexe : menu déroulant M/F/NB en édition, libellé/valeur en lecture. */
+@Composable
+fun SexCell(editing: Boolean, value: String, readValue: String?, onSelect: (String) -> Unit) {
+    if (editing) {
+        AppDropdown(
+            value = value.ifBlank { null },
+            options = listOf("M", "F", "NB"),
+            onSelect = onSelect,
+            label = "Sexe",
+            modifier = Modifier.fillMaxWidth(),
+        )
+    } else {
+        ReadCellPublic("Sexe", readValue)
+    }
+}
+
 /** Affichage lecture seule d'une cellule : libellé atténué au-dessus de la valeur (ou « — »). */
 @Composable
 private fun ReadCell(label: String, value: String?) {
@@ -90,38 +101,30 @@ private fun ReadCell(label: String, value: String?) {
     }
 }
 
-/** Colonne de section : un titre suivi de son contenu, espacés. */
+/** Variante publique de [ReadCell] (utilisée par [SexCell] en lecture). */
 @Composable
-private fun Section(title: String, content: @Composable () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-    ) {
-        SectionTitle(title)
-        content()
-    }
-}
+fun ReadCellPublic(label: String, value: String?) = ReadCell(label, value)
 
 /**
- * Section Identité, disposée comme la fiche : Nom/Formation/Niveau en ligne, puis
- * Peuple/Sexe/Taille-poids/Âge en ligne, puis Apparence pleine largeur.
+ * Section Identité : Nom/Formation/Niveau en ligne, puis Peuple/Sexe/Taille-poids/Âge en ligne,
+ * puis Apparence pleine largeur. Le titre et le cadre sont fournis par la carte englobante.
  */
 @Composable
 fun IdentiteSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
-    Section("Identité") {
+    FieldColumn {
         ResponsiveColumns(
             columns = listOf(
                 { TextCell("Nom", editing, form.name, sheet.name) { form.name = it } },
                 { TextCell("Formation", editing, form.formation, sheet.formation) { form.formation = it } },
-                { TextCell("Niveau", editing, form.niveau, sheet.niveau) { form.niveau = it } },
+                { NumberCell("Niveau", editing, form.niveau, sheet.niveau) { form.niveau = it } },
             ),
         )
         ResponsiveColumns(
             columns = listOf(
                 { TextCell("Peuple", editing, form.peuple, sheet.peuple) { form.peuple = it } },
-                { TextCell("Sexe", editing, form.sexe, sheet.sexe) { form.sexe = it } },
+                { SexCell(editing, form.sexe, sheet.sexe) { form.sexe = it } },
                 { TextCell("Taille / poids", editing, form.tailleEtPoids, sheet.tailleEtPoids) { form.tailleEtPoids = it } },
-                { TextCell("Âge", editing, form.age, sheet.age) { form.age = it } },
+                { NumberCell("Âge", editing, form.age, sheet.age) { form.age = it } },
             ),
         )
         TextCell("Apparence", editing, form.apparence, sheet.apparence, multiline = true) {
@@ -130,26 +133,9 @@ fun IdentiteSection(sheet: CharacterSheet, editing: Boolean, form: CharacterShee
     }
 }
 
-/**
- * Section Caractéristiques, disposée comme la fiche en 3 colonnes : caractéristiques à gauche,
- * points de vie / magie / armures au milieu, protection / monnaie à droite.
- */
+/** Section Caractéristiques : les 5 caractéristiques en colonne. */
 @Composable
 fun CaracteristiquesSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
-    Section("Caractéristiques") {
-        ResponsiveColumns(
-            columns = listOf(
-                { CaracteristiquesColumn(sheet, editing, form) },
-                { RessourcesColumn(sheet, editing, form) },
-                { DefenseColumn(sheet, editing, form) },
-            ),
-        )
-    }
-}
-
-/** Colonne gauche : les 5 caractéristiques. */
-@Composable
-private fun CaracteristiquesColumn(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
     FieldColumn {
         NumberCell("Dextérité", editing, form.dexterite, sheet.dexterite) { form.dexterite = it }
         NumberCell("Intelligence", editing, form.intelligence, sheet.intelligence) { form.intelligence = it }
@@ -159,53 +145,49 @@ private fun CaracteristiquesColumn(sheet: CharacterSheet, editing: Boolean, form
     }
 }
 
-/** Colonne du milieu : points de vie, points de magie, armures. */
+/** Section Combat : points de vie, points de magie, protection en colonne. */
 @Composable
-private fun RessourcesColumn(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
+fun CombatSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
     FieldColumn {
         NumberCell("Points de vie", editing, form.pointsDeVie, sheet.pointsDeVie) { form.pointsDeVie = it }
         NumberCell("Points de magie", editing, form.pointsDeMagie, sheet.pointsDeMagie) { form.pointsDeMagie = it }
-        TextCell("Armures", editing, form.armures, sheet.armures, multiline = true) { form.armures = it }
+        NumberCell("Protection", editing, form.protection, sheet.protection) { form.protection = it }
     }
 }
 
-/** Colonne droite : protection, monnaie. */
+/** Section Bourse : 3 champs Or/Argent/Cuivre en édition, montant normalisé en lecture. */
 @Composable
-private fun DefenseColumn(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
-    FieldColumn {
-        NumberCell("Protection", editing, form.protection, sheet.protection) { form.protection = it }
-        NumberCell("Monnaie", editing, form.monnaie, sheet.monnaie) { form.monnaie = it }
+fun PurseSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
+    if (editing) {
+        FieldColumn {
+            NumberCell("Or (PO)", true, form.purseGold, null) { form.purseGold = it }
+            NumberCell("Argent (PA)", true, form.purseSilver, null) { form.purseSilver = it }
+            NumberCell("Cuivre (PC)", true, form.purseCopper, null) { form.purseCopper = it }
+        }
+    } else {
+        AppText(text = sheet.purse?.formatNormalized() ?: "—", style = AppTextStyle.Body)
     }
 }
 
 /**
- * Section générique de texte long pleine largeur (Armes, Équipement, Sorts & Miracles, Notes).
+ * Contenu d'une zone de texte long (sans titre : fourni par la carte englobante).
  *
- * @param title Titre de la section.
  * @param editing Mode édition (champ) ou lecture (texte).
  * @param editValue Valeur en cours d'édition (liée à l'état du formulaire).
  * @param readValue Valeur à afficher en lecture seule (issue de la fiche).
  * @param onChange Callback de modification en mode édition.
  */
 @Composable
-fun LongTextSection(
-    title: String,
-    editing: Boolean,
-    editValue: String,
-    readValue: String?,
-    onChange: (String) -> Unit,
-) {
-    Section(title) {
-        if (editing) {
-            AppTextField(
-                value = editValue,
-                onValueChange = onChange,
-                label = title,
-                singleLine = false,
-                modifier = Modifier.fillMaxWidth(),
-            )
-        } else {
-            AppText(text = readValue?.ifBlank { null } ?: "—", style = AppTextStyle.Body)
-        }
+fun LongTextBody(editing: Boolean, editValue: String, readValue: String?, onChange: (String) -> Unit) {
+    if (editing) {
+        AppTextField(
+            value = editValue,
+            onValueChange = onChange,
+            label = "",
+            singleLine = false,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    } else {
+        AppText(text = readValue?.ifBlank { null } ?: "—", style = AppTextStyle.Body)
     }
 }

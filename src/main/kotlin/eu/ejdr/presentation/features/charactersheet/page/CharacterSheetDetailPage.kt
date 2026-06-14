@@ -18,10 +18,13 @@ import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.features.charactersheet.CharacterSheetDetailViewModel
 import eu.ejdr.presentation.features.charactersheet.component.CaracteristiquesSection
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetFormState
+import eu.ejdr.presentation.features.charactersheet.component.CombatSection
 import eu.ejdr.presentation.features.charactersheet.component.IdentiteSection
-import eu.ejdr.presentation.features.charactersheet.component.LongTextSection
+import eu.ejdr.presentation.features.charactersheet.component.LongTextBody
+import eu.ejdr.presentation.features.charactersheet.component.PurseSection
+import eu.ejdr.presentation.features.charactersheet.component.ResponsiveColumns
+import eu.ejdr.presentation.features.charactersheet.component.SheetCard
 import eu.ejdr.presentation.shared.component.atomic.AppButton
-import eu.ejdr.presentation.shared.component.atomic.AppDivider
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
@@ -109,18 +112,15 @@ private fun CharacterSheetDetailContent(
             AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
         }
 
-        IdentiteSection(sheet = sheet, editing = isEditing, form = form)
-        AppDivider()
-        CaracteristiquesSection(sheet = sheet, editing = isEditing, form = form)
-        AppDivider()
-        LongTextSection("Armes", isEditing, form.armes, sheet.armes) { form.armes = it }
-        LongTextSection("Équipement", isEditing, form.equipement, sheet.equipement) {
-            form.equipement = it
-        }
-        LongTextSection("Sorts & Miracles", isEditing, form.sortsEtMiracles, sheet.sortsEtMiracles) {
-            form.sortsEtMiracles = it
-        }
-        LongTextSection("Notes", isEditing, form.notes, sheet.notes) { form.notes = it }
+        SheetCard("Identité") { IdentiteSection(sheet, isEditing, form) }
+        ResponsiveColumns(
+            columns = listOf(
+                { SheetCard("Caractéristiques") { CaracteristiquesSection(sheet, isEditing, form) } },
+                { SheetCard("Combat") { CombatSection(sheet, isEditing, form) } },
+                { SheetCard("Bourse") { PurseSection(sheet, isEditing, form) } },
+            ),
+        )
+        TextZones(sheet = sheet, isEditing = isEditing, form = form)
 
         if (isEditing) {
             AppButton(
@@ -131,5 +131,36 @@ private fun CharacterSheetDetailContent(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
+    }
+}
+
+/**
+ * Trois rangées responsives de deux cartes de texte long (50/50) : [Armures · Armes],
+ * [Compétences · Équipement], [Sorts & Miracles · Notes]. Extrait pour garder le contenu concis.
+ */
+@Composable
+private fun TextZones(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFormState) {
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
+    ) {
+        ResponsiveColumns(
+            columns = listOf(
+                { SheetCard("Armures") { LongTextBody(isEditing, form.armures, sheet.armures) { form.armures = it } } },
+                { SheetCard("Armes") { LongTextBody(isEditing, form.armes, sheet.armes) { form.armes = it } } },
+            ),
+        )
+        ResponsiveColumns(
+            columns = listOf(
+                { SheetCard("Compétences") { LongTextBody(isEditing, form.competences, sheet.competences) { form.competences = it } } },
+                { SheetCard("Équipement") { LongTextBody(isEditing, form.equipement, sheet.equipement) { form.equipement = it } } },
+            ),
+        )
+        ResponsiveColumns(
+            columns = listOf(
+                { SheetCard("Sorts & Miracles") { LongTextBody(isEditing, form.sortsEtMiracles, sheet.sortsEtMiracles) { form.sortsEtMiracles = it } } },
+                { SheetCard("Notes") { LongTextBody(isEditing, form.notes, sheet.notes) { form.notes = it } } },
+            ),
+        )
     }
 }
