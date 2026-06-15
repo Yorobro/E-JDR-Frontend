@@ -30,10 +30,22 @@ Sous Windows PowerShell, utiliser `.\gradlew.bat run`, etc.
 
 ## Configuration
 
-| Variable d'env   | Défaut                  | Rôle                                              |
-|------------------|-------------------------|---------------------------------------------------|
-| `EJDR_API_URL`   | `http://localhost:3000` | URL de base de l'API d'authentification.          |
-| `EJDR_HTTP_LOG`  | `false`                 | Active/désactive le logging HTTP Ktor.            |
+La configuration se fait par **variables d'environnement**, surchargées localement
+par un fichier **`.env`** (non commité). Pour choisir l'API ciblée (dev ou prod) :
+
+```bash
+cp .env.example .env   # puis éditer EJDR_API_URL
+```
+
+| Variable d'env   | Défaut                         | Rôle                                              |
+|------------------|--------------------------------|---------------------------------------------------|
+| `EJDR_API_URL`   | `https://ejdr-backend.vyxs.fr` | URL de base de l'API (prod par défaut).           |
+| `EJDR_HTTP_LOG`  | `false`                        | Active/désactive le logging HTTP Ktor.            |
+
+**Ordre de priorité** (décroissant) : variable d'environnement OS → fichier `.env`
+→ valeur par défaut. La prod reste donc le défaut de l'application packagée ; le
+fichier `.env` permet de pointer vers l'API de dev locale (`http://localhost:3000`)
+sans modifier le code.
 
 Les secrets et le KeyStore sont stockés dans `%APPDATA%/E-JDR/` (jamais commités).
 
