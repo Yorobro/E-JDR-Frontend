@@ -1,3 +1,10 @@
+## [1.10.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.9.0...v1.10.0) (2026-06-15)
+
+
+### Features
+
+* **config:** resolve env config at build time instead of system env ([121e732](https://github.com/Yorobro/E-JDR-Frontend/commit/121e7326c0e0551d2224bbc4c5125e7dc2bd29af))
+
 ## [1.9.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.8.0...v1.9.0) (2026-06-15)
 
 
