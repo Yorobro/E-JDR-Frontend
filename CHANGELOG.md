@@ -1,3 +1,38 @@
+## [1.9.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.8.0...v1.9.0) (2026-06-15)
+
+
+### Features
+
+* **auth:** require pseudo at registration without affecting login ([a22604c](https://github.com/Yorobro/E-JDR-Frontend/commit/a22604c5d58b8fa37c34556a6fc6bdd732fb5118))
+* **campaign,character-sheet:** add campaigns and character sheets UI ([e8c8c02](https://github.com/Yorobro/E-JDR-Frontend/commit/e8c8c02d6b1182c04f95173d9f8ff1fd016f0932))
+* **campaign:** detail page shows linkable characters, drop client-side filter ([146511a](https://github.com/Yorobro/E-JDR-Frontend/commit/146511ad71bc27e21824eda9ae6a2781d0cb71df))
+* **campaign:** detail VM lists linkable characters instead of my own ([6753dbe](https://github.com/Yorobro/E-JDR-Frontend/commit/6753dbe8223b168a783eb282c776d08de0a7b8e1))
+* **campaign:** render campaign card as a fixed-height tile ([b9fe2ff](https://github.com/Yorobro/E-JDR-Frontend/commit/b9fe2ff3aa7bc8ed7eb91eb3e683e016f43c1def))
+* **campaign:** show campaigns in an adaptive grid with a floating add button ([87595f0](https://github.com/Yorobro/E-JDR-Frontend/commit/87595f03d7e6fa753b7b12bcb12e7ee7f1a962b5))
+* **charactersheet:** add bordered SheetCard and purse normalization helper ([d635626](https://github.com/Yorobro/E-JDR-Frontend/commit/d635626106637986150228338c9f3ba4090bd214))
+* **charactersheet:** add campagnes tab listing linked campaigns with mj pseudo ([be280ba](https://github.com/Yorobro/E-JDR-Frontend/commit/be280bab2a815509d9ee545afe86b2e41e696fcd))
+* **charactersheet:** add export button that saves the sheet as pdf ([6bfa3c3](https://github.com/Yorobro/E-JDR-Frontend/commit/6bfa3c3bcf9a599b664204b80b195ff9e194bac8))
+* **charactersheet:** add listLinkableForCampaign repo + use case + binding ([75b99ca](https://github.com/Yorobro/E-JDR-Frontend/commit/75b99ca12f27790f05538a8cc85abb0070684203))
+* **charactersheet:** add pdf export data layer and desktop file saver ([2374b25](https://github.com/Yorobro/E-JDR-Frontend/commit/2374b25fe27ecf15ad0866f62db2fbcc65d60981))
+* **charactersheet:** align identité fields on a regular 4-column grid ([22d4f10](https://github.com/Yorobro/E-JDR-Frontend/commit/22d4f10fd3a8e1813bd294d6f748059c249e9a8c))
+* **charactersheet:** editable detail screen with full sheet fields ([1b5fc59](https://github.com/Yorobro/E-JDR-Frontend/commit/1b5fc5970a9f3249a1113710602f362103d097d8))
+* **charactersheet:** grid view with fab and clickable sheet detail screen ([54862ce](https://github.com/Yorobro/E-JDR-Frontend/commit/54862ce7821db1c67f9378a5f2883879b4d1add0))
+* **charactersheet:** lay out detail in bordered cards with sex dropdown and purse ([0caae86](https://github.com/Yorobro/E-JDR-Frontend/commit/0caae86192a2f246855b48e27905d9246e757ccb))
+* **charactersheet:** organize detail screen into identité/combat/inventaire tabs ([31ddf61](https://github.com/Yorobro/E-JDR-Frontend/commit/31ddf618d020210d5a381b520f074080ffac1252))
+* **charactersheet:** render sheet card as a clickable tile ([034b61a](https://github.com/Yorobro/E-JDR-Frontend/commit/034b61a6c33faca249cdb2458be59b2b57a29f7e))
+* **charactersheet:** weighted stat-block row with stacked combat/purse and armures/armes ([6b6c6d7](https://github.com/Yorobro/E-JDR-Frontend/commit/6b6c6d79853e8888a3e89453b9fa47d3c8273501))
+* **design-system:** add AppDropdown atom for closed-list choices ([c574fc9](https://github.com/Yorobro/E-JDR-Frontend/commit/c574fc903c94529653dccfd2e7ac8e98dae921c2))
+* **design-system:** add AppFab floating action button ([721e28c](https://github.com/Yorobro/E-JDR-Frontend/commit/721e28cf09b533e1364f6f325bbc301aadc318b5))
+* model purse, competences and integer niveau/age on front character sheet ([896a13f](https://github.com/Yorobro/E-JDR-Frontend/commit/896a13f8c5148247c1e6a621846782ca609b3af5))
+* **shared:** enrich Result with map/flatMap/mapError/getOrElse/onSuccess/onFailure ([aa8a23d](https://github.com/Yorobro/E-JDR-Frontend/commit/aa8a23d27469aa6404c42f8a50d942ed2d6d1ba1))
+
+
+### Bug Fixes
+
+* **design-system:** default LocalContentColor to theme text color ([b70132e](https://github.com/Yorobro/E-JDR-Frontend/commit/b70132ec30705474104fef3b97b3ef74013d809a))
+* **http:** only clear session on 401/403 refresh, keep it on transient errors ([b88f803](https://github.com/Yorobro/E-JDR-Frontend/commit/b88f80320f05bd91a0ec047679450ea904286021))
+* **update:** drive UpdateViewModel via remembered scope (no ViewModelStoreOwner at root) ([d09d9cd](https://github.com/Yorobro/E-JDR-Frontend/commit/d09d9cd38298190eae51890b3b655683a41c275d))
+
 ## [1.8.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.7.0...v1.8.0) (2026-06-12)
 
 
