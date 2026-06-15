@@ -51,15 +51,19 @@ Chaque feature regroupe, sous `features/<feature>/` :
 ### Ajouter une feature à la présentation
 
 1. Définir une route dans `navigation/Routes.kt` : `@Serializable data … : Route`
-   (les arguments d'écran voyagent dans la clé).
+   (les arguments d'écran voyagent dans la clé) **et** l'enregistrer dans
+   `appNavConfiguration` via `subclass(Route.X::class)`.
 2. Créer `features/<feature>/<Feature>ViewModel.kt` : `class … : ViewModel()`, état
    en `StateFlow`, événements one-shot (navigation) via un `Channel`, use cases
    injectés au constructeur.
 3. Créer `features/<feature>/page/<Feature>Page.kt` : `koinInject` les use cases, crée
-   le VM via `viewModel { <Feature>ViewModel(useCase) }`, observe l'état avec
+   le VM via `koinViewModel { <Feature>ViewModel(useCase) }`, observe l'état avec
    `collectAsStateWithLifecycle`, collecte les événements one-shot dans un
    `LaunchedEffect` pour naviguer.
-4. Brancher la route dans `navigation/AppNavDisplay.kt` (`entry<Route.X> { … }`).
+4. Créer `features/<feature>/<Feature>NavEntries.kt` : une fonction d'extension
+   `fun NavEntryProviderBuilder.featureEntries(actions: NavActions)` qui déclare
+   `entry<Route.X> { … }`. Elle est agrégée dans `navigation/AppNavDisplay.kt` par un
+   simple appel `featureEntries(actions)`.
 
 ## Composants bêtes vs pages intelligentes vs ViewModels
 
@@ -80,7 +84,7 @@ Chaque feature regroupe, sous `features/<feature>/` :
   multi-niveaux est donc natif. `App` délègue le mapping route → écran à
   `navigation/AppNavDisplay` (`NavDisplay` + `entryProvider`).
 - Les **ViewModels sont retenus par destination** via le décorateur
-  `rememberViewModelStoreNavEntryDecorator` : leur état survit à la recomposition et à
+  `rememberEjdrViewModelStoreNavEntryDecorator` : leur état survit à la recomposition et à
   un aller-retour de navigation.
 - `App` fournit le design system (`AppTheme`), tente un **auto-login**
   (`RestoreSessionUseCase`) au démarrage, puis remplace l'écran `Splash` par `Home`

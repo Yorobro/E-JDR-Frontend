@@ -4,6 +4,9 @@ import eu.ejdr.BuildConfig
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
 import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.application.features.update.dto.UpdateInfoDto
+import eu.ejdr.application.shared.Result
+import eu.ejdr.application.shared.runCatchingCancellable
+import eu.ejdr.domain.features.update.error.UpdateError
 import eu.ejdr.domain.shared.version.SemanticVersion
 
 class CheckUpdateUseCaseImpl(
@@ -11,10 +14,18 @@ class CheckUpdateUseCaseImpl(
     private val currentVersion: String = BuildConfig.APP_VERSION,
 ) : CheckUpdateUseCase {
 
-    override suspend fun invoke(): UpdateInfoDto? {
-        val latest = updateRepository.fetchLatestRelease() ?: return null
-        val isNewer = SemanticVersion.parse(latest.version)
-            .isNewerThan(SemanticVersion.parse(currentVersion))
-        return if (isNewer) latest else null
-    }
+    override suspend fun invoke(): Result<UpdateInfoDto?, UpdateError> =
+        runCatchingCancellable {
+            val latest = updateRepository.fetchLatestRelease()
+            if (latest == null) {
+                null
+            } else {
+                val isNewer = SemanticVersion.parse(latest.version)
+                    .isNewerThan(SemanticVersion.parse(currentVersion))
+                if (isNewer) latest else null
+            }
+        }.fold(
+            onSuccess = { Result.Success(it) },
+            onFailure = { Result.Failure(UpdateError.CheckFailed) },
+        )
 }

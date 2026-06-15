@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -40,10 +41,13 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  *
  * @param email Valeur courante du champ email.
  * @param password Valeur courante du champ mot de passe.
+ * @param pseudo Valeur courante du champ pseudo (affiché à l'inscription uniquement).
+ * @param showPseudo Si vrai, affiche le champ pseudo avant l'email (cas inscription).
  * @param errorMessage Message d'erreur à afficher, ou `null` si aucun.
  * @param loading Si vrai, désactive les champs et affiche un indicateur sur le bouton principal.
  * @param onEmailChange Callback de mise à jour de l'email.
  * @param onPasswordChange Callback de mise à jour du mot de passe.
+ * @param onPseudoChange Callback de mise à jour du pseudo.
  * @param onSubmit Callback déclenché à la soumission du formulaire.
  * @param onSecondaryAction Callback du lien de navigation secondaire (vers l'autre page auth).
  * @param subtitle Texte descriptif sous le titre de l'application.
@@ -56,10 +60,13 @@ import eu.ejdr.presentation.shared.theme.AppTheme
 fun AuthForm(
     email: String,
     password: String,
+    pseudo: String,
+    showPseudo: Boolean,
     errorMessage: String?,
     loading: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onPseudoChange: (String) -> Unit,
     onSubmit: () -> Unit,
     onSecondaryAction: () -> Unit,
     subtitle: String,
@@ -92,10 +99,13 @@ fun AuthForm(
                 AuthFormFields(
                     email = email,
                     password = password,
+                    pseudo = pseudo,
+                    showPseudo = showPseudo,
                     errorMessage = errorMessage,
                     loading = loading,
                     onEmailChange = onEmailChange,
                     onPasswordChange = onPasswordChange,
+                    onPseudoChange = onPseudoChange,
                 )
 
                 AppButton(
@@ -133,16 +143,30 @@ private fun AuthFormHeader(subtitle: String) {
     )
 }
 
-/** Champs email et mot de passe suivis du message d'erreur éventuel. */
+/** Champs pseudo (inscription), email et mot de passe suivis du message d'erreur éventuel. */
 @Composable
 private fun AuthFormFields(
     email: String,
     password: String,
+    pseudo: String,
+    showPseudo: Boolean,
     errorMessage: String?,
     loading: Boolean,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
+    onPseudoChange: (String) -> Unit,
 ) {
+    if (showPseudo) {
+        AppTextField(
+            value = pseudo,
+            onValueChange = onPseudoChange,
+            label = "Pseudo",
+            enabled = !loading,
+            leadingIcon = Icons.Outlined.Person,
+            modifier = Modifier.fillMaxWidth(),
+        )
+        Spacer(Modifier.height(AppTheme.dimens.sm))
+    }
     AppTextField(
         value = email,
         onValueChange = onEmailChange,

@@ -31,10 +31,12 @@ private val RefreshRetryKey = AttributeKey<Unit>("RefreshRetry")
  * - [Logging] HTTP optionnel, activé selon [AppConfig.enableHttpLogging] ;
  * - [WebSockets] pour les connexions temps réel (cf. couche `realtime`) ;
  * - Intercepteur 401 : sur toute route hors `/auth/`, tente un rafraîchissement silencieux
- *   de session puis rejoue la requête originale. Si le refresh échoue, la session persistée
- *   est effacée et le 401 est retourné tel quel à l'appelant. (N.B. cet intercepteur ne
- *   couvre PAS les connexions WebSocket longue durée : leur ré-authentification est gérée
- *   par la couche `realtime`.)
+ *   de session puis rejoue la requête originale. Si le refresh renvoie 401/403, la session
+ *   persistée est effacée (token réellement expiré) ; tout autre **code HTTP** d'échec (5xx)
+ *   conserve la session (panne transitoire). Une erreur **réseau** (timeout, DNS) lève une
+ *   exception qui sort de l'intercepteur et est gérée par l'appelant — la session n'est pas
+ *   effacée là non plus. (N.B. cet intercepteur ne couvre PAS les connexions WebSocket
+ *   longue durée : leur ré-authentification est gérée par la couche `realtime`.)
  *
  * `expectSuccess = false` laisse l'appelant inspecter lui-même les statuts d'échec.
  */
@@ -75,8 +77,18 @@ class KtorClientFactory(
             )
 
             if (!refreshCall.response.status.isSuccess()) {
-                // Session expirée : on efface localement et on retourne le 401 original.
-                cookiesStorage.clearPersisted()
+                // On distingue une vraie expiration de session d'une panne serveur (codes HTTP) :
+                // - 401/403 => refresh_token invalide : on efface la session.
+                // - autre code (5xx, etc.) => panne transitoire : on conserve la session.
+                // N.B. une erreur réseau (timeout, DNS) lève une exception AVANT d'atteindre ce
+                // bloc ; la session n'est pas effacée non plus, mais c'est l'appelant qui gère
+                // cette exception (cf. runCatchingCancellable dans AuthHttpRepository).
+                val refreshStatus = refreshCall.response.status
+                if (refreshStatus == HttpStatusCode.Unauthorized ||
+                    refreshStatus == HttpStatusCode.Forbidden
+                ) {
+                    cookiesStorage.clearPersisted()
+                }
                 return@intercept call
             }
 

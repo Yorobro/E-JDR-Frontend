@@ -22,7 +22,7 @@ fun RegisterPage(
 ) {
     val viewModel = koinViewModel {
         val registerUseCase = get<RegisterUseCase>()
-        AuthViewModel(submit = { credentials -> registerUseCase(credentials) })
+        AuthViewModel(submit = { credentials -> registerUseCase(credentials) }, requirePseudo = true)
     }
     AuthPage(
         viewModel = viewModel,
@@ -32,5 +32,6 @@ fun RegisterPage(
         submitLabel = "S'inscrire",
         secondaryText = "Déjà un compte ?",
         secondaryActionLabel = "Se connecter",
+        showPseudo = true,
     )
 }

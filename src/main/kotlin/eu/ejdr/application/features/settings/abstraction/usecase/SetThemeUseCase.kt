@@ -11,5 +11,5 @@ fun interface SetThemeUseCase {
      * @return [Result.Success] si la persistance a réussi, sinon
      * [Result.Failure] avec [SettingsError.ThemePersistenceFailed].
      */
-    operator fun invoke(theme: ThemeVariant): Result<Unit, SettingsError>
+    suspend operator fun invoke(theme: ThemeVariant): Result<Unit, SettingsError>
 }

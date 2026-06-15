@@ -35,8 +35,10 @@ d'inversion des dépendances.
 Créer `http/features/<feature>/` contenant le repository HTTP (implémentation d'un
 port déclaré dans `application/features/<feature>/abstraction/repository/`), ses
 `dto/` et, si besoin, un mapper DTO -> domaine. Réutiliser le `HttpClient` partagé
-fourni par `KtorClientFactory` (injecté via Koin). Lier ensuite le port à son
-implémentation dans `di/InfrastructureModule.kt`.
+fourni par `KtorClientFactory` (injecté via Koin). Lier ensuite le port à son implémentation dans le module Koin de la feature :
+`di/<feature>Module.kt` (ex. `authModule`, `settingsModule`, `updateModule`).
+`infrastructureModule` est réservé au socle technique transverse (config,
+sécurité/coffre, HttpClient).
 
 ## Modèle d'authentification
 
@@ -49,7 +51,9 @@ En cas de refresh échoué ou de déconnexion, le cookie persisté est effacé.
 ## Injection de dépendances (`di/`)
 
 Le câblage est assuré par **Koin** (package `di/`, techniquement à part).
-`infrastructureModule` fournit les briques techniques et lie chaque port
-application à son implémentation infra (ex. `AuthRepository -> AuthHttpRepository`) ;
-`applicationModule` enregistre les services et use cases. `initKoin()` constitue la
-*composition root* et charge ces modules au démarrage.
+`infrastructureModule` fournit le **socle** technique transverse (configuration,
+sécurité/coffre, client HTTP). Chaque feature possède ensuite son module dédié
+(`authModule`, `settingsModule`, `updateModule`, `realtimeModule`) qui enregistre
+ses use cases, services et adaptateurs infra et lie chaque port application à son
+implémentation infra (ex. `AuthRepository -> AuthHttpRepository`). `initKoin()`
+constitue la *composition root* et charge ces modules au démarrage.

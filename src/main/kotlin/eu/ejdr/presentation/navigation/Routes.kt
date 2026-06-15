@@ -40,6 +40,32 @@ sealed interface Route : NavKey {
     /** Écran des paramètres (thème, etc.). */
     @Serializable
     data object Settings : Route
+
+    /** Liste des campagnes dont l'utilisateur est le maître du jeu. */
+    @Serializable
+    data object Campaigns : Route
+
+    /**
+     * Détail d'une campagne. Les arguments voyagent dans la clé elle-même.
+     *
+     * @property id Identifiant de la campagne.
+     * @property name Nom de la campagne (affiché en titre, évite un appel réseau).
+     */
+    @Serializable
+    data class CampaignDetail(val id: String, val name: String) : Route
+
+    /** Liste des fiches de personnage de l'utilisateur. */
+    @Serializable
+    data object CharacterSheets : Route
+
+    /**
+     * Détail d'une fiche de personnage. Les arguments voyagent dans la clé elle-même.
+     *
+     * @property id Identifiant de la fiche.
+     * @property name Nom de la fiche (affiché en titre, évite un appel réseau).
+     */
+    @Serializable
+    data class CharacterSheetDetail(val id: String, val name: String) : Route
 }
 
 /**
@@ -51,6 +77,10 @@ sealed interface Route : NavKey {
  * `SavedStateConfiguration.DEFAULT` ne connaît pas nos routes).
  *
  * Toute nouvelle [Route] doit être ajoutée ici via `subclass(...)`.
+ * Et son entry de rendu doit être ajoutée dans la fonction `xxxEntries()` de la feature
+ * correspondante (cf. `presentation/features/<feature>/<Feature>NavEntries.kt`), elle-même
+ * agrégée dans `AppNavDisplay`. Le mapping route→écran est ainsi distribué par feature ;
+ * seul l'enregistrement de sérialisation reste centralisé ici (un seul point de vérité).
  */
 val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -60,6 +90,10 @@ val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
             subclass(Route.Register::class)
             subclass(Route.Home::class)
             subclass(Route.Settings::class)
+            subclass(Route.Campaigns::class)
+            subclass(Route.CampaignDetail::class)
+            subclass(Route.CharacterSheets::class)
+            subclass(Route.CharacterSheetDetail::class)
         }
     }
 }

@@ -1,5 +1,6 @@
 package eu.ejdr.presentation.shared.theme
 
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -49,6 +50,10 @@ fun AppTheme(
         LocalAppColors provides colors,
         LocalAppTypography provides typography,
         LocalAppDimens provides dimens,
+        // Couleur de contenu par défaut de l'app : les atomes qui s'appuient sur
+        // LocalContentColor (ex. AppIcon sans tint explicite) héritent de `text`. Les
+        // conteneurs Material (FAB, bouton…) la surchargent localement par leur contentColor.
+        LocalContentColor provides colors.text,
         content = content,
     )
 }

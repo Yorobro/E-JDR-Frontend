@@ -12,12 +12,11 @@ import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
-import eu.ejdr.presentation.features.auth.page.LoginPage
-import eu.ejdr.presentation.features.auth.page.RegisterPage
-import eu.ejdr.presentation.features.settings.page.SettingsPage
-import eu.ejdr.presentation.features.user.page.UserPage
-import eu.ejdr.presentation.shared.component.organism.AppScaffold
-import eu.ejdr.presentation.shared.component.organism.AppTopBar
+import eu.ejdr.presentation.features.auth.authEntries
+import eu.ejdr.presentation.features.campaign.campaignEntries
+import eu.ejdr.presentation.features.charactersheet.characterSheetEntries
+import eu.ejdr.presentation.features.settings.settingsEntries
+import eu.ejdr.presentation.features.user.userEntries
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -27,7 +26,11 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * Ce composable concentre **uniquement** le mapping route → écran et les transitions
  * de navigation ; l'orchestration du démarrage (auto-login, mise à jour) et l'état du
  * thème restent dans [eu.ejdr.presentation.App]. Le décorateur
- * [rememberViewModelStoreNavEntryDecorator] retient un ViewModel par destination.
+ * [rememberEjdrViewModelStoreNavEntryDecorator] retient un ViewModel par destination.
+ *
+ * Le mapping route → écran est **distribué par feature** : chaque feature expose une
+ * extension `xxxEntries(actions)` sur le builder d'entries, agrégée ici. Seul l'écran de
+ * démarrage ([Route.Splash]), transverse, reste défini inline.
  *
  * @param backStack Pile de navigation à afficher (possédée par l'appelant). Typée
  * [NavKey] car `rememberNavBackStack` produit un `NavBackStack<NavKey>` ; les valeurs
@@ -43,54 +46,18 @@ fun AppNavDisplay(
     onThemeChange: (ThemeVariant) -> Unit,
     resetTo: (Route) -> Unit,
 ) {
+    val actions = NavActions(backStack, onLogout, onThemeChange, resetTo)
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
         entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
         entryProvider = entryProvider {
             entry<Route.Splash> { SplashScreen() }
-
-            entry<Route.Login> {
-                LoginPage(
-                    onAuthenticated = { resetTo(Route.Home) },
-                    onGoToRegister = { backStack.add(Route.Register) },
-                )
-            }
-
-            entry<Route.Register> {
-                RegisterPage(
-                    onAuthenticated = { resetTo(Route.Home) },
-                    onGoToLogin = { backStack.removeLastOrNull() },
-                )
-            }
-
-            entry<Route.Home> {
-                AppScaffold(
-                    topBar = {
-                        AppTopBar(
-                            title = "E-JDR",
-                            onLogout = onLogout,
-                            onSettings = { backStack.add(Route.Settings) },
-                        )
-                    },
-                ) {
-                    UserPage(onSessionExpired = { resetTo(Route.Login) })
-                }
-            }
-
-            entry<Route.Settings> {
-                AppScaffold(
-                    topBar = {
-                        AppTopBar(
-                            title = "Paramètres",
-                            onLogout = onLogout,
-                            onBack = { backStack.removeLastOrNull() },
-                        )
-                    },
-                ) {
-                    SettingsPage(onThemeChange = onThemeChange)
-                }
-            }
+            authEntries(actions)
+            userEntries(actions)
+            settingsEntries(actions)
+            campaignEntries(actions)
+            characterSheetEntries(actions)
         },
     )
 }
