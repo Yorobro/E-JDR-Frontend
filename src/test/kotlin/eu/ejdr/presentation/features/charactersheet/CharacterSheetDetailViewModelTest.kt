@@ -1,5 +1,7 @@
 package eu.ejdr.presentation.features.charactersheet
 
+import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
@@ -17,6 +19,7 @@ import kotlinx.coroutines.test.setMain
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -47,6 +50,8 @@ class CharacterSheetDetailViewModelTest {
             getById = GetCharacterSheetUseCase { Result.Success(sheet(vigueur = 6)) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+            fileSaver = FileSaver { _, _ -> true },
         )
         advanceUntilIdle()
 
@@ -63,6 +68,8 @@ class CharacterSheetDetailViewModelTest {
             getById = GetCharacterSheetUseCase { Result.Failure(CharacterSheetError.NotFound) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+            fileSaver = FileSaver { _, _ -> true },
         )
         advanceUntilIdle()
 
@@ -77,6 +84,8 @@ class CharacterSheetDetailViewModelTest {
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+            fileSaver = FileSaver { _, _ -> true },
         )
         advanceUntilIdle()
 
@@ -94,6 +103,8 @@ class CharacterSheetDetailViewModelTest {
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+            fileSaver = FileSaver { _, _ -> true },
         )
         advanceUntilIdle()
         vm.startEdit()
@@ -114,6 +125,8 @@ class CharacterSheetDetailViewModelTest {
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Failure(CharacterSheetError.Network) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+            fileSaver = FileSaver { _, _ -> true },
         )
         advanceUntilIdle()
         vm.startEdit()
@@ -133,6 +146,8 @@ class CharacterSheetDetailViewModelTest {
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(campaigns) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+            fileSaver = FileSaver { _, _ -> true },
         )
         advanceUntilIdle()
 
@@ -146,11 +161,56 @@ class CharacterSheetDetailViewModelTest {
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Failure(CharacterSheetError.Network) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+            fileSaver = FileSaver { _, _ -> true },
         )
         advanceUntilIdle()
 
         assertTrue(vm.campaigns.value.isEmpty())
         assertEquals("Aragorn", vm.sheet.value?.name)
         assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `export fetches the pdf and saves it as fiche-name pdf`() = runTest {
+        val savedNames = mutableListOf<String>()
+        val savedBytes = mutableListOf<ByteArray>()
+        val vm = CharacterSheetDetailViewModel(
+            sheetId = "s-1",
+            getById = GetCharacterSheetUseCase { Result.Success(sheet(name = "Aragorn")) },
+            update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf(37, 80, 68, 70)) },
+            fileSaver = FileSaver { name, bytes -> savedNames += name; savedBytes += bytes; true },
+        )
+        advanceUntilIdle()
+
+        vm.export()
+        advanceUntilIdle()
+
+        assertEquals(listOf("fiche-Aragorn.pdf"), savedNames)
+        assertContentEquals(byteArrayOf(37, 80, 68, 70), savedBytes.single())
+        assertNull(vm.error.value)
+        assertFalse(vm.isExporting.value)
+    }
+
+    @Test
+    fun `export failure surfaces the error and does not save`() = runTest {
+        var saveCalls = 0
+        val vm = CharacterSheetDetailViewModel(
+            sheetId = "s-1",
+            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
+            update = UpdateCharacterSheetUseCase { Result.Success(it) },
+            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+            exportPdf = ExportCharacterSheetPdfUseCase { Result.Failure(CharacterSheetError.Network) },
+            fileSaver = FileSaver { _, _ -> saveCalls++; true },
+        )
+        advanceUntilIdle()
+
+        vm.export()
+        advanceUntilIdle()
+
+        assertEquals(0, saveCalls)
+        assertEquals(CharacterSheetError.Network.message, vm.error.value)
     }
 }

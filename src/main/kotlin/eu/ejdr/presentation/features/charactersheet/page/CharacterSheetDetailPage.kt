@@ -14,6 +14,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
@@ -61,12 +63,15 @@ fun CharacterSheetDetailPage(
             getById = get<GetCharacterSheetUseCase>(),
             update = get<UpdateCharacterSheetUseCase>(),
             getCampaigns = get<GetSheetCampaignsUseCase>(),
+            exportPdf = get<ExportCharacterSheetPdfUseCase>(),
+            fileSaver = get<FileSaver>(),
         )
     }
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
     val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()
     val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
 
     Column(
@@ -82,9 +87,11 @@ fun CharacterSheetDetailPage(
                 campaigns = campaigns,
                 isEditing = isEditing,
                 isSaving = isLoading,
+                isExporting = isExporting,
                 onStartEdit = viewModel::startEdit,
                 onCancelEdit = viewModel::cancelEdit,
                 onSave = viewModel::save,
+                onExport = viewModel::export,
             )
         }
     }
@@ -102,9 +109,11 @@ private fun CharacterSheetDetailContent(
     campaigns: List<SheetCampaign>,
     isEditing: Boolean,
     isSaving: Boolean,
+    isExporting: Boolean,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSave: (CharacterSheet) -> Unit,
+    onExport: () -> Unit,
 ) {
     val form = remember(sheet) { CharacterSheetFormState(sheet) }
     var selectedTab by remember { mutableStateOf(0) }
@@ -116,10 +125,12 @@ private fun CharacterSheetDetailContent(
         DetailActionBar(
             isEditing = isEditing,
             isSaving = isSaving,
+            isExporting = isExporting,
             canSave = form.isNameValid,
             onStartEdit = onStartEdit,
             onCancelEdit = onCancelEdit,
             onSave = { onSave(form.toCharacterSheet()) },
+            onExport = onExport,
         )
         AppTabs(tabs = TabTitles, selectedIndex = selectedTab, onSelect = { selectedTab = it })
 
@@ -142,10 +153,12 @@ private fun CharacterSheetDetailContent(
 private fun DetailActionBar(
     isEditing: Boolean,
     isSaving: Boolean,
+    isExporting: Boolean,
     canSave: Boolean,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSave: () -> Unit,
+    onExport: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
         if (isEditing) {
@@ -159,6 +172,12 @@ private fun DetailActionBar(
             )
         } else {
             AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
+            AppButton(
+                label = "Exporter",
+                onClick = onExport,
+                variant = ButtonVariant.Secondary,
+                loading = isExporting,
+            )
         }
     }
 }

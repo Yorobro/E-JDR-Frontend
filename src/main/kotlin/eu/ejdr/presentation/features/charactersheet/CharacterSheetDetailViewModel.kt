@@ -2,6 +2,8 @@ package eu.ejdr.presentation.features.charactersheet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
@@ -24,12 +26,16 @@ import kotlinx.coroutines.launch
  * @property getById Use case de récupération du détail d'une fiche.
  * @property update Use case de mise à jour d'une fiche.
  * @property getCampaigns Use case de récupération des campagnes rattachées (onglet Campagnes).
+ * @property exportPdf Use case de récupération du PDF (binaire) de la fiche.
+ * @property fileSaver Port d'enregistrement du fichier via le dialogue natif « Enregistrer sous ».
  */
 class CharacterSheetDetailViewModel(
     private val sheetId: String,
     private val getById: GetCharacterSheetUseCase,
     private val update: UpdateCharacterSheetUseCase,
     private val getCampaigns: GetSheetCampaignsUseCase,
+    private val exportPdf: ExportCharacterSheetPdfUseCase,
+    private val fileSaver: FileSaver,
 ) : ViewModel() {
 
     private val _sheet = MutableStateFlow<CharacterSheet?>(null)
@@ -46,6 +52,9 @@ class CharacterSheetDetailViewModel(
 
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
+
+    private val _isExporting = MutableStateFlow(false)
+    val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
 
     init {
         load()
@@ -92,6 +101,25 @@ class CharacterSheetDetailViewModel(
                 onFailure = { _error.value = it.message },
             )
             _isLoading.value = false
+        }
+    }
+
+    /**
+     * Exporte la fiche courante : récupère le PDF puis ouvre « Enregistrer sous »
+     * (nom par défaut « fiche-{nom}.pdf »). Une annulation utilisateur n'est pas une erreur.
+     */
+    fun export() {
+        val current = _sheet.value ?: return
+        viewModelScope.launch {
+            _isExporting.value = true
+            exportPdf(sheetId).fold(
+                onSuccess = { bytes ->
+                    fileSaver.save("fiche-${current.name}.pdf", bytes)
+                    _error.value = null
+                },
+                onFailure = { _error.value = it.message },
+            )
+            _isExporting.value = false
         }
     }
 }
