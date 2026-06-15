@@ -137,6 +137,7 @@ kover {
                     "eu.ejdr.presentation.features.campaign.component",
                     "eu.ejdr.presentation.features.charactersheet.page",
                     "eu.ejdr.presentation.features.charactersheet.component",
+                    "eu.ejdr.infrastructure.file",
                     "eu.ejdr.di",
                 )
                 classes(

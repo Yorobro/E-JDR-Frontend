@@ -22,6 +22,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.readRawBytes
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
@@ -154,6 +155,16 @@ class CharacterSheetHttpRepository(
             if (response.status.isSuccess()) {
                 val body = response.body<SheetCampaignsResponseDto>()
                 Result.Success(body.campaigns.map(CharacterSheetHttpMapper::toSheetCampaign))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(CharacterSheetError.Network) }
+
+    override suspend fun exportSheetPdf(id: String): Result<ByteArray, CharacterSheetError> =
+        runCatchingCancellable {
+            val response = client.get("${config.baseUrl}/character-sheets/$id/export-pdf")
+            if (response.status.isSuccess()) {
+                Result.Success(response.readRawBytes())
             } else {
                 failure(response)
             }

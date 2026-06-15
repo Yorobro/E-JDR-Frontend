@@ -64,3 +64,8 @@ fun interface UnlinkCharacterFromCampaignUseCase {
 fun interface GetSheetCampaignsUseCase {
     suspend operator fun invoke(id: String): Result<List<SheetCampaign>, CharacterSheetError>
 }
+
+/** Use case : récupère le PDF (binaire) de la fiche courante. */
+fun interface ExportCharacterSheetPdfUseCase {
+    suspend operator fun invoke(id: String): Result<ByteArray, CharacterSheetError>
+}

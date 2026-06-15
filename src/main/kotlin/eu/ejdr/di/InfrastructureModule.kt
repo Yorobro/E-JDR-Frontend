@@ -1,7 +1,9 @@
 package eu.ejdr.di
 
 import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
+import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.infrastructure.config.AppConfig
+import eu.ejdr.infrastructure.file.DesktopFileSaver
 import eu.ejdr.infrastructure.http.KtorClientFactory
 import eu.ejdr.infrastructure.security.CookieCipher
 import eu.ejdr.infrastructure.security.KeyStoreProvider
@@ -22,4 +24,5 @@ val infrastructureModule = module {
     single { SecureCookiesStorage(get<AppConfig>().dataDir, get(), AcceptAllCookiesStorage()) }
     single<SessionPersistence> { get<SecureCookiesStorage>() }
     single<HttpClient> { KtorClientFactory(get(), get<SecureCookiesStorage>()).create() }
+    single<FileSaver> { DesktopFileSaver() }
 }

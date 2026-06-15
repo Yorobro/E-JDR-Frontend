@@ -49,4 +49,7 @@ interface CharacterSheetRepository {
 
     /** Liste les campagnes auxquelles une fiche est rattachée (avec le pseudo du MJ). */
     suspend fun getCampaignsForSheet(id: String): Result<List<SheetCampaign>, CharacterSheetError>
+
+    /** Récupère le PDF (binaire) de la fiche courante sauvegardée. */
+    suspend fun exportSheetPdf(id: String): Result<ByteArray, CharacterSheetError>
 }

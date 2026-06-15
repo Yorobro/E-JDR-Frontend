@@ -3,6 +3,7 @@ package eu.ejdr.application.features.charactersheet.usecase
 import eu.ejdr.application.features.charactersheet.abstraction.repository.CharacterSheetRepository
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
@@ -95,4 +96,11 @@ class GetSheetCampaignsUseCaseImpl(
 ) : GetSheetCampaignsUseCase {
     override suspend fun invoke(id: String): Result<List<SheetCampaign>, CharacterSheetError> =
         repository.getCampaignsForSheet(id)
+}
+
+class ExportCharacterSheetPdfUseCaseImpl(
+    private val repository: CharacterSheetRepository,
+) : ExportCharacterSheetPdfUseCase {
+    override suspend fun invoke(id: String): Result<ByteArray, CharacterSheetError> =
+        repository.exportSheetPdf(id)
 }

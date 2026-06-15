@@ -20,6 +20,7 @@ import kotlinx.serialization.json.Json
 import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
+import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
@@ -197,6 +198,33 @@ class CharacterSheetHttpRepositoryTest {
 
         assertIs<Result.Success<List<SheetCampaign>>>(result)
         assertEquals(listOf(SheetCampaign("c-1", "Donjon", "MJ")), result.value)
+    }
+
+    @Test
+    fun `exportSheetPdf success returns the pdf bytes`() = runTest {
+        val pdf = byteArrayOf(37, 80, 68, 70, 45) // %PDF-
+        val engine = MockEngine {
+            respond(
+                content = ByteReadChannel(pdf),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/pdf"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
+        }
+        val result = repository(client).exportSheetPdf("s-1")
+        assertIs<Result.Success<ByteArray>>(result)
+        assertContentEquals(pdf, result.value)
+    }
+
+    @Test
+    fun `exportSheetPdf 403 maps to AccessDenied`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.Forbidden, """{"code":"CHARACTER_SHEET_ACCESS_DENIED"}"""),
+        ).exportSheetPdf("s-1")
+        assertIs<Result.Failure<CharacterSheetError>>(result)
+        assertEquals(CharacterSheetError.AccessDenied, result.error)
     }
 
     @Test
