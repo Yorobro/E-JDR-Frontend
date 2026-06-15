@@ -1,3 +1,4 @@
+import java.util.Properties
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -61,11 +62,40 @@ tasks.test {
     useJUnitPlatform()
 }
 
+// ───────────────────────────────────────────────────────────────
+// Configuration par environnement, résolue AU BUILD (pas au runtime).
+//
+// On lit `config.defaults.properties` (versionné) puis on le surcharge avec
+// `config.local.properties` (non versionné, ignoré par git) si présent. Les
+// valeurs sont gelées dans `BuildConfig` → le binaire packagé n'a AUCUNE
+// dépendance à l'environnement système de la machine qui le lance.
+// Portable desktop / Android / iOS : ces constantes vivront en commonMain.
+// ───────────────────────────────────────────────────────────────
+val defaultsConfigFile = rootProject.file("config.defaults.properties")
+val localConfigFile = rootProject.file("config.local.properties")
+
+fun loadAppConfig(): Properties {
+    val props = Properties()
+    for (configFile in listOf(defaultsConfigFile, localConfigFile)) {
+        if (configFile.exists()) {
+            configFile.inputStream().use { stream -> props.load(stream) }
+        }
+    }
+    return props
+}
+
 val generateBuildConfig by tasks.registering {
     val appVersion = project.version.toString()
+    val appConfig = loadAppConfig()
+    val apiUrl = appConfig.getProperty("api.url") ?: "https://ejdr-backend.vyxs.fr"
+    val httpLogging = appConfig.getProperty("http.logging")?.toBoolean() ?: false
     val outputDir = layout.buildDirectory.dir("generated/source/buildConfig")
     outputs.dir(outputDir)
     inputs.property("version", appVersion)
+    inputs.property("apiUrl", apiUrl)
+    inputs.property("httpLogging", httpLogging)
+    // Re-générer dès qu'un fichier de config change (correction de l'incrémental Gradle).
+    inputs.files(defaultsConfigFile, localConfigFile).optional()
     doLast {
         val file = outputDir.get().asFile.resolve("eu/ejdr/BuildConfig.kt")
         file.parentFile.mkdirs()
@@ -76,6 +106,8 @@ val generateBuildConfig by tasks.registering {
             internal object BuildConfig {
                 const val APP_VERSION = "$appVersion"
                 const val GITHUB_REPO = "Yorobro/E-JDR-Frontend"
+                const val API_URL = "$apiUrl"
+                const val HTTP_LOGGING = $httpLogging
             }
             """.trimIndent()
         )

@@ -1,0 +1,17 @@
+# ───────────────────────────────────────────────────────────────
+# Surcharge LOCALE de la config (modèle).
+#
+# Copie ce fichier en `config.local.properties` (non versionné, ignoré par git)
+# et décommente/modifie seulement les clés que tu veux surcharger. Toute clé
+# absente retombe sur `config.defaults.properties`.
+#
+#   cp config.local.properties.example config.local.properties
+#
+# Lu par Gradle au build → gelé dans BuildConfig. Pas de lecture runtime.
+# ───────────────────────────────────────────────────────────────
+
+# Développer contre le backend local :
+# api.url=http://localhost:3000
+
+# Activer le logging HTTP détaillé en dev :
+# http.logging=true
