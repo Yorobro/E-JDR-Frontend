@@ -89,11 +89,15 @@ val generateBuildConfig by tasks.registering {
     val appConfig = loadAppConfig()
     val apiUrl = appConfig.getProperty("api.url") ?: "https://ejdr-backend.vyxs.fr"
     val httpLogging = appConfig.getProperty("http.logging")?.toBoolean() ?: false
+    // `app.dev` n'est défini que dans `config.local.properties` (non versionné) : faux par
+    // défaut → les binaires packagés (prod) restent en mode normal.
+    val isDev = appConfig.getProperty("app.dev")?.toBoolean() ?: false
     val outputDir = layout.buildDirectory.dir("generated/source/buildConfig")
     outputs.dir(outputDir)
     inputs.property("version", appVersion)
     inputs.property("apiUrl", apiUrl)
     inputs.property("httpLogging", httpLogging)
+    inputs.property("isDev", isDev)
     // Re-générer dès qu'un fichier de config change (correction de l'incrémental Gradle).
     inputs.files(defaultsConfigFile, localConfigFile).optional()
     doLast {
@@ -108,6 +112,7 @@ val generateBuildConfig by tasks.registering {
                 const val GITHUB_REPO = "Yorobro/E-JDR-Frontend"
                 const val API_URL = "$apiUrl"
                 const val HTTP_LOGGING = $httpLogging
+                const val IS_DEV = $isDev
             }
             """.trimIndent()
         )

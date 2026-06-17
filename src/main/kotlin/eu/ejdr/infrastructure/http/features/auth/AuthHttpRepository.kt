@@ -107,17 +107,20 @@ class AuthHttpRepository(
     /**
      * Renouvelle la session via `/auth/refresh` à partir du refresh_token.
      *
-     * En cas d'échec, le cookie persisté est effacé pour éviter de retenter
-     * indéfiniment une restauration avec un jeton invalide.
+     * `/auth/refresh` ne renvoie **pas** l'utilisateur (seulement un message + de nouveaux
+     * cookies) : une fois la session renouvelée, on récupère donc le profil courant via
+     * [me] (`GET /me`). En cas d'échec du refresh, le cookie persisté est effacé pour éviter
+     * de retenter indéfiniment une restauration avec un jeton invalide.
      *
-     * @return [Result.Success] si la session est renouvelée, sinon
+     * @return [Result.Success] avec l'utilisateur courant si la session est renouvelée, sinon
      * [AuthError.SessionExpired] (échec serveur) ou [AuthError.Network].
      */
     override suspend fun refresh(): Result<User, AuthError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/auth/refresh")
             if (response.status.isSuccess()) {
-                Result.Success(mapper.toUser(response.body<AuthResponseDto>()))
+                // Les nouveaux cookies sont posés ; le profil vient de GET /me, pas du corps du refresh.
+                me()
             } else {
                 sessionPersistence.clearPersisted()
                 Result.Failure(AuthError.SessionExpired)

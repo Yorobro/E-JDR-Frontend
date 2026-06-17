@@ -80,6 +80,30 @@ class AuthHttpRepositoryTest {
         }
     }
 
+    /**
+     * Client Ktor dont le moteur répond différemment selon le chemin de la requête.
+     * Utile pour `refresh()` qui enchaîne `/auth/refresh` puis `/me`.
+     */
+    private fun clientByPath(
+        responder: (path: String) -> Pair<HttpStatusCode, String>,
+    ): HttpClient {
+        val engine =
+            MockEngine { request ->
+                val (status, body) = responder(request.url.encodedPath)
+                respond(
+                    content = ByteReadChannel(body),
+                    status = status,
+                    headers = headersOf(HttpHeaders.ContentType, "application/json"),
+                )
+            }
+        return HttpClient(engine) {
+            install(HttpCookies) { storage = cookiesStorage }
+            install(ContentNegotiation) {
+                json(Json { ignoreUnknownKeys = true; isLenient = true })
+            }
+        }
+    }
+
     private fun repository(client: HttpClient) = AuthHttpRepository(client, config, AuthHttpMapper, cookiesStorage)
 
     private val creds = Credentials("user@test.com", "password123")
@@ -127,11 +151,21 @@ class AuthHttpRepositoryTest {
         }
 
     @Test
-    fun `refresh success maps body to User`() =
+    fun `refresh success fetches the user via me (refresh body has no user)`() =
         runTest {
+            // Contrat réel : /auth/refresh renvoie { "message": ... } (pas l'utilisateur).
+            // L'utilisateur est ensuite récupéré via GET /me.
             val repo =
                 repository(
-                    clientReturning(HttpStatusCode.OK, """{"userId":"u-1","email":"user@test.com"}"""),
+                    clientByPath { path ->
+                        when {
+                            path.endsWith("/auth/refresh") ->
+                                HttpStatusCode.OK to """{"message":"Jetons rafraîchis."}"""
+                            path.endsWith("/me") ->
+                                HttpStatusCode.OK to """{"userId":"u-1","email":"user@test.com","createdAt":"2026-06-10T08:00:00.000Z"}"""
+                            else -> HttpStatusCode.NotFound to "{}"
+                        }
+                    },
                 )
 
             val result = repo.refresh()
