@@ -1,3 +1,15 @@
+## [1.11.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.10.1...v1.11.0) (2026-06-17)
+
+
+### Features
+
+* **session:** show and manage campaign sessions ([b603562](https://github.com/Yorobro/E-JDR-Frontend/commit/b6035628d979c05ccfd7394d2e73d71be8b220ad))
+
+
+### Bug Fixes
+
+* **auth:** restore session on launch and skip update check in dev ([e652ee3](https://github.com/Yorobro/E-JDR-Frontend/commit/e652ee3e8904fe3ddc4a09b5c56354f8f2c36de5))
+
 ## [1.10.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.10.0...v1.10.1) (2026-06-17)
 
 
