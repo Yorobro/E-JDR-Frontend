@@ -4,6 +4,7 @@ import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url
+import io.ktor.http.isSecure
 import java.io.File
 
 /**
@@ -11,18 +12,30 @@ import java.io.File
  * chiffré sur disque, pour permettre l'auto-login après redémarrage.
  * L'access_token reste en mémoire seulement.
  *
- * Le refresh_token chargé depuis le disque est ré-injecté paresseusement au premier
- * appel à [get] : cela évite un `runBlocking` dans le constructeur et utilise l'URL
- * réelle de la requête plutôt qu'une URL codée en dur.
+ * Le refresh_token chargé depuis le disque est ré-injecté paresseusement, mais
+ * **uniquement pour les requêtes vers le host du backend** ([backendUrl]). C'est
+ * crucial : au démarrage, un appel concurrent vers un autre host (vérification de
+ * mise à jour sur GitHub) partage le même client donc le même storage ; sans ce
+ * filtre, ce premier appel consommerait la ré-injection et figerait le cookie sur le
+ * mauvais domaine (Ktor remplit `domain`/`path` manquants à partir de l'URL de
+ * requête via `fillDefaults`), si bien que `POST /auth/refresh` partirait sans
+ * refresh_token → 401 → session effacée → reconnexion forcée à chaque lancement.
+ *
+ * Le cookie ré-injecté est reconstruit avec les mêmes attributs que ceux posés par
+ * le backend (`path=/`, `domain` = host du backend, `secure` selon le schéma) pour
+ * que le matching domaine/chemin de Ktor le renvoie bien sur toutes les routes du
+ * backend, et pas seulement `/auth/refresh`.
  */
 class SecureCookiesStorage(
     dataDir: File,
     private val cipher: CookieCipher,
+    backendUrl: String,
     private val delegate: CookiesStorage,
 ) : CookiesStorage, SessionPersistence {
 
     private val refreshTokenName = "refresh_token"
     private val storeFile = File(dataDir, "secure-cookies.enc")
+    private val backend = Url(backendUrl)
     private var pendingRefreshToken: String? = loadPersistedValue()
 
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
@@ -33,9 +46,14 @@ class SecureCookiesStorage(
     }
 
     override suspend fun get(requestUrl: Url): List<Cookie> {
-        pendingRefreshToken?.let { value ->
+        // Ne ré-injecter que sur le host du backend : un appel concurrent vers un autre
+        // host (ex. GitHub pour la mise à jour) ne doit pas consommer la ré-injection.
+        if (pendingRefreshToken != null && requestUrl.host == backend.host) {
+            val value = pendingRefreshToken
             pendingRefreshToken = null
-            delegate.addCookie(requestUrl, Cookie(name = refreshTokenName, value = value))
+            if (value != null) {
+                delegate.addCookie(requestUrl, restoredCookie(value))
+            }
         }
         return delegate.get(requestUrl)
     }
@@ -47,6 +65,22 @@ class SecureCookiesStorage(
     override fun clearPersisted() {
         if (storeFile.exists()) storeFile.delete()
     }
+
+    /**
+     * Reconstruit le cookie refresh_token avec les attributs posés par le backend.
+     *
+     * On fixe explicitement `domain`, `path` et `secure` plutôt que de laisser Ktor les
+     * déduire de l'URL de requête : sinon le cookie se figerait sur le chemin de la
+     * première requête (ex. `/auth/refresh`) et ne serait plus renvoyé aux autres routes.
+     */
+    private fun restoredCookie(value: String): Cookie = Cookie(
+        name = refreshTokenName,
+        value = value,
+        domain = backend.host,
+        path = "/",
+        secure = backend.protocol.isSecure(),
+        httpOnly = true,
+    )
 
     private fun persist(value: String) {
         storeFile.writeText(cipher.encrypt(value))

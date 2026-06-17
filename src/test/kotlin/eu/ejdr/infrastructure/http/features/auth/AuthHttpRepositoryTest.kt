@@ -42,7 +42,12 @@ class AuthHttpRepositoryTest {
             enableHttpLogging = false,
         )
     private val cookiesStorage =
-        SecureCookiesStorage(tmpDir, CookieCipher(KeyStoreProvider(tmpDir)), AcceptAllCookiesStorage())
+        SecureCookiesStorage(
+            tmpDir,
+            CookieCipher(KeyStoreProvider(tmpDir)),
+            config.baseUrl,
+            AcceptAllCookiesStorage(),
+        )
 
     @AfterTest
     fun cleanup() {

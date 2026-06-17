@@ -21,7 +21,14 @@ val infrastructureModule = module {
     single { AppConfig.load() }
     single { KeyStoreProvider(get<AppConfig>().dataDir) }
     single { CookieCipher(get()) }
-    single { SecureCookiesStorage(get<AppConfig>().dataDir, get(), AcceptAllCookiesStorage()) }
+    single {
+        SecureCookiesStorage(
+            get<AppConfig>().dataDir,
+            get(),
+            get<AppConfig>().baseUrl,
+            AcceptAllCookiesStorage(),
+        )
+    }
     single<SessionPersistence> { get<SecureCookiesStorage>() }
     single<HttpClient> { KtorClientFactory(get(), get<SecureCookiesStorage>()).create() }
     single<FileSaver> { DesktopFileSaver() }
