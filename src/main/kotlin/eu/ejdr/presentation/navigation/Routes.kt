@@ -54,6 +54,15 @@ sealed interface Route : NavKey {
     @Serializable
     data class CampaignDetail(val id: String, val name: String) : Route
 
+    /**
+     * Détail d'une session. Les arguments voyagent dans la clé elle-même.
+     *
+     * @property id Identifiant de la session.
+     * @property title Titre de la session (affiché en titre, évite un appel réseau).
+     */
+    @Serializable
+    data class SessionDetail(val id: String, val title: String) : Route
+
     /** Liste des fiches de personnage de l'utilisateur. */
     @Serializable
     data object CharacterSheets : Route
@@ -92,6 +101,7 @@ val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
             subclass(Route.Settings::class)
             subclass(Route.Campaigns::class)
             subclass(Route.CampaignDetail::class)
+            subclass(Route.SessionDetail::class)
             subclass(Route.CharacterSheets::class)
             subclass(Route.CharacterSheetDetail::class)
         }

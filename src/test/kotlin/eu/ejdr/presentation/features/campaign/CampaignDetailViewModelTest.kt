@@ -4,9 +4,13 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkChara
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
+import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.error.SessionError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -32,6 +36,15 @@ class CampaignDetailViewModelTest {
     private fun sheet(id: String) =
         CharacterSheet(id = id, ownerId = "u-1", name = "S-$id", createdAt = "2026-06-13T10:00:00.000Z")
 
+    private fun session(id: String) =
+        Session(id = id, campaignId = "camp-1", title = "T-$id", date = "2026-06-20", createdAt = "2026-06-13T10:00:00.000Z")
+
+    /** Use case sessions par défaut : liste vide. */
+    private val emptySessions = ListCampaignSessionsUseCase { Result.Success(emptyList<Session>()) }
+
+    /** Use case création de session par défaut : succès. */
+    private val createSessionOk = CreateSessionUseCase { _, _, _ -> Result.Success(session("new")) }
+
     @Test
     fun `loads campaign characters and linkable sheets at init`() = runTest {
         val vm = CampaignDetailViewModel(
@@ -40,6 +53,8 @@ class CampaignDetailViewModelTest {
             listLinkable = ListLinkableCharactersUseCase { Result.Success(listOf(sheet("a"), sheet("b"))) },
             linkCharacter = LinkCharacterToCampaignUseCase { _, _ -> Result.Success(Unit) },
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
+            listCampaignSessions = emptySessions,
+            createSession = createSessionOk,
         )
         advanceUntilIdle()
 
@@ -60,6 +75,8 @@ class CampaignDetailViewModelTest {
                 Result.Success(Unit)
             },
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
+            listCampaignSessions = emptySessions,
+            createSession = createSessionOk,
         )
         advanceUntilIdle()
 
@@ -80,6 +97,8 @@ class CampaignDetailViewModelTest {
                 Result.Failure(CharacterSheetError.GmCannotJoinOwnCampaign)
             },
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
+            listCampaignSessions = emptySessions,
+            createSession = createSessionOk,
         )
         advanceUntilIdle()
 
@@ -87,5 +106,65 @@ class CampaignDetailViewModelTest {
         advanceUntilIdle()
 
         assertEquals(CharacterSheetError.GmCannotJoinOwnCampaign.message, vm.error.value)
+    }
+
+    @Test
+    fun `loads sessions at init`() = runTest {
+        val vm = CampaignDetailViewModel(
+            campaignId = "camp-1",
+            listCampaignCharacters = ListCampaignCharactersUseCase { Result.Success(emptyList()) },
+            listLinkable = ListLinkableCharactersUseCase { Result.Success(emptyList()) },
+            linkCharacter = LinkCharacterToCampaignUseCase { _, _ -> Result.Success(Unit) },
+            unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
+            listCampaignSessions = ListCampaignSessionsUseCase { Result.Success(listOf(session("a"), session("b"))) },
+            createSession = createSessionOk,
+        )
+        advanceUntilIdle()
+
+        assertEquals(2, vm.sessions.value.size)
+        assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `createSession success reloads the sessions`() = runTest {
+        var stored = emptyList<Session>()
+        val vm = CampaignDetailViewModel(
+            campaignId = "camp-1",
+            listCampaignCharacters = ListCampaignCharactersUseCase { Result.Success(emptyList()) },
+            listLinkable = ListLinkableCharactersUseCase { Result.Success(emptyList()) },
+            linkCharacter = LinkCharacterToCampaignUseCase { _, _ -> Result.Success(Unit) },
+            unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
+            listCampaignSessions = ListCampaignSessionsUseCase { Result.Success(stored) },
+            createSession = CreateSessionUseCase { _, _, _ ->
+                stored = listOf(session("new"))
+                Result.Success(session("new"))
+            },
+        )
+        advanceUntilIdle()
+
+        vm.createSession("Titre", "2026-06-20")
+        advanceUntilIdle()
+
+        assertEquals(1, vm.sessions.value.size)
+        assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `createSession failure exposes the error message`() = runTest {
+        val vm = CampaignDetailViewModel(
+            campaignId = "camp-1",
+            listCampaignCharacters = ListCampaignCharactersUseCase { Result.Success(emptyList()) },
+            listLinkable = ListLinkableCharactersUseCase { Result.Success(emptyList()) },
+            linkCharacter = LinkCharacterToCampaignUseCase { _, _ -> Result.Success(Unit) },
+            unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
+            listCampaignSessions = emptySessions,
+            createSession = CreateSessionUseCase { _, _, _ -> Result.Failure(SessionError.InvalidDate) },
+        )
+        advanceUntilIdle()
+
+        vm.createSession("Titre", "bad")
+        advanceUntilIdle()
+
+        assertEquals(SessionError.InvalidDate.message, vm.error.value)
     }
 }
