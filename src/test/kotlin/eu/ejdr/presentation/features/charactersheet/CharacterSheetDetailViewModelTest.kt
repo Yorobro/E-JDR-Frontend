@@ -5,10 +5,15 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetReferenceUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
+import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -43,10 +48,37 @@ class CharacterSheetDetailViewModelTest {
             vigueur = vigueur,
         )
 
+    /**
+     * Construit le ViewModel avec des défauts neutres pour les use cases de référence (listes vides,
+     * link/unlink en succès). Les tests qui ne testent pas la référence n'ont qu'à fournir les use
+     * cases de fiche ; ceux qui la testent surchargent les paramètres nommés correspondants.
+     */
+    private fun buildVm(
+        getById: GetCharacterSheetUseCase,
+        update: UpdateCharacterSheetUseCase = UpdateCharacterSheetUseCase { Result.Success(it) },
+        getCampaigns: GetSheetCampaignsUseCase = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
+        exportPdf: ExportCharacterSheetPdfUseCase = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
+        fileSaver: FileSaver = FileSaver { _, _ -> true },
+        listReferenceItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { Result.Success(emptyList<ReferenceItem>()) },
+        listSheetReferences: ListSheetReferencesUseCase = ListSheetReferencesUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
+        linkSheetReference: LinkSheetReferenceUseCase = LinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
+        unlinkSheetReference: UnlinkSheetReferenceUseCase = UnlinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
+    ) = CharacterSheetDetailViewModel(
+        sheetId = "s-1",
+        getById = getById,
+        update = update,
+        getCampaigns = getCampaigns,
+        exportPdf = exportPdf,
+        fileSaver = fileSaver,
+        listReferenceItems = listReferenceItems,
+        listSheetReferences = listSheetReferences,
+        linkSheetReference = linkSheetReference,
+        unlinkSheetReference = unlinkSheetReference,
+    )
+
     @Test
     fun `loads the sheet at init`() = runTest {
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet(vigueur = 6)) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
@@ -63,8 +95,7 @@ class CharacterSheetDetailViewModelTest {
 
     @Test
     fun `exposes error when loading fails`() = runTest {
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Failure(CharacterSheetError.NotFound) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
@@ -79,8 +110,7 @@ class CharacterSheetDetailViewModelTest {
 
     @Test
     fun `startEdit and cancelEdit toggle editing`() = runTest {
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
@@ -98,8 +128,7 @@ class CharacterSheetDetailViewModelTest {
 
     @Test
     fun `save success stores the returned sheet and exits edit mode`() = runTest {
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
@@ -120,8 +149,7 @@ class CharacterSheetDetailViewModelTest {
 
     @Test
     fun `save failure surfaces the error and stays in edit mode`() = runTest {
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Failure(CharacterSheetError.Network) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
@@ -141,8 +169,7 @@ class CharacterSheetDetailViewModelTest {
     @Test
     fun `loads the linked campaigns at init`() = runTest {
         val campaigns = listOf(SheetCampaign("c-1", "Donjon", "MJ"))
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(campaigns) },
@@ -156,8 +183,7 @@ class CharacterSheetDetailViewModelTest {
 
     @Test
     fun `campaigns failure leaves the list empty without overwriting the sheet`() = runTest {
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Failure(CharacterSheetError.Network) },
@@ -175,8 +201,7 @@ class CharacterSheetDetailViewModelTest {
     fun `export fetches the pdf and saves it as fiche-name pdf`() = runTest {
         val savedNames = mutableListOf<String>()
         val savedBytes = mutableListOf<ByteArray>()
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet(name = "Aragorn")) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
@@ -197,8 +222,7 @@ class CharacterSheetDetailViewModelTest {
     @Test
     fun `export failure surfaces the error and does not save`() = runTest {
         var saveCalls = 0
-        val vm = CharacterSheetDetailViewModel(
-            sheetId = "s-1",
+        val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
             getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
@@ -212,5 +236,44 @@ class CharacterSheetDetailViewModelTest {
 
         assertEquals(0, saveCalls)
         assertEquals(CharacterSheetError.Network.message, vm.error.value)
+    }
+
+    @Test
+    fun `loads reference catalogues and linked items at init`() = runTest {
+        val item = ReferenceItem("ref-1", "Épée", "2026-06-13T10:00:00.000Z")
+        val vm = buildVm(
+            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
+            listReferenceItems = ListReferenceItemsUseCase { Result.Success(listOf(item)) },
+            listSheetReferences = ListSheetReferencesUseCase { _, _ -> Result.Success(listOf(item)) },
+        )
+        advanceUntilIdle()
+
+        assertContentEquals(listOf(item), vm.formations.value)
+        // Chaque type liable a sa liste rattachée chargée.
+        assertTrue(vm.linked.value.values.all { it == listOf(item) })
+    }
+
+    @Test
+    fun `linkRef reloads the linked items for that type`() = runTest {
+        val arme = ReferenceItem("a-1", "Andúril", "2026-06-13T10:00:00.000Z")
+        var linkedNow = emptyList<ReferenceItem>()
+        val vm = buildVm(
+            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
+            listSheetReferences = ListSheetReferencesUseCase { _, _ -> Result.Success(linkedNow) },
+            linkSheetReference = LinkSheetReferenceUseCase { _, _, _ ->
+                linkedNow = listOf(arme)
+                Result.Success(Unit)
+            },
+        )
+        advanceUntilIdle()
+
+        vm.linkRef(eu.ejdr.domain.features.reference.entities.ReferenceType.ARME, "a-1")
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(arme),
+            vm.linked.value[eu.ejdr.domain.features.reference.entities.ReferenceType.ARME],
+        )
+        assertNull(vm.error.value)
     }
 }

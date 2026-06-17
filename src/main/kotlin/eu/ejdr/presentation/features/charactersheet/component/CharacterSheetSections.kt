@@ -112,14 +112,27 @@ fun ReadCellPublic(label: String, value: String?) = ReadCell(label, value)
  * englobante.
  */
 @Composable
-fun IdentiteSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
+fun IdentiteSection(
+    sheet: CharacterSheet,
+    editing: Boolean,
+    form: CharacterSheetFormState,
+    refs: SheetReferences,
+) {
     FieldColumn {
         ResponsiveColumns(
             columns = listOf(
                 { TextCell("Nom", editing, form.name, sheet.name) { form.name = it } },
-                { TextCell("Formation", editing, form.formation, sheet.formation) { form.formation = it } },
+                {
+                    ReferenceCell("Formation", editing, form.formationId, refs.formations) {
+                        form.formationId = it
+                    }
+                },
                 { NumberCell("Niveau", editing, form.niveau, sheet.niveau) { form.niveau = it } },
-                { TextCell("Peuple", editing, form.peuple, sheet.peuple) { form.peuple = it } },
+                {
+                    ReferenceCell("Peuple", editing, form.peupleId, refs.peoples) {
+                        form.peupleId = it
+                    }
+                },
             ),
         )
         ResponsiveColumns(

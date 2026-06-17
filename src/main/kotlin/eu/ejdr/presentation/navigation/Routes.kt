@@ -63,6 +63,18 @@ sealed interface Route : NavKey {
     @Serializable
     data class SessionDetail(val id: String, val title: String) : Route
 
+    /** Hub « Mes éléments » : liste des catégories d'éléments de référence. */
+    @Serializable
+    data object ReferenceHub : Route
+
+    /**
+     * Liste/gestion des éléments d'une catégorie de référence.
+     *
+     * @property type Slug de la catégorie (ex. `formations`, `armes`) — cf. `ReferenceType.slug`.
+     */
+    @Serializable
+    data class ReferenceList(val type: String) : Route
+
     /** Liste des fiches de personnage de l'utilisateur. */
     @Serializable
     data object CharacterSheets : Route
@@ -102,6 +114,8 @@ val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
             subclass(Route.Campaigns::class)
             subclass(Route.CampaignDetail::class)
             subclass(Route.SessionDetail::class)
+            subclass(Route.ReferenceHub::class)
+            subclass(Route.ReferenceList::class)
             subclass(Route.CharacterSheets::class)
             subclass(Route.CharacterSheetDetail::class)
         }

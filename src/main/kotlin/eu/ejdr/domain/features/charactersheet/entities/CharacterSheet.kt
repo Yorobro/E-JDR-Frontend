@@ -13,9 +13,9 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property ownerId Identifiant du propriétaire de la fiche.
  * @property name Nom affiché de la fiche.
  * @property createdAt Date de création au format ISO 8601 (telle que renvoyée par l'API).
- * @property formation Formation du personnage.
+ * @property formationId Id de la formation choisie (élément de référence du propriétaire), ou `null`.
  * @property niveau Niveau du personnage (entier).
- * @property peuple Peuple du personnage.
+ * @property peupleId Id du peuple choisi (élément de référence du propriétaire), ou `null`.
  * @property sexe Sexe du personnage (M/F/NB).
  * @property tailleEtPoids Taille et poids du personnage.
  * @property age Âge du personnage (entier).
@@ -28,22 +28,21 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property pointsDeVie Points de vie.
  * @property pointsDeMagie Points de magie.
  * @property protection Valeur de protection / armure.
- * @property competences Compétences du personnage (texte libre).
  * @property purse Bourse du personnage (pièces d'or, d'argent et de cuivre).
- * @property armes Description des armes.
- * @property armures Description des armures.
- * @property equipement Description de l'équipement.
  * @property sortsEtMiracles Description des sorts et miracles.
  * @property notes Notes libres.
+ *
+ * Note : armes, armures, compétences et équipements ne sont **plus** des champs ici — ce sont des
+ * relations N‑N gérées à part (cf. feature `reference`).
  */
 data class CharacterSheet(
     val id: String,
     val ownerId: String,
     val name: String,
     val createdAt: String,
-    val formation: String? = null,
+    val formationId: String? = null,
     val niveau: Int? = null,
-    val peuple: String? = null,
+    val peupleId: String? = null,
     val sexe: String? = null,
     val tailleEtPoids: String? = null,
     val age: Int? = null,
@@ -56,11 +55,7 @@ data class CharacterSheet(
     val pointsDeVie: Int? = null,
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
-    val competences: String? = null,
     val purse: Purse? = null,
-    val armes: String? = null,
-    val armures: String? = null,
-    val equipement: String? = null,
     val sortsEtMiracles: String? = null,
     val notes: String? = null,
 )

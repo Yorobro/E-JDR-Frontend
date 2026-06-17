@@ -19,6 +19,10 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetReferenceUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.presentation.features.charactersheet.CharacterSheetDetailViewModel
@@ -27,6 +31,7 @@ import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetForm
 import eu.ejdr.presentation.features.charactersheet.component.CombatTab
 import eu.ejdr.presentation.features.charactersheet.component.IdentiteTab
 import eu.ejdr.presentation.features.charactersheet.component.InventaireTab
+import eu.ejdr.presentation.features.charactersheet.component.SheetReferences
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppTabs
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -65,6 +70,10 @@ fun CharacterSheetDetailPage(
             getCampaigns = get<GetSheetCampaignsUseCase>(),
             exportPdf = get<ExportCharacterSheetPdfUseCase>(),
             fileSaver = get<FileSaver>(),
+            listReferenceItems = get<ListReferenceItemsUseCase>(),
+            listSheetReferences = get<ListSheetReferencesUseCase>(),
+            linkSheetReference = get<LinkSheetReferenceUseCase>(),
+            unlinkSheetReference = get<UnlinkSheetReferenceUseCase>(),
         )
     }
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
@@ -73,6 +82,19 @@ fun CharacterSheetDetailPage(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val formations by viewModel.formations.collectAsStateWithLifecycle()
+    val peoples by viewModel.peoples.collectAsStateWithLifecycle()
+    val linked by viewModel.linked.collectAsStateWithLifecycle()
+    val catalogues by viewModel.catalogues.collectAsStateWithLifecycle()
+
+    val refs = SheetReferences(
+        formations = formations,
+        peoples = peoples,
+        linked = linked,
+        catalogues = catalogues,
+        onLink = viewModel::linkRef,
+        onUnlink = viewModel::unlinkRef,
+    )
 
     Column(
         modifier = modifier.fillMaxSize().padding(AppTheme.dimens.xl),
@@ -85,6 +107,7 @@ fun CharacterSheetDetailPage(
             CharacterSheetDetailContent(
                 sheet = loaded,
                 campaigns = campaigns,
+                refs = refs,
                 isEditing = isEditing,
                 isSaving = isLoading,
                 isExporting = isExporting,
@@ -107,6 +130,7 @@ fun CharacterSheetDetailPage(
 private fun CharacterSheetDetailContent(
     sheet: CharacterSheet,
     campaigns: List<SheetCampaign>,
+    refs: SheetReferences,
     isEditing: Boolean,
     isSaving: Boolean,
     isExporting: Boolean,
@@ -141,6 +165,7 @@ private fun CharacterSheetDetailContent(
                 selectedTab = selectedTab,
                 sheet = sheet,
                 campaigns = campaigns,
+                refs = refs,
                 isEditing = isEditing,
                 form = form,
             )
@@ -188,13 +213,14 @@ private fun TabContent(
     selectedTab: Int,
     sheet: CharacterSheet,
     campaigns: List<SheetCampaign>,
+    refs: SheetReferences,
     isEditing: Boolean,
     form: CharacterSheetFormState,
 ) {
     when (selectedTab) {
-        0 -> IdentiteTab(sheet, isEditing, form)
-        1 -> CombatTab(sheet, isEditing, form)
-        2 -> InventaireTab(sheet, isEditing, form)
+        0 -> IdentiteTab(sheet, isEditing, form, refs)
+        1 -> CombatTab(sheet, isEditing, form, refs)
+        2 -> InventaireTab(sheet, isEditing, form, refs)
         else -> CampagnesTab(campaigns)
     }
 }
