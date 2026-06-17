@@ -18,9 +18,19 @@ class CheckUpdateUseCaseImplTest {
 
     private val repository = mockk<UpdateRepository>()
 
-    private fun useCase(current: String) = CheckUpdateUseCaseImpl(repository, currentVersion = current)
+    private fun useCase(current: String) =
+        CheckUpdateUseCaseImpl(repository, currentVersion = current, isDev = false)
 
     private fun release(version: String) = UpdateInfoDto(version, "https://example.com/release", null)
+
+    @Test
+    fun `returns null in dev mode without querying the repository`() = runTest {
+        // En dev, on ne propose jamais de mise à jour, même si une release plus récente existe.
+        coEvery { repository.fetchLatestRelease() } returns release("v99.0.0")
+        val devUseCase = CheckUpdateUseCaseImpl(repository, currentVersion = "1.0.0", isDev = true)
+        assertNull(devUseCase().getOrNull())
+        io.mockk.coVerify(exactly = 0) { repository.fetchLatestRelease() }
+    }
 
     @Test
     fun `returns null when no release available`() = runTest {
