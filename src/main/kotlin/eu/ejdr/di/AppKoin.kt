@@ -7,8 +7,8 @@ import org.koin.core.context.startKoin
  *
  * Charge le socle transverse ([infrastructureModule]) puis un module **par feature**
  * ([authModule], [settingsModule], [updateModule], [realtimeModule], [campaignModule],
- * [characterSheetModule]). Ajouter une feature = ajouter son module ici, sans toucher aux
- * autres. À appeler une seule fois au démarrage.
+ * [sessionModule], [characterSheetModule]). Ajouter une feature = ajouter son module ici, sans
+ * toucher aux autres. À appeler une seule fois au démarrage.
  *
  * @return L'application Koin initialisée.
  */
@@ -20,6 +20,7 @@ fun initKoin() = startKoin {
         updateModule,
         realtimeModule,
         campaignModule,
+        sessionModule,
         characterSheetModule,
     )
 }

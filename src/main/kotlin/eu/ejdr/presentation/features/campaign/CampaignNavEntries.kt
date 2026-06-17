@@ -35,7 +35,11 @@ fun EntryProviderScope<Any>.campaignEntries(actions: NavActions) {
                 )
             },
         ) {
-            CampaignDetailPage(id = key.id, name = key.name)
+            CampaignDetailPage(
+                id = key.id,
+                name = key.name,
+                onOpenSession = { id, title -> actions.backStack.add(Route.SessionDetail(id, title)) },
+            )
         }
     }
 }
