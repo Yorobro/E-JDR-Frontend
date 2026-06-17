@@ -1,3 +1,10 @@
+## [1.10.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.10.0...v1.10.1) (2026-06-17)
+
+
+### Bug Fixes
+
+* **auth:** persist session reliably across restarts ([ff429ae](https://github.com/Yorobro/E-JDR-Frontend/commit/ff429ae88c586270d3526b4bff353a4d00c8207f))
+
 ## [1.10.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.9.0...v1.10.0) (2026-06-15)
 
 
