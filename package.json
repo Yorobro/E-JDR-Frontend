@@ -4,18 +4,25 @@
   "private": true,
   "scripts": {
     "prepare": "husky install",
-    "release": "semantic-release"
+    "release": "semantic-release",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "lint-staged": {
+    "*": "prettier --check --ignore-unknown"
   },
   "devDependencies": {
-    "semantic-release": "^21.0.0",
-    "@semantic-release/commit-analyzer": "^10.0.0",
-    "@semantic-release/release-notes-generator": "^10.0.0",
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
     "@semantic-release/changelog": "^6.0.0",
+    "@semantic-release/commit-analyzer": "^10.0.0",
     "@semantic-release/exec": "^6.0.3",
     "@semantic-release/git": "^10.0.0",
     "@semantic-release/github": "^9.0.0",
-    "@commitlint/config-conventional": "^17.0.0",
-    "@commitlint/cli": "^17.0.0",
-    "husky": "^8.0.0"
+    "@semantic-release/release-notes-generator": "^10.0.0",
+    "husky": "^8.0.0",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.4",
+    "semantic-release": "^21.0.0"
   }
 }
