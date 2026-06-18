@@ -7,9 +7,16 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetReferenceUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.application.shared.fold
+import eu.ejdr.application.shared.getOrElse
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
+import eu.ejdr.domain.features.reference.entities.ReferenceItem
+import eu.ejdr.domain.features.reference.entities.ReferenceType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -28,6 +35,10 @@ import kotlinx.coroutines.launch
  * @property getCampaigns Use case de récupération des campagnes rattachées (onglet Campagnes).
  * @property exportPdf Use case de récupération du PDF (binaire) de la fiche.
  * @property fileSaver Port d'enregistrement du fichier via le dialogue natif « Enregistrer sous ».
+ * @property listReferenceItems Use case de listing du catalogue d'un type (dropdowns + dialogs).
+ * @property listSheetReferences Use case de listing des éléments N‑N rattachés à la fiche.
+ * @property linkSheetReference Use case de rattachement d'un élément N‑N à la fiche.
+ * @property unlinkSheetReference Use case de détachement d'un élément N‑N de la fiche.
  */
 class CharacterSheetDetailViewModel(
     private val sheetId: String,
@@ -36,6 +47,10 @@ class CharacterSheetDetailViewModel(
     private val getCampaigns: GetSheetCampaignsUseCase,
     private val exportPdf: ExportCharacterSheetPdfUseCase,
     private val fileSaver: FileSaver,
+    private val listReferenceItems: ListReferenceItemsUseCase,
+    private val listSheetReferences: ListSheetReferencesUseCase,
+    private val linkSheetReference: LinkSheetReferenceUseCase,
+    private val unlinkSheetReference: UnlinkSheetReferenceUseCase,
 ) : ViewModel() {
 
     private val _sheet = MutableStateFlow<CharacterSheet?>(null)
@@ -43,6 +58,21 @@ class CharacterSheetDetailViewModel(
 
     private val _campaigns = MutableStateFlow<List<SheetCampaign>>(emptyList())
     val campaigns: StateFlow<List<SheetCampaign>> = _campaigns.asStateFlow()
+
+    /** Catalogues N‑1 de l'utilisateur (pour les dropdowns formation/peuple). */
+    private val _formations = MutableStateFlow<List<ReferenceItem>>(emptyList())
+    val formations: StateFlow<List<ReferenceItem>> = _formations.asStateFlow()
+
+    private val _peoples = MutableStateFlow<List<ReferenceItem>>(emptyList())
+    val peoples: StateFlow<List<ReferenceItem>> = _peoples.asStateFlow()
+
+    /** Éléments N‑N rattachés à la fiche, par type liable. */
+    private val _linked = MutableStateFlow<Map<ReferenceType, List<ReferenceItem>>>(emptyMap())
+    val linked: StateFlow<Map<ReferenceType, List<ReferenceItem>>> = _linked.asStateFlow()
+
+    /** Catalogues N‑N de l'utilisateur (pour proposer des éléments à rattacher), par type liable. */
+    private val _catalogues = MutableStateFlow<Map<ReferenceType, List<ReferenceItem>>>(emptyMap())
+    val catalogues: StateFlow<Map<ReferenceType, List<ReferenceItem>>> = _catalogues.asStateFlow()
 
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
@@ -60,7 +90,10 @@ class CharacterSheetDetailViewModel(
         load()
     }
 
-    /** Recharge la fiche complète (et ses campagnes rattachées) depuis le serveur. */
+    /** Types de référence rattachables en N‑N à une fiche. */
+    private val linkableTypes = ReferenceType.entries.filter { it.linkable }
+
+    /** Recharge la fiche complète, ses campagnes, et les données de référence (catalogues + liaisons). */
     fun load() {
         viewModelScope.launch {
             _isLoading.value = true
@@ -72,8 +105,54 @@ class CharacterSheetDetailViewModel(
                 onSuccess = { _campaigns.value = it },
                 onFailure = { /* onglet vide : ne pas écraser l'erreur principale */ },
             )
+            loadReferences()
             _isLoading.value = false
         }
+    }
+
+    /**
+     * Charge les catalogues N‑1 (formations/peuples) pour les dropdowns, et — pour chaque type
+     * liable — les éléments rattachés à la fiche + le catalogue de l'utilisateur. Les échecs de
+     * référence n'écrasent pas l'erreur principale de la fiche (sections simplement vides).
+     */
+    private suspend fun loadReferences() {
+        _formations.value = listReferenceItems(ReferenceType.FORMATION).getOrElse { emptyList() }
+        _peoples.value = listReferenceItems(ReferenceType.PEUPLE).getOrElse { emptyList() }
+
+        val linked = mutableMapOf<ReferenceType, List<ReferenceItem>>()
+        val catalogues = mutableMapOf<ReferenceType, List<ReferenceItem>>()
+        for (type in linkableTypes) {
+            linked[type] = listSheetReferences(sheetId, type).getOrElse { emptyList() }
+            catalogues[type] = listReferenceItems(type).getOrElse { emptyList() }
+        }
+        _linked.value = linked
+        _catalogues.value = catalogues
+    }
+
+    /** Rattache un élément du catalogue à la fiche (N‑N), puis recharge les liaisons du type. */
+    fun linkRef(type: ReferenceType, itemId: String) {
+        viewModelScope.launch {
+            linkSheetReference(sheetId, type, itemId).fold(
+                onSuccess = { _error.value = null; reloadLinked(type) },
+                onFailure = { _error.value = it.message },
+            )
+        }
+    }
+
+    /** Détache un élément de la fiche (N‑N), puis recharge les liaisons du type. */
+    fun unlinkRef(type: ReferenceType, itemId: String) {
+        viewModelScope.launch {
+            unlinkSheetReference(sheetId, type, itemId).fold(
+                onSuccess = { _error.value = null; reloadLinked(type) },
+                onFailure = { _error.value = it.message },
+            )
+        }
+    }
+
+    /** Recharge la liste des éléments rattachés pour un seul type (après link/unlink). */
+    private suspend fun reloadLinked(type: ReferenceType) {
+        val items = listSheetReferences(sheetId, type).getOrElse { return }
+        _linked.value = _linked.value.toMutableMap().apply { put(type, items) }
     }
 
     /** Passe en mode édition. */

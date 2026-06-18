@@ -22,9 +22,11 @@ class CharacterSheetFormState(source: CharacterSheet) {
     private val createdAt = source.createdAt
 
     var name by mutableStateOf(source.name)
-    var formation by mutableStateOf(source.formation.orEmpty())
+    // formationId / peupleId : id de l'élément de référence sélectionné (ou "" si aucun),
+    // pilotés par les dropdowns. La résolution id→nom se fait dans la page à partir des catalogues.
+    var formationId by mutableStateOf(source.formationId.orEmpty())
     var niveau by mutableStateOf(source.niveau.toFieldText())
-    var peuple by mutableStateOf(source.peuple.orEmpty())
+    var peupleId by mutableStateOf(source.peupleId.orEmpty())
     var sexe by mutableStateOf(source.sexe.orEmpty())
     var tailleEtPoids by mutableStateOf(source.tailleEtPoids.orEmpty())
     var age by mutableStateOf(source.age.toFieldText())
@@ -37,13 +39,9 @@ class CharacterSheetFormState(source: CharacterSheet) {
     var pointsDeVie by mutableStateOf(source.pointsDeVie.toFieldText())
     var pointsDeMagie by mutableStateOf(source.pointsDeMagie.toFieldText())
     var protection by mutableStateOf(source.protection.toFieldText())
-    var competences by mutableStateOf(source.competences.orEmpty())
     var purseGold by mutableStateOf(source.purse?.gold.toFieldText())
     var purseSilver by mutableStateOf(source.purse?.silver.toFieldText())
     var purseCopper by mutableStateOf(source.purse?.copper.toFieldText())
-    var armes by mutableStateOf(source.armes.orEmpty())
-    var armures by mutableStateOf(source.armures.orEmpty())
-    var equipement by mutableStateOf(source.equipement.orEmpty())
     var sortsEtMiracles by mutableStateOf(source.sortsEtMiracles.orEmpty())
     var notes by mutableStateOf(source.notes.orEmpty())
 
@@ -56,9 +54,9 @@ class CharacterSheetFormState(source: CharacterSheet) {
         ownerId = ownerId,
         name = name.trim(),
         createdAt = createdAt,
-        formation = formation.toNullableText(),
+        formationId = formationId.toNullableText(),
         niveau = niveau.toNullableInt(),
-        peuple = peuple.toNullableText(),
+        peupleId = peupleId.toNullableText(),
         sexe = sexe.toNullableText(),
         tailleEtPoids = tailleEtPoids.toNullableText(),
         age = age.toNullableInt(),
@@ -71,11 +69,7 @@ class CharacterSheetFormState(source: CharacterSheet) {
         pointsDeVie = pointsDeVie.toNullableInt(),
         pointsDeMagie = pointsDeMagie.toNullableInt(),
         protection = protection.toNullableInt(),
-        competences = competences.toNullableText(),
         purse = buildPurse(),
-        armes = armes.toNullableText(),
-        armures = armures.toNullableText(),
-        equipement = equipement.toNullableText(),
         sortsEtMiracles = sortsEtMiracles.toNullableText(),
         notes = notes.toNullableText(),
     )

@@ -85,7 +85,7 @@ class CharacterSheetHttpRepositoryTest {
         assertIs<Result.Success<List<CharacterSheet>>>(result)
         val sheet = result.value.first()
         assertEquals("Aragorn", sheet.name)
-        assertNull(sheet.peuple)
+        assertNull(sheet.peupleId)
         assertNull(sheet.vigueur)
         assertNull(sheet.notes)
     }
@@ -94,22 +94,22 @@ class CharacterSheetHttpRepositoryTest {
     fun `getById success maps the full sheet`() = runTest {
         val body = """
             {"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z",
-             "peuple":"Dúnedain","vigueur":6,"notes":"Garde du Nord"}
+             "peupleId":"peuple-1","vigueur":6,"notes":"Garde du Nord"}
         """.trimIndent()
         val result = repository(clientReturning(HttpStatusCode.OK, body)).getById("s-1")
 
         assertIs<Result.Success<CharacterSheet>>(result)
-        assertEquals("Dúnedain", result.value.peuple)
+        assertEquals("peuple-1", result.value.peupleId)
         assertEquals(6, result.value.vigueur)
         assertEquals("Garde du Nord", result.value.notes)
-        assertNull(result.value.formation)
+        assertNull(result.value.formationId)
     }
 
     @Test
-    fun `getById maps sexe niveau purse and competences`() = runTest {
+    fun `getById maps sexe niveau formationId and purse`() = runTest {
         val body = """
             {"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z",
-             "sexe":"M","niveau":5,"competences":"Pistage",
+             "sexe":"M","niveau":5,"formationId":"formation-1",
              "purse":{"gold":1,"silver":50,"copper":0}}
         """.trimIndent()
         val result = repository(clientReturning(HttpStatusCode.OK, body)).getById("s-1")
@@ -117,7 +117,7 @@ class CharacterSheetHttpRepositoryTest {
         assertIs<Result.Success<CharacterSheet>>(result)
         assertEquals("M", result.value.sexe)
         assertEquals(5, result.value.niveau)
-        assertEquals("Pistage", result.value.competences)
+        assertEquals("formation-1", result.value.formationId)
         assertEquals(Purse(gold = 1, silver = 50, copper = 0), result.value.purse)
     }
 

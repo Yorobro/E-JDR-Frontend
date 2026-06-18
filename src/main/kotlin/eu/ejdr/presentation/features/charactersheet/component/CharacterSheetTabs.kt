@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /* ----------------------------------------------------------------------------------------- *
@@ -25,16 +26,26 @@ private fun TabColumn(content: @Composable () -> Unit) {
 
 /** Onglet Identité : Identité + Caractéristiques, empilés pleine largeur. */
 @Composable
-fun IdentiteTab(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFormState) {
+fun IdentiteTab(
+    sheet: CharacterSheet,
+    isEditing: Boolean,
+    form: CharacterSheetFormState,
+    refs: SheetReferences,
+) {
     TabColumn {
-        SheetCard("Identité") { IdentiteSection(sheet, isEditing, form) }
+        SheetCard("Identité") { IdentiteSection(sheet, isEditing, form, refs) }
         SheetCard("Caractéristiques") { CaracteristiquesSection(sheet, isEditing, form) }
     }
 }
 
-/** Onglet Combat : [Combat · Bourse], [Armes · Armures], puis Sorts & Miracles pleine largeur. */
+/** Onglet Combat : [Combat · Bourse], [Armes · Armures] (N‑N), puis Sorts & Miracles. */
 @Composable
-fun CombatTab(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFormState) {
+fun CombatTab(
+    sheet: CharacterSheet,
+    isEditing: Boolean,
+    form: CharacterSheetFormState,
+    refs: SheetReferences,
+) {
     TabColumn {
         ResponsiveColumns(
             columns = listOf(
@@ -44,8 +55,8 @@ fun CombatTab(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFor
         )
         ResponsiveColumns(
             columns = listOf(
-                { SheetCard("Armes") { LongTextBody(isEditing, form.armes, sheet.armes) { form.armes = it } } },
-                { SheetCard("Armures") { LongTextBody(isEditing, form.armures, sheet.armures) { form.armures = it } } },
+                { SheetCard("Armes") { LinkedReferenceSection(ReferenceType.ARME, isEditing, refs) } },
+                { SheetCard("Armures") { LinkedReferenceSection(ReferenceType.ARMURE, isEditing, refs) } },
             ),
         )
         SheetCard("Sorts & Miracles") {
@@ -54,14 +65,19 @@ fun CombatTab(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFor
     }
 }
 
-/** Onglet Inventaire : [Équipement · Compétences], puis Notes pleine largeur. */
+/** Onglet Inventaire : [Équipements · Compétences] (N‑N), puis Notes pleine largeur. */
 @Composable
-fun InventaireTab(sheet: CharacterSheet, isEditing: Boolean, form: CharacterSheetFormState) {
+fun InventaireTab(
+    sheet: CharacterSheet,
+    isEditing: Boolean,
+    form: CharacterSheetFormState,
+    refs: SheetReferences,
+) {
     TabColumn {
         ResponsiveColumns(
             columns = listOf(
-                { SheetCard("Équipement") { LongTextBody(isEditing, form.equipement, sheet.equipement) { form.equipement = it } } },
-                { SheetCard("Compétences") { LongTextBody(isEditing, form.competences, sheet.competences) { form.competences = it } } },
+                { SheetCard("Équipements") { LinkedReferenceSection(ReferenceType.EQUIPEMENT, isEditing, refs) } },
+                { SheetCard("Compétences") { LinkedReferenceSection(ReferenceType.COMPETENCE, isEditing, refs) } },
             ),
         )
         SheetCard("Notes") { LongTextBody(isEditing, form.notes, sheet.notes) { form.notes = it } }

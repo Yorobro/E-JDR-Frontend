@@ -174,6 +174,8 @@ kover {
                     "eu.ejdr.presentation.features.campaign.component",
                     "eu.ejdr.presentation.features.session.page",
                     "eu.ejdr.presentation.features.session.component",
+                    "eu.ejdr.presentation.features.reference.page",
+                    "eu.ejdr.presentation.features.reference.component",
                     "eu.ejdr.presentation.features.charactersheet.page",
                     "eu.ejdr.presentation.features.charactersheet.component",
                     "eu.ejdr.infrastructure.file",
@@ -187,6 +189,7 @@ kover {
                     "eu.ejdr.presentation.features.settings.SettingsNavEntriesKt",
                     "eu.ejdr.presentation.features.campaign.CampaignNavEntriesKt",
                     "eu.ejdr.presentation.features.session.SessionNavEntriesKt",
+                    "eu.ejdr.presentation.features.reference.ReferenceNavEntriesKt",
                     "eu.ejdr.presentation.features.charactersheet.CharacterSheetNavEntriesKt",
                     "eu.ejdr.presentation.navigation.NavActions",
                 )

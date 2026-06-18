@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.IconButton
@@ -34,6 +35,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param modifier Modifier Compose appliqué à la barre.
  * @param onCampaigns Callback pour ouvrir les campagnes ; si `null`, l'icône est masquée.
  * @param onCharacterSheets Callback pour ouvrir les fiches ; si `null`, l'icône est masquée.
+ * @param onReferences Callback pour ouvrir « Mes éléments » ; si `null`, l'icône est masquée.
  * @param onSettings Callback pour ouvrir les paramètres ; si `null`, l'icône est masquée.
  * @param onBack Callback pour revenir en arrière ; si `null`, le bouton est masqué.
  */
@@ -44,6 +46,7 @@ fun AppTopBar(
     modifier: Modifier = Modifier,
     onCampaigns: (() -> Unit)? = null,
     onCharacterSheets: (() -> Unit)? = null,
+    onReferences: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null,
 ) {
@@ -85,6 +88,14 @@ fun AppTopBar(
                     AppIcon(
                         imageVector = Icons.Default.Person,
                         contentDescription = "Mes fiches",
+                    )
+                }
+            }
+            if (onReferences != null) {
+                IconButton(onClick = onReferences) {
+                    AppIcon(
+                        imageVector = Icons.Default.Category,
+                        contentDescription = "Mes éléments",
                     )
                 }
             }
