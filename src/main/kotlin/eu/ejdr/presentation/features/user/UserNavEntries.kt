@@ -18,6 +18,7 @@ fun EntryProviderScope<Any>.userEntries(actions: NavActions) {
                     onCampaigns = { actions.backStack.add(Route.Campaigns) },
                     onCharacterSheets = { actions.backStack.add(Route.CharacterSheets) },
                     onReferences = { actions.backStack.add(Route.ReferenceHub) },
+                    onGroups = { actions.backStack.add(Route.Groups) },
                     onSettings = { actions.backStack.add(Route.Settings) },
                 )
             },

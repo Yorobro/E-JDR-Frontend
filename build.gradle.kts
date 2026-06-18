@@ -178,6 +178,8 @@ kover {
                     "eu.ejdr.presentation.features.reference.component",
                     "eu.ejdr.presentation.features.charactersheet.page",
                     "eu.ejdr.presentation.features.charactersheet.component",
+                    "eu.ejdr.presentation.features.friendgroup.page",
+                    "eu.ejdr.presentation.features.friendgroup.component",
                     "eu.ejdr.infrastructure.file",
                     "eu.ejdr.di",
                 )
@@ -191,6 +193,7 @@ kover {
                     "eu.ejdr.presentation.features.session.SessionNavEntriesKt",
                     "eu.ejdr.presentation.features.reference.ReferenceNavEntriesKt",
                     "eu.ejdr.presentation.features.charactersheet.CharacterSheetNavEntriesKt",
+                    "eu.ejdr.presentation.features.friendgroup.FriendGroupNavEntriesKt",
                     "eu.ejdr.presentation.navigation.NavActions",
                 )
                 // N.B. : les ViewModels (AuthViewModel, UserViewModel, SettingsViewModel),

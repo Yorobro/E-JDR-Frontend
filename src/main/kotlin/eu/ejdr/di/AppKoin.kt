@@ -23,5 +23,6 @@ fun initKoin() = startKoin {
         sessionModule,
         characterSheetModule,
         referenceModule,
+        friendGroupModule,
     )
 }
