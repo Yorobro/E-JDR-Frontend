@@ -55,16 +55,18 @@ class CharacterSheetDetailViewModelTest {
      */
     private fun buildVm(
         getById: GetCharacterSheetUseCase,
+        activeGroupId: String? = "g-1",
         update: UpdateCharacterSheetUseCase = UpdateCharacterSheetUseCase { Result.Success(it) },
         getCampaigns: GetSheetCampaignsUseCase = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         exportPdf: ExportCharacterSheetPdfUseCase = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
         fileSaver: FileSaver = FileSaver { _, _ -> true },
-        listReferenceItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { Result.Success(emptyList<ReferenceItem>()) },
+        listReferenceItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
         listSheetReferences: ListSheetReferencesUseCase = ListSheetReferencesUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
         linkSheetReference: LinkSheetReferenceUseCase = LinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
         unlinkSheetReference: UnlinkSheetReferenceUseCase = UnlinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
     ) = CharacterSheetDetailViewModel(
         sheetId = "s-1",
+        activeGroupId = activeGroupId,
         getById = getById,
         update = update,
         getCampaigns = getCampaigns,
@@ -243,7 +245,7 @@ class CharacterSheetDetailViewModelTest {
         val item = ReferenceItem("ref-1", "Épée", "2026-06-13T10:00:00.000Z")
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
-            listReferenceItems = ListReferenceItemsUseCase { Result.Success(listOf(item)) },
+            listReferenceItems = ListReferenceItemsUseCase { _, _ -> Result.Success(listOf(item)) },
             listSheetReferences = ListSheetReferencesUseCase { _, _ -> Result.Success(listOf(item)) },
         )
         advanceUntilIdle()

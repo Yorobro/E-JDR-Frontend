@@ -21,6 +21,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 /**
  * Tests de l'adapter HTTP [ReferenceHttpRepository] avec le MockEngine de Ktor. Couvre la
@@ -57,31 +58,58 @@ class ReferenceHttpRepositoryTest {
     private fun repository(client: HttpClient) = ReferenceHttpRepository(client, config)
 
     @Test
-    fun `list success maps the wrapped items`() = runTest {
+    fun `list scopes the request by the active group`() = runTest {
         val body =
             """{"items":[{"id":"a-1","name":"Épée","createdAt":"2026-06-13T10:00:00.000Z"}]}"""
-        val result = repository(clientReturning(HttpStatusCode.OK, body)).list(ReferenceType.ARME)
+        var requestedUrl = ""
+        val engine = MockEngine { request ->
+            requestedUrl = request.url.toString()
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).list(ReferenceType.ARME, "g-1")
 
         assertIs<Result.Success<List<ReferenceItem>>>(result)
-        assertEquals(1, result.value.size)
         assertEquals("Épée", result.value.first().name)
+        assertTrue(requestedUrl.contains("armes"), "URL should target the type slug: $requestedUrl")
+        assertTrue(requestedUrl.contains("groupId=g-1"), "URL should carry groupId: $requestedUrl")
     }
 
     @Test
-    fun `create success maps the item`() = runTest {
+    fun `create sends name and group in the body`() = runTest {
         val body = """{"id":"a-1","name":"Épée","createdAt":"2026-06-13T10:00:00.000Z"}"""
-        val result = repository(clientReturning(HttpStatusCode.Created, body))
-            .create(ReferenceType.ARME, "Épée")
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).create(ReferenceType.ARME, "Épée", "g-1")
 
         assertIs<Result.Success<ReferenceItem>>(result)
         assertEquals("a-1", result.value.id)
+        assertTrue(requestBody.contains("\"groupId\":\"g-1\""), "Body should carry groupId: $requestBody")
     }
 
     @Test
     fun `create 409 maps to NameAlreadyUsed`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.Conflict, """{"code":"REFERENCE_NAME_ALREADY_USED"}"""),
-        ).create(ReferenceType.ARME, "Épée")
+        ).create(ReferenceType.ARME, "Épée", "g-1")
 
         assertIs<Result.Failure<ReferenceError>>(result)
         assertEquals(ReferenceError.NameAlreadyUsed, result.error)
@@ -91,7 +119,7 @@ class ReferenceHttpRepositoryTest {
     fun `create 400 maps to InvalidName`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.BadRequest, """{"code":"INVALID_REFERENCE_NAME"}"""),
-        ).create(ReferenceType.ARME, "")
+        ).create(ReferenceType.ARME, "", "g-1")
 
         assertIs<Result.Failure<ReferenceError>>(result)
         assertEquals(ReferenceError.InvalidName, result.error)
@@ -156,7 +184,7 @@ class ReferenceHttpRepositoryTest {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         }
 
-        val result = repository(client).list(ReferenceType.ARME)
+        val result = repository(client).list(ReferenceType.ARME, "g-1")
 
         assertIs<Result.Failure<ReferenceError>>(result)
         assertEquals(ReferenceError.Network, result.error)

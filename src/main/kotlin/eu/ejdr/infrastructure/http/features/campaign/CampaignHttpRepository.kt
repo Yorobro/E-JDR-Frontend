@@ -14,6 +14,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -37,13 +38,16 @@ class CampaignHttpRepository(
 ) : CampaignRepository {
 
     /**
-     * Liste les campagnes du maître du jeu courant via `GET /campaigns`.
+     * Liste les campagnes du groupe actif via `GET /campaigns?groupId=…`.
      *
+     * @param groupId Identifiant du groupe actif.
      * @return [Result.Success] avec la liste des campagnes, sinon une [CampaignError].
      */
-    override suspend fun list(): Result<List<Campaign>, CampaignError> =
+    override suspend fun list(groupId: String): Result<List<Campaign>, CampaignError> =
         runCatchingCancellable {
-            val response = client.get("${config.baseUrl}/campaigns")
+            val response = client.get("${config.baseUrl}/campaigns") {
+                parameter("groupId", groupId)
+            }
             if (response.status.isSuccess()) {
                 val body = response.body<CampaignListResponseDto>()
                 Result.Success(body.campaigns.map(CampaignHttpMapper::toCampaign))
@@ -53,17 +57,18 @@ class CampaignHttpRepository(
         }.getOrElse { Result.Failure(CampaignError.Network) }
 
     /**
-     * Crée une campagne via `POST /campaigns`.
+     * Crée une campagne dans le groupe actif via `POST /campaigns`.
      *
      * @param name Nom de la campagne à créer.
+     * @param groupId Identifiant du groupe actif auquel rattacher la campagne.
      * @return [Result.Success] avec la campagne créée, sinon une [CampaignError]
      * (ex. [CampaignError.InvalidName]).
      */
-    override suspend fun create(name: String): Result<Campaign, CampaignError> =
+    override suspend fun create(name: String, groupId: String): Result<Campaign, CampaignError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/campaigns") {
                 contentType(ContentType.Application.Json)
-                setBody(CreateCampaignRequestDto(name))
+                setBody(CreateCampaignRequestDto(name, groupId))
             }
             if (response.status.isSuccess()) {
                 Result.Success(CampaignHttpMapper.toCampaign(response.body<CampaignDto>()))

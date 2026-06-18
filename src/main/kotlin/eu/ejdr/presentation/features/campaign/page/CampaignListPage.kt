@@ -27,12 +27,14 @@ import eu.ejdr.presentation.features.campaign.CampaignListViewModel
 import eu.ejdr.presentation.features.campaign.component.CampaignCard
 import eu.ejdr.presentation.features.campaign.component.ConfirmDeleteDialog
 import eu.ejdr.presentation.features.campaign.component.CreateCampaignDialog
+import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.shared.component.atomic.AppFab
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import org.koin.compose.koinInject
 
 private val MinTileWidth = 180.dp
 private val GridBottomPadding = 96.dp
@@ -53,8 +55,10 @@ fun CampaignListPage(
     onOpenCampaign: (id: String, name: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val activeGroupState = koinInject<ActiveGroupState>()
     val viewModel = koinViewModel {
         CampaignListViewModel(
+            activeGroupState.activeGroupId,
             get<ListCampaignsUseCase>(),
             get<CreateCampaignUseCase>(),
             get<DeleteCampaignUseCase>(),
@@ -63,33 +67,43 @@ fun CampaignListPage(
     val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val needsGroup by viewModel.needsGroup.collectAsStateWithLifecycle()
 
     var showCreate by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<Campaign?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(AppTheme.dimens.xl),
-            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-        ) {
-            FormError(message = error)
-            CampaignGrid(
-                campaigns = campaigns,
-                isLoading = isLoading,
-                onOpenCampaign = onOpenCampaign,
-                onDeleteRequest = { pendingDelete = it },
+        if (needsGroup) {
+            AppText(
+                text = "Choisis ou crée un groupe pour voir ses campagnes.",
+                style = AppTextStyle.Body,
+                color = AppTheme.colors.muted,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(AppTheme.dimens.xl),
+                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+            ) {
+                FormError(message = error)
+                CampaignGrid(
+                    campaigns = campaigns,
+                    isLoading = isLoading,
+                    onOpenCampaign = onOpenCampaign,
+                    onDeleteRequest = { pendingDelete = it },
+                )
+            }
+
+            AppFab(
+                onClick = { showCreate = true },
+                contentDescription = "Ajouter une campagne",
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(AppTheme.dimens.xl),
             )
         }
-
-        AppFab(
-            onClick = { showCreate = true },
-            contentDescription = "Ajouter une campagne",
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(AppTheme.dimens.xl),
-        )
     }
 
     if (showCreate) {

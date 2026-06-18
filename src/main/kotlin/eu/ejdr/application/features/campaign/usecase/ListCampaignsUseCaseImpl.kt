@@ -9,5 +9,6 @@ import eu.ejdr.domain.features.campaign.error.CampaignError
 class ListCampaignsUseCaseImpl(
     private val repository: CampaignRepository,
 ) : ListCampaignsUseCase {
-    override suspend fun invoke(): Result<List<Campaign>, CampaignError> = repository.list()
+    override suspend fun invoke(groupId: String): Result<List<Campaign>, CampaignError> =
+        repository.list(groupId)
 }

@@ -5,16 +5,20 @@ import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.domain.features.reference.error.ReferenceError
 
-/** Use case : liste les éléments du catalogue de l'utilisateur pour un type. */
+/** Use case : liste les éléments du catalogue du groupe actif pour un type. */
 fun interface ListReferenceItemsUseCase {
-    suspend operator fun invoke(type: ReferenceType): Result<List<ReferenceItem>, ReferenceError>
+    suspend operator fun invoke(
+        type: ReferenceType,
+        groupId: String,
+    ): Result<List<ReferenceItem>, ReferenceError>
 }
 
-/** Use case : crée un élément dans le catalogue d'un type. */
+/** Use case : crée un élément dans le catalogue d'un type pour le groupe actif (admin requis). */
 fun interface CreateReferenceItemUseCase {
     suspend operator fun invoke(
         type: ReferenceType,
         name: String,
+        groupId: String,
     ): Result<ReferenceItem, ReferenceError>
 }
 

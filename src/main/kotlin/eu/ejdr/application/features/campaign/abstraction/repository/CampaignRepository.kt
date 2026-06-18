@@ -13,19 +13,21 @@ import eu.ejdr.domain.features.campaign.error.CampaignError
  */
 interface CampaignRepository {
     /**
-     * Liste les campagnes dont l'utilisateur courant est le maître du jeu.
+     * Liste les campagnes du groupe indiqué (l'utilisateur doit en être membre côté serveur).
      *
+     * @param groupId identifiant du groupe actif.
      * @return la liste des campagnes, ou une [CampaignError] en cas d'échec.
      */
-    suspend fun list(): Result<List<Campaign>, CampaignError>
+    suspend fun list(groupId: String): Result<List<Campaign>, CampaignError>
 
     /**
-     * Crée une campagne dont l'utilisateur courant devient le maître du jeu.
+     * Crée une campagne dans le groupe indiqué ; l'utilisateur courant en devient le maître du jeu.
      *
      * @param name nom de la campagne à créer.
+     * @param groupId identifiant du groupe actif auquel rattacher la campagne.
      * @return la campagne créée, ou une [CampaignError] (ex. [CampaignError.InvalidName]).
      */
-    suspend fun create(name: String): Result<Campaign, CampaignError>
+    suspend fun create(name: String, groupId: String): Result<Campaign, CampaignError>
 
     /**
      * Supprime une campagne dont l'utilisateur courant est le maître du jeu.

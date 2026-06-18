@@ -14,17 +14,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel **générique** de gestion d'un catalogue d'éléments de référence, paramétré par
- * [type]. Charge les éléments de l'utilisateur pour ce type, expose création et suppression.
- * Une instance par destination (un type à la fois) ; clone de `CampaignListViewModel`.
+ * ViewModel **générique** de gestion d'un catalogue d'éléments de référence, paramétré par [type]
+ * et **scopé au groupe actif** (D9). Observe [activeGroupId] : recharge les éléments du groupe à
+ * chaque changement, vide la liste et lève [needsGroup] quand aucun groupe n'est sélectionné. Une
+ * instance par destination (un type à la fois).
  *
  * @param type Catégorie gérée (détermine l'endpoint via son slug).
- * @property listItems Use case de listing.
- * @property createItem Use case de création.
+ * @property activeGroupId Identifiant du groupe actif (null = aucun groupe sélectionné).
+ * @property listItems Use case de listing (par type et groupe).
+ * @property createItem Use case de création (admin requis côté serveur).
  * @property deleteItem Use case de suppression.
  */
 class ReferenceListViewModel(
     private val type: ReferenceType,
+    private val activeGroupId: StateFlow<String?>,
     private val listItems: ListReferenceItemsUseCase,
     private val createItem: CreateReferenceItemUseCase,
     private val deleteItem: DeleteReferenceItemUseCase,
@@ -39,27 +42,42 @@ class ReferenceListViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    init {
-        load()
-    }
+    /** Vrai quand aucun groupe n'est actif : l'UI invite alors à en choisir/créer un. */
+    private val _needsGroup = MutableStateFlow(false)
+    val needsGroup: StateFlow<Boolean> = _needsGroup.asStateFlow()
 
-    /** Recharge la liste des éléments du type depuis le serveur. */
-    fun load() {
+    init {
         viewModelScope.launch {
-            _isLoading.value = true
-            listItems(type).fold(
-                onSuccess = { list -> _items.value = list; _error.value = null },
-                onFailure = { error -> _error.value = error.message },
-            )
-            _isLoading.value = false
+            activeGroupId.collect { groupId -> reload(groupId) }
         }
     }
 
-    /** Crée un élément puis recharge la liste en cas de succès. */
+    /** Recharge la liste du type pour le groupe actif (ou vide + onboarding si aucun groupe). */
+    fun load() {
+        viewModelScope.launch { reload(activeGroupId.value) }
+    }
+
+    private suspend fun reload(groupId: String?) {
+        if (groupId == null) {
+            _needsGroup.value = true
+            _items.value = emptyList()
+            return
+        }
+        _needsGroup.value = false
+        _isLoading.value = true
+        listItems(type, groupId).fold(
+            onSuccess = { list -> _items.value = list; _error.value = null },
+            onFailure = { error -> _error.value = error.message },
+        )
+        _isLoading.value = false
+    }
+
+    /** Crée un élément dans le groupe actif puis recharge la liste en cas de succès. */
     fun create(name: String) {
+        val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            createItem(type, name).fold(
-                onSuccess = { _error.value = null; load() },
+            createItem(type, name, groupId).fold(
+                onSuccess = { _error.value = null; reload(groupId) },
                 onFailure = { error -> _error.value = error.message },
             )
         }
@@ -69,7 +87,7 @@ class ReferenceListViewModel(
     fun delete(itemId: String) {
         viewModelScope.launch {
             deleteItem(type, itemId).fold(
-                onSuccess = { _error.value = null; load() },
+                onSuccess = { _error.value = null; reload(activeGroupId.value) },
                 onFailure = { error -> _error.value = error.message },
             )
         }

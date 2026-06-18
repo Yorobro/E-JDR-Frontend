@@ -9,6 +9,7 @@ import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.domain.features.reference.error.ReferenceError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -19,6 +20,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ReferenceListViewModelTest {
@@ -32,31 +34,75 @@ class ReferenceListViewModelTest {
     private fun item(id: String) = ReferenceItem(id, "N-$id", "2026-06-13T10:00:00.000Z")
 
     @Test
-    fun `loads the items of the given type at init`() = runTest {
+    fun `loads the items of the given type and active group at init`() = runTest {
         var requestedType: ReferenceType? = null
+        var requestedGroup: String? = null
         val vm = ReferenceListViewModel(
             ReferenceType.ARME,
-            listItems = ListReferenceItemsUseCase { type ->
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { type, groupId ->
                 requestedType = type
+                requestedGroup = groupId
                 Result.Success(listOf(item("a")))
             },
-            createItem = CreateReferenceItemUseCase { _, _ -> Result.Success(item("a")) },
+            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
             deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
         )
         advanceUntilIdle()
 
         assertEquals(ReferenceType.ARME, requestedType)
+        assertEquals("g-1", requestedGroup)
         assertEquals(1, vm.items.value.size)
         assertNull(vm.error.value)
+        assertEquals(false, vm.needsGroup.value)
     }
 
     @Test
-    fun `create success reloads`() = runTest {
+    fun `no active group flags onboarding and does not call the use case`() = runTest {
+        var called = false
+        val vm = ReferenceListViewModel(
+            ReferenceType.ARME,
+            activeGroupId = MutableStateFlow(null),
+            listItems = ListReferenceItemsUseCase { _, _ -> called = true; Result.Success(emptyList()) },
+            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
+            deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+
+        assertTrue(vm.needsGroup.value)
+        assertTrue(vm.items.value.isEmpty())
+        assertEquals(false, called)
+    }
+
+    @Test
+    fun `reloads when the active group changes`() = runTest {
+        val active = MutableStateFlow<String?>("g-1")
+        val vm = ReferenceListViewModel(
+            ReferenceType.ARME,
+            activeGroupId = active,
+            listItems = ListReferenceItemsUseCase { _, groupId -> Result.Success(listOf(item(groupId))) },
+            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
+            deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+        assertEquals("g-1", vm.items.value.first().id)
+
+        active.value = "g-2"
+        advanceUntilIdle()
+
+        assertEquals("g-2", vm.items.value.first().id)
+    }
+
+    @Test
+    fun `create uses the active group and reloads`() = runTest {
+        var createdGroup: String? = null
         var stored = emptyList<ReferenceItem>()
         val vm = ReferenceListViewModel(
             ReferenceType.FORMATION,
-            listItems = ListReferenceItemsUseCase { Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _ ->
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
+            createItem = CreateReferenceItemUseCase { _, _, groupId ->
+                createdGroup = groupId
                 stored = listOf(item("f"))
                 Result.Success(item("f"))
             },
@@ -67,6 +113,7 @@ class ReferenceListViewModelTest {
         vm.create("Rôdeur")
         advanceUntilIdle()
 
+        assertEquals("g-1", createdGroup)
         assertEquals(1, vm.items.value.size)
         assertNull(vm.error.value)
     }
@@ -75,8 +122,9 @@ class ReferenceListViewModelTest {
     fun `create failure exposes the error`() = runTest {
         val vm = ReferenceListViewModel(
             ReferenceType.FORMATION,
-            listItems = ListReferenceItemsUseCase { Result.Success(emptyList()) },
-            createItem = CreateReferenceItemUseCase { _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList()) },
+            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
             deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
         )
         advanceUntilIdle()
@@ -92,8 +140,9 @@ class ReferenceListViewModelTest {
         var stored = listOf(item("a"))
         val vm = ReferenceListViewModel(
             ReferenceType.ARME,
-            listItems = ListReferenceItemsUseCase { Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _ -> Result.Success(item("a")) },
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
+            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
             deleteItem = DeleteReferenceItemUseCase { _, _ ->
                 stored = emptyList()
                 Result.Success(Unit)

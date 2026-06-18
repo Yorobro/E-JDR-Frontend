@@ -14,7 +14,7 @@ data class ReferenceItemDto(val id: String, val name: String, val createdAt: Str
 
 /** Corps de requête de création d'un élément (`POST /reference/{type}`). */
 @Serializable
-data class CreateReferenceRequestDto(val name: String)
+data class CreateReferenceRequestDto(val name: String, val groupId: String)
 
 /**
  * Réponse de listing (catalogue `GET /reference/{type}` et liaisons `GET /character-sheets/:id/{type}`) :

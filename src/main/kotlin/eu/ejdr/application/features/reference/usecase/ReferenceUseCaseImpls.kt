@@ -20,8 +20,10 @@ import eu.ejdr.domain.features.reference.error.ReferenceError
 class ListReferenceItemsUseCaseImpl(
     private val repository: ReferenceRepository,
 ) : ListReferenceItemsUseCase {
-    override suspend fun invoke(type: ReferenceType): Result<List<ReferenceItem>, ReferenceError> =
-        repository.list(type)
+    override suspend fun invoke(
+        type: ReferenceType,
+        groupId: String,
+    ): Result<List<ReferenceItem>, ReferenceError> = repository.list(type, groupId)
 }
 
 class CreateReferenceItemUseCaseImpl(
@@ -30,7 +32,8 @@ class CreateReferenceItemUseCaseImpl(
     override suspend fun invoke(
         type: ReferenceType,
         name: String,
-    ): Result<ReferenceItem, ReferenceError> = repository.create(type, name)
+        groupId: String,
+    ): Result<ReferenceItem, ReferenceError> = repository.create(type, name, groupId)
 }
 
 class DeleteReferenceItemUseCaseImpl(
