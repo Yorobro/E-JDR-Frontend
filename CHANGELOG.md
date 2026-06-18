@@ -1,3 +1,10 @@
+## [1.12.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.11.0...v1.12.0) (2026-06-18)
+
+
+### Features
+
+* **reference:** manage and use reference elements on the front ([296ff0f](https://github.com/Yorobro/E-JDR-Frontend/commit/296ff0fd24b5579883bc619abe7c79d3d0aa08cb))
+
 ## [1.11.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.10.1...v1.11.0) (2026-06-17)
 
 
