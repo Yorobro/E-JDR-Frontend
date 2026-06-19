@@ -230,13 +230,16 @@ fun CaracteristiquesSection(sheet: CharacterSheet, editing: Boolean, form: Chara
     }
 }
 
-/** Section Combat : points de vie, points de magie, protection en colonne. */
+/**
+ * Section Combat : points de vie et protection en **lecture seule** (calculés côté serveur —
+ * PV = 10 + vigueur totale ; protection = somme des armures liées), points de magie éditable.
+ */
 @Composable
 fun CombatSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
     FieldColumn {
-        NumberCell("Points de vie", editing, form.pointsDeVie, sheet.pointsDeVie) { form.pointsDeVie = it }
+        ReadCellPublic("Points de vie", sheet.pointsDeVie?.toString())
         NumberCell("Points de magie", editing, form.pointsDeMagie, sheet.pointsDeMagie) { form.pointsDeMagie = it }
-        NumberCell("Protection", editing, form.protection, sheet.protection) { form.protection = it }
+        ReadCellPublic("Protection", sheet.protection?.toString())
     }
 }
 

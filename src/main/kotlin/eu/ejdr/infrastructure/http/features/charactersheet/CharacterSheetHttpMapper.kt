@@ -68,7 +68,13 @@ object CharacterSheetHttpMapper {
     fun toSheetCampaign(dto: SheetCampaignDto): SheetCampaign =
         SheetCampaign(dto.campaignId, dto.campaignName, dto.gameMasterPseudo)
 
-    /** Construit le corps de mise à jour (`PUT`) à partir d'une fiche du domaine. */
+    /**
+     * Construit le corps de mise à jour (`PUT`) à partir d'une fiche du domaine.
+     *
+     * `pointsDeVie` et `protection` sont **toujours omis** (`null`) : ce sont des valeurs dérivées
+     * calculées côté serveur (PV = 10 + vigueur totale ; protection = somme des armures liées) et
+     * affichées en lecture seule. Les renvoyer serait inutile (le serveur les ignore) et trompeur.
+     */
     fun toUpdateRequest(sheet: CharacterSheet): UpdateCharacterSheetRequestDto =
         UpdateCharacterSheetRequestDto(
             name = sheet.name,
@@ -84,9 +90,9 @@ object CharacterSheetHttpMapper {
             perception = sheet.perception,
             social = sheet.social,
             vigueur = sheet.vigueur,
-            pointsDeVie = sheet.pointsDeVie,
+            pointsDeVie = null,
             pointsDeMagie = sheet.pointsDeMagie,
-            protection = sheet.protection,
+            protection = null,
             purse = sheet.purse?.let { PurseDto(it.gold, it.silver, it.copper) },
             sortsEtMiracles = sheet.sortsEtMiracles,
             notes = sheet.notes,
