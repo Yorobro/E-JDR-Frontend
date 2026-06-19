@@ -11,12 +11,14 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Group
+import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
@@ -39,6 +41,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param onGroups Callback pour ouvrir les groupes ; si `null`, l'icône est masquée.
  * @param onReferences Callback pour ouvrir « Mes éléments » ; si `null`, l'icône est masquée.
  * @param onSettings Callback pour ouvrir les paramètres ; si `null`, l'icône est masquée.
+ * @param onInvitations Callback pour ouvrir les invitations reçues ; si `null`, l'icône est masquée.
  * @param onBack Callback pour revenir en arrière ; si `null`, le bouton est masqué.
  */
 @Composable
@@ -50,6 +53,7 @@ fun AppTopBar(
     onCharacterSheets: (() -> Unit)? = null,
     onReferences: (() -> Unit)? = null,
     onGroups: (() -> Unit)? = null,
+    onInvitations: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null,
 ) {
@@ -78,51 +82,39 @@ fun AppTopBar(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (onCampaigns != null) {
-                IconButton(onClick = onCampaigns) {
-                    AppIcon(
-                        imageVector = Icons.AutoMirrored.Filled.List,
-                        contentDescription = "Campagnes",
-                    )
-                }
-            }
-            if (onCharacterSheets != null) {
-                IconButton(onClick = onCharacterSheets) {
-                    AppIcon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Mes fiches",
-                    )
-                }
-            }
-            if (onReferences != null) {
-                IconButton(onClick = onReferences) {
-                    AppIcon(
-                        imageVector = Icons.Default.Category,
-                        contentDescription = "Mes éléments",
-                    )
-                }
-            }
-            if (onGroups != null) {
-                IconButton(onClick = onGroups) {
-                    AppIcon(
-                        imageVector = Icons.Default.Group,
-                        contentDescription = "Mes groupes",
-                    )
-                }
-            }
-            if (onSettings != null) {
-                IconButton(onClick = onSettings) {
-                    AppIcon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Paramètres",
-                    )
-                }
-            }
+            TopBarAction(onCampaigns, Icons.AutoMirrored.Filled.List, "Campagnes")
+            TopBarAction(onCharacterSheets, Icons.Default.Person, "Mes fiches")
+            TopBarAction(onReferences, Icons.Default.Category, "Mes éléments")
+            TopBarAction(onGroups, Icons.Default.Group, "Mes groupes")
+            TopBarAction(onInvitations, Icons.Default.MailOutline, "Invitations")
+            TopBarAction(onSettings, Icons.Default.Settings, "Paramètres")
             AppButton(
                 label = "Déconnexion",
                 onClick = onLogout,
                 variant = ButtonVariant.Text,
             )
+        }
+    }
+}
+
+/**
+ * Action-icône de la top bar : rendue seulement si [onClick] est fourni.
+ *
+ * Factorise le motif « bouton-icône optionnel » répété pour chaque destination.
+ *
+ * @param onClick Callback du clic ; si `null`, rien n'est affiché.
+ * @param icon Icône du bouton.
+ * @param contentDescription Description d'accessibilité.
+ */
+@Composable
+private fun TopBarAction(
+    onClick: (() -> Unit)?,
+    icon: ImageVector,
+    contentDescription: String,
+) {
+    if (onClick != null) {
+        IconButton(onClick = onClick) {
+            AppIcon(imageVector = icon, contentDescription = contentDescription)
         }
     }
 }

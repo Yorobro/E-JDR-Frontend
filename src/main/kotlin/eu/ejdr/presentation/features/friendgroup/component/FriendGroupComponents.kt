@@ -123,13 +123,30 @@ fun InviteMemberDialog(
     }
 }
 
+/**
+ * Carte d'un membre de groupe.
+ *
+ * Composant bête : affiche l'identité du membre et son rôle, et expose les actions de gestion
+ * uniquement quand l'utilisateur courant est administrateur ([canManageRole]) :
+ * promouvoir un membre en admin ou rétrograder un admin en membre. Le retrait reste régi par
+ * [canRemove] (calculé par l'appelant, ex. ne pas pouvoir retirer le dernier membre).
+ *
+ * @param member Membre affiché (rôle `"ADMIN"` ou `"MEMBER"`).
+ * @param canRemove Affiche le bouton « Retirer » si vrai.
+ * @param canManageRole Affiche le bouton de changement de rôle si vrai (admin uniquement).
+ * @param onRemove Callback de retrait du membre.
+ * @param onChangeRole Callback de changement de rôle ; reçoit le nouveau rôle (`"ADMIN"`/`"MEMBER"`).
+ */
 @Composable
 fun MemberCard(
     member: GroupMember,
     canRemove: Boolean,
+    canManageRole: Boolean,
     onRemove: () -> Unit,
+    onChangeRole: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isAdmin = member.role == "ADMIN"
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = AppTheme.colors.beige),
@@ -141,19 +158,28 @@ fun MemberCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 AppText(
                     text = member.userId.take(12) + if (member.userId.length > 12) "…" else "",
                     style = AppTextStyle.Body,
                 )
                 AppText(
-                    text = if (member.role == "ADMIN") "Admin" else "Membre",
+                    text = if (isAdmin) "Admin" else "Membre",
                     style = AppTextStyle.Body,
                     color = AppTheme.colors.textSecondary,
                 )
             }
-            if (canRemove) {
-                AppButton(label = "Retirer", onClick = onRemove, variant = ButtonVariant.Danger)
+            Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs)) {
+                if (canManageRole) {
+                    AppButton(
+                        label = if (isAdmin) "Rétrograder" else "Promouvoir admin",
+                        onClick = { onChangeRole(if (isAdmin) "MEMBER" else "ADMIN") },
+                        variant = ButtonVariant.Ghost,
+                    )
+                }
+                if (canRemove) {
+                    AppButton(label = "Retirer", onClick = onRemove, variant = ButtonVariant.Danger)
+                }
             }
         }
     }

@@ -79,8 +79,10 @@ fun GroupDetailPage(
 
                 detail != null -> {
                     val d = detail!!
+                    val isAdmin = d.myRole == "ADMIN"
+                    val adminCount = d.members.count { it.role == "ADMIN" }
                     AppText(
-                        text = if (d.myRole == "ADMIN") "Mon rôle : Administrateur" else "Mon rôle : Membre",
+                        text = if (isAdmin) "Mon rôle : Administrateur" else "Mon rôle : Membre",
                         style = AppTextStyle.Body,
                         color = AppTheme.colors.textSecondary,
                     )
@@ -92,10 +94,15 @@ fun GroupDetailPage(
                         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
                     ) {
                         items(d.members, key = { it.userId }) { member ->
+                            // On masque la rétrogradation du dernier admin (le back la refuse de toute
+                            // façon : CannotRemoveLastAdmin). Réservé aux admins.
+                            val wouldDemoteLastAdmin = member.role == "ADMIN" && adminCount <= 1
                             MemberCard(
                                 member = member,
                                 canRemove = d.members.size > 1,
+                                canManageRole = isAdmin && !wouldDemoteLastAdmin,
                                 onRemove = { viewModel.removeMember(member.userId) },
+                                onChangeRole = { newRole -> viewModel.changeRole(member.userId, newRole) },
                             )
                         }
                     }

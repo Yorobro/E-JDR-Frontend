@@ -16,6 +16,7 @@ fun EntryProviderScope<Any>.friendGroupEntries(actions: NavActions) {
                 AppTopBar(
                     title = "Mes groupes",
                     onLogout = actions.onLogout,
+                    onInvitations = { actions.backStack.add(Route.Invitations) },
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },
