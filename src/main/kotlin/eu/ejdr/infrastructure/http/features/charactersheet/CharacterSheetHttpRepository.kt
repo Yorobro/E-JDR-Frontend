@@ -18,6 +18,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.put
 import io.ktor.client.request.setBody
@@ -43,9 +44,11 @@ class CharacterSheetHttpRepository(
     private val config: AppConfig,
 ) : CharacterSheetRepository {
 
-    override suspend fun list(): Result<List<CharacterSheet>, CharacterSheetError> =
+    override suspend fun list(groupId: String): Result<List<CharacterSheet>, CharacterSheetError> =
         runCatchingCancellable {
-            val response = client.get("${config.baseUrl}/character-sheets")
+            val response = client.get("${config.baseUrl}/character-sheets") {
+                parameter("groupId", groupId)
+            }
             if (response.status.isSuccess()) {
                 val body = response.body<CharacterSheetListResponseDto>()
                 Result.Success(body.characterSheets.map(CharacterSheetHttpMapper::toCharacterSheet))
@@ -54,11 +57,14 @@ class CharacterSheetHttpRepository(
             }
         }.getOrElse { Result.Failure(CharacterSheetError.Network) }
 
-    override suspend fun create(name: String): Result<CharacterSheet, CharacterSheetError> =
+    override suspend fun create(
+        name: String,
+        groupId: String,
+    ): Result<CharacterSheet, CharacterSheetError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/character-sheets") {
                 contentType(ContentType.Application.Json)
-                setBody(CreateCharacterSheetRequestDto(name))
+                setBody(CreateCharacterSheetRequestDto(name, groupId))
             }
             if (response.status.isSuccess()) {
                 Result.Success(CharacterSheetHttpMapper.toCharacterSheet(response.body<CharacterSheetDto>()))

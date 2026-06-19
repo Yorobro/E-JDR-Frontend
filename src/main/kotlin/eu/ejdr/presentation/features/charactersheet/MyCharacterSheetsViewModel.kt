@@ -13,16 +13,20 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel de l'écran « Mes fiches ».
+ * ViewModel de l'écran « Fiches du groupe », **scopé au groupe actif** (D9/D10).
  *
- * Charge les fiches de l'utilisateur courant et expose la création et la suppression. Retenu
- * par la destination, son état survit à la recomposition. Aucune exception ne remonte.
+ * Visibilité « tout le groupe » : observe [activeGroupId] et recharge les fiches du groupe à chaque
+ * changement de groupe actif. Quand aucun groupe n'est sélectionné, vide la liste et lève
+ * [needsGroup] (onboarding « choisis un groupe »). La création rattache la fiche au groupe actif.
+ * Aucune exception ne remonte (les use cases renvoient un `Result`).
  *
- * @property listSheets Use case de listing.
- * @property createSheet Use case de création.
+ * @property activeGroupId Identifiant du groupe actif (null = aucun groupe sélectionné).
+ * @property listSheets Use case de listing (par groupe).
+ * @property createSheet Use case de création (dans un groupe).
  * @property deleteSheet Use case de suppression.
  */
 class MyCharacterSheetsViewModel(
+    private val activeGroupId: StateFlow<String?>,
     private val listSheets: ListCharacterSheetsUseCase,
     private val createSheet: CreateCharacterSheetUseCase,
     private val deleteSheet: DeleteCharacterSheetUseCase,
@@ -37,32 +41,47 @@ class MyCharacterSheetsViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
-    init {
-        load()
-    }
+    /** Vrai quand aucun groupe n'est actif : l'UI invite alors à en choisir/créer un. */
+    private val _needsGroup = MutableStateFlow(false)
+    val needsGroup: StateFlow<Boolean> = _needsGroup.asStateFlow()
 
-    /** Recharge la liste des fiches. */
-    fun load() {
+    init {
         viewModelScope.launch {
-            _isLoading.value = true
-            listSheets().fold(
-                onSuccess = { list ->
-                    _sheets.value = list
-                    _error.value = null
-                },
-                onFailure = { error -> _error.value = error.message },
-            )
-            _isLoading.value = false
+            activeGroupId.collect { groupId -> reload(groupId) }
         }
     }
 
-    /** Crée une fiche puis recharge la liste en cas de succès. */
+    /** Recharge la liste des fiches du groupe actif (ou vide + onboarding si aucun groupe). */
+    fun load() {
+        viewModelScope.launch { reload(activeGroupId.value) }
+    }
+
+    private suspend fun reload(groupId: String?) {
+        if (groupId == null) {
+            _needsGroup.value = true
+            _sheets.value = emptyList()
+            return
+        }
+        _needsGroup.value = false
+        _isLoading.value = true
+        listSheets(groupId).fold(
+            onSuccess = { list ->
+                _sheets.value = list
+                _error.value = null
+            },
+            onFailure = { error -> _error.value = error.message },
+        )
+        _isLoading.value = false
+    }
+
+    /** Crée une fiche dans le groupe actif puis recharge la liste en cas de succès. */
     fun create(name: String) {
+        val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            createSheet(name).fold(
+            createSheet(name, groupId).fold(
                 onSuccess = {
                     _error.value = null
-                    load()
+                    reload(groupId)
                 },
                 onFailure = { error -> _error.value = error.message },
             )
@@ -75,7 +94,7 @@ class MyCharacterSheetsViewModel(
             deleteSheet(id).fold(
                 onSuccess = {
                     _error.value = null
-                    load()
+                    reload(activeGroupId.value)
                 },
                 onFailure = { error -> _error.value = error.message },
             )

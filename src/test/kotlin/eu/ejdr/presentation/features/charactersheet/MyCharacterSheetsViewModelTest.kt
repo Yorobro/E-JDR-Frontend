@@ -8,6 +8,7 @@ import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -18,6 +19,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MyCharacterSheetsViewModelTest {
@@ -32,24 +34,66 @@ class MyCharacterSheetsViewModelTest {
         CharacterSheet(id = id, ownerId = "u-1", name = name, createdAt = "2026-06-13T10:00:00.000Z")
 
     @Test
-    fun `loads sheets at init`() = runTest {
+    fun `loads sheets of the active group at init`() = runTest {
+        var requestedGroup: String? = null
         val vm = MyCharacterSheetsViewModel(
-            listSheets = ListCharacterSheetsUseCase { Result.Success(listOf(sheet("s-1"))) },
-            createSheet = CreateCharacterSheetUseCase { Result.Success(sheet("x")) },
+            activeGroupId = MutableStateFlow("g-1"),
+            listSheets = ListCharacterSheetsUseCase { groupId ->
+                requestedGroup = groupId
+                Result.Success(listOf(sheet("s-1")))
+            },
+            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
         )
         advanceUntilIdle()
 
+        assertEquals("g-1", requestedGroup)
         assertEquals(1, vm.sheets.value.size)
         assertNull(vm.error.value)
         assertEquals(false, vm.isLoading.value)
+        assertEquals(false, vm.needsGroup.value)
+    }
+
+    @Test
+    fun `no active group flags onboarding and does not call the use case`() = runTest {
+        var called = false
+        val vm = MyCharacterSheetsViewModel(
+            activeGroupId = MutableStateFlow(null),
+            listSheets = ListCharacterSheetsUseCase { called = true; Result.Success(emptyList()) },
+            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
+            deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+
+        assertTrue(vm.needsGroup.value)
+        assertTrue(vm.sheets.value.isEmpty())
+        assertEquals(false, called)
+    }
+
+    @Test
+    fun `reloads when the active group changes`() = runTest {
+        val active = MutableStateFlow<String?>("g-1")
+        val vm = MyCharacterSheetsViewModel(
+            activeGroupId = active,
+            listSheets = ListCharacterSheetsUseCase { groupId -> Result.Success(listOf(sheet(groupId))) },
+            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
+            deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+        assertEquals("g-1", vm.sheets.value.first().id)
+
+        active.value = "g-2"
+        advanceUntilIdle()
+
+        assertEquals("g-2", vm.sheets.value.first().id)
     }
 
     @Test
     fun `exposes error when listing fails`() = runTest {
         val vm = MyCharacterSheetsViewModel(
+            activeGroupId = MutableStateFlow("g-1"),
             listSheets = ListCharacterSheetsUseCase { Result.Failure(CharacterSheetError.Network) },
-            createSheet = CreateCharacterSheetUseCase { Result.Success(sheet("x")) },
+            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
         )
         advanceUntilIdle()
@@ -58,11 +102,14 @@ class MyCharacterSheetsViewModelTest {
     }
 
     @Test
-    fun `create success reloads the list`() = runTest {
+    fun `create uses the active group and reloads the list`() = runTest {
+        var createdGroup: String? = null
         var listing = listOf(sheet("s-1"))
         val vm = MyCharacterSheetsViewModel(
+            activeGroupId = MutableStateFlow("g-1"),
             listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
-            createSheet = CreateCharacterSheetUseCase { name ->
+            createSheet = CreateCharacterSheetUseCase { name, groupId ->
+                createdGroup = groupId
                 listing = listing + sheet("s-2", name)
                 Result.Success(sheet("s-2", name))
             },
@@ -73,6 +120,7 @@ class MyCharacterSheetsViewModelTest {
         vm.create("Nouvelle")
         advanceUntilIdle()
 
+        assertEquals("g-1", createdGroup)
         assertEquals(2, vm.sheets.value.size)
         assertNull(vm.error.value)
     }
@@ -81,8 +129,9 @@ class MyCharacterSheetsViewModelTest {
     fun `delete success reloads the list`() = runTest {
         var listing = listOf(sheet("s-1"), sheet("s-2"))
         val vm = MyCharacterSheetsViewModel(
+            activeGroupId = MutableStateFlow("g-1"),
             listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
-            createSheet = CreateCharacterSheetUseCase { Result.Success(sheet("x")) },
+            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { id ->
                 listing = listing.filterNot { it.id == id }
                 Result.Success(Unit)

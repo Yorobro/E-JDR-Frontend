@@ -5,14 +5,17 @@ import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 
-/** Use case : liste les fiches de l'utilisateur courant. */
+/** Use case : liste les fiches du groupe actif (visibilité « tout le groupe »). */
 fun interface ListCharacterSheetsUseCase {
-    suspend operator fun invoke(): Result<List<CharacterSheet>, CharacterSheetError>
+    suspend operator fun invoke(groupId: String): Result<List<CharacterSheet>, CharacterSheetError>
 }
 
-/** Use case : crée une fiche pour l'utilisateur courant. */
+/** Use case : crée une fiche dans le groupe actif (propriétaire = utilisateur courant). */
 fun interface CreateCharacterSheetUseCase {
-    suspend operator fun invoke(name: String): Result<CharacterSheet, CharacterSheetError>
+    suspend operator fun invoke(
+        name: String,
+        groupId: String,
+    ): Result<CharacterSheet, CharacterSheetError>
 }
 
 /** Use case : récupère le détail complet d'une fiche par son identifiant. */

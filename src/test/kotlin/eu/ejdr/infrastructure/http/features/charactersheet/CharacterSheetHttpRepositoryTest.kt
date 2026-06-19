@@ -24,6 +24,7 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class CharacterSheetHttpRepositoryTest {
     private val tmpDir = Files.createTempDirectory("ejdr-sheet-test").toFile()
@@ -54,23 +55,50 @@ class CharacterSheetHttpRepositoryTest {
     private fun repository(client: HttpClient) = CharacterSheetHttpRepository(client, config)
 
     @Test
-    fun `list success maps the wrapped sheets`() = runTest {
+    fun `list scopes the request by the active group`() = runTest {
         val body =
             """{"characterSheets":[{"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z"}]}"""
-        val result = repository(clientReturning(HttpStatusCode.OK, body)).list()
+        var requestedUrl = ""
+        val engine = MockEngine { request ->
+            requestedUrl = request.url.toString()
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).list("g-1")
 
         assertIs<Result.Success<List<CharacterSheet>>>(result)
-        assertEquals(1, result.value.size)
         assertEquals("Aragorn", result.value.first().name)
+        assertTrue(requestedUrl.contains("groupId=g-1"), "URL should carry groupId: $requestedUrl")
     }
 
     @Test
-    fun `create success maps the sheet`() = runTest {
+    fun `create sends name and group in the body`() = runTest {
         val body = """{"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z"}"""
-        val result = repository(clientReturning(HttpStatusCode.Created, body)).create("Aragorn")
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).create("Aragorn", "g-1")
 
         assertIs<Result.Success<CharacterSheet>>(result)
         assertEquals("s-1", result.value.id)
+        assertTrue(requestBody.contains("\"groupId\":\"g-1\""), "Body should carry groupId: $requestBody")
     }
 
     @Test
@@ -80,7 +108,7 @@ class CharacterSheetHttpRepositoryTest {
         // que les clés EN TROP, pas les manquantes).
         val body =
             """{"characterSheets":[{"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z"}]}"""
-        val result = repository(clientReturning(HttpStatusCode.OK, body)).list()
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).list("g-1")
 
         assertIs<Result.Success<List<CharacterSheet>>>(result)
         val sheet = result.value.first()
@@ -154,7 +182,7 @@ class CharacterSheetHttpRepositoryTest {
     fun `create 400 maps to InvalidName`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.BadRequest, """{"code":"INVALID_CHARACTER_SHEET_NAME"}"""),
-        ).create("")
+        ).create("", "g-1")
         assertIs<Result.Failure<CharacterSheetError>>(result)
         assertEquals(CharacterSheetError.InvalidName, result.error)
     }
@@ -233,7 +261,7 @@ class CharacterSheetHttpRepositoryTest {
         val client = HttpClient(engine) {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         }
-        val result = repository(client).list()
+        val result = repository(client).list("g-1")
         assertIs<Result.Failure<CharacterSheetError>>(result)
         assertEquals(CharacterSheetError.Network, result.error)
     }

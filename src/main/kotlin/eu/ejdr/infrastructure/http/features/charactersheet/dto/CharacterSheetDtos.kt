@@ -46,7 +46,7 @@ data class CharacterSheetDto(
 
 /** Corps de requête de création d'une fiche (`POST /character-sheets`). */
 @Serializable
-data class CreateCharacterSheetRequestDto(val name: String)
+data class CreateCharacterSheetRequestDto(val name: String, val groupId: String)
 
 /**
  * Corps de requête de mise à jour d'une fiche (`PUT /character-sheets/:id`).
