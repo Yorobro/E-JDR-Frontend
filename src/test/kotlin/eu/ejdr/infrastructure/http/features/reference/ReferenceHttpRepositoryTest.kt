@@ -177,6 +177,57 @@ class ReferenceHttpRepositoryTest {
     }
 
     @Test
+    fun `update sends a PUT to the item url with the full body`() = runTest {
+        val body =
+            """{"id":"f-1","name":"Rôdeur+","createdAt":"2026-06-13T10:00:00.000Z","stat":"vigueur","bonus":4,"competenceIds":["c-1"]}"""
+        var requestMethod = ""
+        var requestUrl = ""
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestMethod = request.method.value
+            requestUrl = request.url.toString()
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).update(
+            ReferenceType.FORMATION,
+            "f-1",
+            "Rôdeur+",
+            "g-1",
+            stat = "vigueur",
+            bonus = 4,
+            competenceIds = listOf("c-1"),
+        )
+
+        assertIs<Result.Success<ReferenceItem>>(result)
+        assertEquals("Rôdeur+", result.value.name)
+        assertEquals("vigueur", result.value.stat)
+        assertEquals("PUT", requestMethod)
+        assertTrue(requestUrl.contains("formations/f-1"), "URL should target the item: $requestUrl")
+        assertTrue(requestBody.contains("\"groupId\":\"g-1\""), "Body should carry groupId: $requestBody")
+        assertTrue(requestBody.contains("\"stat\":\"vigueur\""), "Body should carry stat: $requestBody")
+        assertTrue(requestBody.contains("\"competenceIds\":[\"c-1\"]"), "Body should carry ids: $requestBody")
+    }
+
+    @Test
+    fun `update 409 maps to NameAlreadyUsed`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.Conflict, """{"code":"REFERENCE_NAME_ALREADY_USED"}"""),
+        ).update(ReferenceType.ARME, "a-1", "Épée", "g-1")
+
+        assertIs<Result.Failure<ReferenceError>>(result)
+        assertEquals(ReferenceError.NameAlreadyUsed, result.error)
+    }
+
+    @Test
     fun `list deserializes protection points tolerantly`() = runTest {
         val body = """{"items":[
             {"id":"a-1","name":"Cotte","createdAt":"2026-06-13T10:00:00.000Z","protectionPoints":3},

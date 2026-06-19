@@ -49,6 +49,29 @@ data class CreateReferenceRequestDto(
 )
 
 /**
+ * Corps de requête de modification d'un élément (`PUT /reference/{type}/{itemId}`).
+ *
+ * Remplacement **complet** : tous les champs de l'élément sont transmis (mêmes règles par type que
+ * [CreateReferenceRequestDto]). Le serveur renvoie l'élément modifié.
+ *
+ * @property name Nom de l'élément.
+ * @property groupId Groupe propriétaire.
+ * @property stat Statistique associée (formation/peuple), ou `null` ; omise pour les autres types.
+ * @property bonus Montant du bonus (le serveur applique `1` par défaut si [stat] est fournie sans).
+ * @property competenceIds Compétences à lier (formation), ou `null` pour les autres types.
+ * @property protectionPoints Points de protection (armure uniquement), ou `null` pour les autres types.
+ */
+@Serializable
+data class UpdateReferenceRequestDto(
+    val name: String,
+    val groupId: String,
+    val stat: String? = null,
+    val bonus: Int? = null,
+    val competenceIds: List<String>? = null,
+    val protectionPoints: Int? = null,
+)
+
+/**
  * Réponse de listing (catalogue `GET /reference/{type}` et liaisons `GET /character-sheets/:id/{type}`) :
  * l'API enveloppe la liste sous la clé `items`.
  *

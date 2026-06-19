@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,17 +66,23 @@ private val STAT_OPTIONS: List<Pair<String, String?>> = buildList {
     StatKeys.ORDERED.forEach { (slug, label) -> add(label to slug) }
 }
 
+/** Libellé de stat pré-sélectionné dans le dropdown pour [initial] (ou « Aucune » à la création). */
+private fun initialStatLabel(initial: ReferenceItem?): String =
+    STAT_OPTIONS.firstOrNull { it.second == initial?.stat }?.first ?: NO_STAT_LABEL
+
 /**
- * Tuile d'un élément de référence dans la grille de gestion (composant bête) : nom centré + icône
- * de suppression. Clone de `CampaignCard`, sans clic d'ouverture (les éléments n'ont pas de détail).
+ * Tuile d'un élément de référence dans la grille de gestion (composant bête) : nom centré + icônes
+ * éditer/supprimer. Clone de `CampaignCard`, sans clic d'ouverture (les éléments n'ont pas de détail).
  *
  * @param item Élément à afficher.
+ * @param onEdit Callback de modification.
  * @param onDelete Callback de suppression.
  * @param modifier Modifier Compose appliqué à la tuile.
  */
 @Composable
 fun ReferenceCard(
     item: ReferenceItem,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -97,6 +104,13 @@ fun ReferenceCard(
                 .align(Alignment.Center)
                 .padding(horizontal = AppTheme.dimens.md),
         )
+        IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
+            AppIcon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = "Modifier",
+                tint = AppTheme.colors.primary,
+            )
+        }
         IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
             AppIcon(
                 imageVector = Icons.Filled.Delete,
@@ -108,7 +122,11 @@ fun ReferenceCard(
 }
 
 /**
- * Dialog de création d'un élément de référence (composant bête).
+ * Dialog de création **ou** de modification d'un élément de référence (composant bête).
+ *
+ * Quand [initial] est `null` le dialog crée un élément (champs vides) ; sinon il modifie [initial]
+ * (champs pré-remplis avec ses valeurs : nom, stat/bonus, compétences cochées, protection) et le
+ * `onConfirm` porte alors un **remplacement complet**.
  *
  * Pour [ReferenceType.FORMATION]/[ReferenceType.PEUPLE], propose en plus un sélecteur de
  * statistique et un montant de bonus (visible seulement si une stat est choisie). Pour la seule
@@ -120,17 +138,20 @@ fun ReferenceCard(
  * @param type Catégorie courante (détermine les champs proposés).
  * @param title Titre du dialog (ex. « Nouvelle formation »).
  * @param label Libellé du champ nom.
- * @param onDismiss Fermeture sans création.
+ * @param confirmLabel Libellé du bouton de confirmation (ex. « Créer » / « Enregistrer »).
+ * @param onDismiss Fermeture sans enregistrement.
  * @param onConfirm Confirmation :
  *   `(name, stat slug ou null, bonus ou null, ids de compétences, points de protection ou null)`.
+ * @param initial Élément à éditer (champs pré-remplis), ou `null` pour une création.
  * @param availableCompetences Catalogue des compétences proposées (formation uniquement).
  * @param errorMessage Message d'erreur éventuel (ex. doublon).
  */
 @Composable
-fun CreateReferenceDialog(
+fun ReferenceFormDialog(
     type: ReferenceType,
     title: String,
     label: String,
+    confirmLabel: String,
     onDismiss: () -> Unit,
     onConfirm: (
         name: String,
@@ -139,14 +160,17 @@ fun CreateReferenceDialog(
         competenceIds: List<String>,
         protectionPoints: Int?,
     ) -> Unit,
+    initial: ReferenceItem? = null,
     availableCompetences: List<ReferenceItem> = emptyList(),
     errorMessage: String? = null,
 ) {
-    var name by remember { mutableStateOf("") }
-    var statLabel by remember { mutableStateOf(NO_STAT_LABEL) }
-    var bonus by remember { mutableStateOf(DEFAULT_BONUS) }
-    var protection by remember { mutableStateOf(DEFAULT_PROTECTION) }
-    val selectedCompetences = remember { mutableStateListOf<String>() }
+    var name by remember { mutableStateOf(initial?.name ?: "") }
+    var statLabel by remember { mutableStateOf(initialStatLabel(initial)) }
+    var bonus by remember { mutableStateOf(initial?.bonus?.toString() ?: DEFAULT_BONUS) }
+    var protection by remember {
+        mutableStateOf(initial?.protectionPoints?.toString() ?: DEFAULT_PROTECTION)
+    }
+    val selectedCompetences = remember { mutableStateListOf<String>().apply { addAll(initial?.competenceIds.orEmpty()) } }
 
     val hasStatChoice = type == ReferenceType.FORMATION || type == ReferenceType.PEUPLE
     val selectedStat = STAT_OPTIONS.firstOrNull { it.first == statLabel }?.second
@@ -154,7 +178,7 @@ fun CreateReferenceDialog(
     AppDialog(
         title = title,
         onDismiss = onDismiss,
-        confirmLabel = "Créer",
+        confirmLabel = confirmLabel,
         onConfirm = {
             onConfirm(
                 name.trim(),

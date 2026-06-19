@@ -22,13 +22,14 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.reference.ReferenceListViewModel
 import eu.ejdr.presentation.features.reference.component.ConfirmDeleteReferenceDialog
-import eu.ejdr.presentation.features.reference.component.CreateReferenceDialog
 import eu.ejdr.presentation.features.reference.component.ReferenceCard
+import eu.ejdr.presentation.features.reference.component.ReferenceFormDialog
 import eu.ejdr.presentation.shared.component.atomic.AppFab
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
@@ -62,6 +63,7 @@ fun ReferenceListPage(
             activeGroupState.activeGroupId,
             get<ListReferenceItemsUseCase>(),
             get<CreateReferenceItemUseCase>(),
+            get<UpdateReferenceItemUseCase>(),
             get<DeleteReferenceItemUseCase>(),
         )
     }
@@ -72,6 +74,7 @@ fun ReferenceListPage(
     val availableCompetences by viewModel.availableCompetences.collectAsStateWithLifecycle()
 
     var showCreate by remember { mutableStateOf(false) }
+    var pendingEdit by remember { mutableStateOf<ReferenceItem?>(null) }
     var pendingDelete by remember { mutableStateOf<ReferenceItem?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -91,6 +94,7 @@ fun ReferenceListPage(
                 ReferenceGrid(
                     items = items,
                     isLoading = isLoading,
+                    onEditRequest = { pendingEdit = it },
                     onDeleteRequest = { pendingDelete = it },
                 )
             }
@@ -103,19 +107,22 @@ fun ReferenceListPage(
         }
     }
 
-    if (showCreate) {
-        CreateReferenceDialog(
-            type = type,
-            title = "Nouvel élément : ${type.singularLabel}",
-            label = "Nom (${type.singularLabel})",
-            onDismiss = { showCreate = false },
-            onConfirm = { name, stat, bonus, competenceIds, protectionPoints ->
-                showCreate = false
-                viewModel.create(name, stat, bonus, competenceIds, protectionPoints)
-            },
-            availableCompetences = availableCompetences,
-        )
-    }
+    ReferenceFormDialogs(
+        type = type,
+        showCreate = showCreate,
+        pendingEdit = pendingEdit,
+        availableCompetences = availableCompetences,
+        onCreateDismiss = { showCreate = false },
+        onCreateConfirm = { name, stat, bonus, competenceIds, protectionPoints ->
+            showCreate = false
+            viewModel.create(name, stat, bonus, competenceIds, protectionPoints)
+        },
+        onEditDismiss = { pendingEdit = null },
+        onEditConfirm = { id, name, stat, bonus, competenceIds, protectionPoints ->
+            pendingEdit = null
+            viewModel.update(id, name, stat, bonus, competenceIds, protectionPoints)
+        },
+    )
 
     pendingDelete?.let { item ->
         ConfirmDeleteReferenceDialog(
@@ -126,11 +133,52 @@ fun ReferenceListPage(
     }
 }
 
+/** Modals de création et d'édition (mêmes champs, libellés et pré-remplissage distincts). */
+@Composable
+private fun ReferenceFormDialogs(
+    type: ReferenceType,
+    showCreate: Boolean,
+    pendingEdit: ReferenceItem?,
+    availableCompetences: List<ReferenceItem>,
+    onCreateDismiss: () -> Unit,
+    onCreateConfirm: (String, String?, Int?, List<String>, Int?) -> Unit,
+    onEditDismiss: () -> Unit,
+    onEditConfirm: (String, String, String?, Int?, List<String>, Int?) -> Unit,
+) {
+    if (showCreate) {
+        ReferenceFormDialog(
+            type = type,
+            title = "Nouvel élément : ${type.singularLabel}",
+            label = "Nom (${type.singularLabel})",
+            confirmLabel = "Créer",
+            onDismiss = onCreateDismiss,
+            onConfirm = onCreateConfirm,
+            availableCompetences = availableCompetences,
+        )
+    }
+
+    pendingEdit?.let { item ->
+        ReferenceFormDialog(
+            type = type,
+            title = "Modifier : ${type.singularLabel}",
+            label = "Nom (${type.singularLabel})",
+            confirmLabel = "Enregistrer",
+            initial = item,
+            onDismiss = onEditDismiss,
+            onConfirm = { name, stat, bonus, competenceIds, protectionPoints ->
+                onEditConfirm(item.id, name, stat, bonus, competenceIds, protectionPoints)
+            },
+            availableCompetences = availableCompetences,
+        )
+    }
+}
+
 /** Zone de contenu : chargement initial, message si vide, ou grille de tuiles. */
 @Composable
 private fun ReferenceGrid(
     items: List<ReferenceItem>,
     isLoading: Boolean,
+    onEditRequest: (ReferenceItem) -> Unit,
     onDeleteRequest: (ReferenceItem) -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -157,7 +205,11 @@ private fun ReferenceGrid(
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
                 items(items, key = { it.id }) { item ->
-                    ReferenceCard(item = item, onDelete = { onDeleteRequest(item) })
+                    ReferenceCard(
+                        item = item,
+                        onEdit = { onEditRequest(item) },
+                        onDelete = { onDeleteRequest(item) },
+                    )
                 }
             }
         }

@@ -36,6 +36,21 @@ interface ReferenceRepository {
         protectionPoints: Int? = null,
     ): Result<ReferenceItem, ReferenceError>
 
+    /**
+     * Modifie un élément du catalogue (remplacement **complet**, admin requis). Mêmes règles de
+     * champs par type que [create] ; le serveur renvoie l'élément modifié.
+     */
+    suspend fun update(
+        type: ReferenceType,
+        itemId: String,
+        name: String,
+        groupId: String,
+        stat: String? = null,
+        bonus: Int? = null,
+        competenceIds: List<String> = emptyList(),
+        protectionPoints: Int? = null,
+    ): Result<ReferenceItem, ReferenceError>
+
     /** Supprime un élément du catalogue. */
     suspend fun delete(type: ReferenceType, itemId: String): Result<Unit, ReferenceError>
 

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
@@ -23,6 +24,7 @@ import kotlinx.coroutines.launch
  * @property activeGroupId Identifiant du groupe actif (null = aucun groupe sélectionné).
  * @property listItems Use case de listing (par type et groupe).
  * @property createItem Use case de création (admin requis côté serveur).
+ * @property updateItem Use case de modification (admin requis côté serveur).
  * @property deleteItem Use case de suppression.
  */
 class ReferenceListViewModel(
@@ -30,6 +32,7 @@ class ReferenceListViewModel(
     private val activeGroupId: StateFlow<String?>,
     private val listItems: ListReferenceItemsUseCase,
     private val createItem: CreateReferenceItemUseCase,
+    private val updateItem: UpdateReferenceItemUseCase,
     private val deleteItem: DeleteReferenceItemUseCase,
 ) : ViewModel() {
 
@@ -109,6 +112,27 @@ class ReferenceListViewModel(
         val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
             createItem(type, name, groupId, stat, bonus, competenceIds, protectionPoints).fold(
+                onSuccess = { _error.value = null; reload(groupId) },
+                onFailure = { error -> _error.value = error.message },
+            )
+        }
+    }
+
+    /**
+     * Modifie un élément du groupe actif (remplacement complet) puis recharge la liste en cas de
+     * succès. Mêmes règles de champs par type que [create].
+     */
+    fun update(
+        itemId: String,
+        name: String,
+        stat: String? = null,
+        bonus: Int? = null,
+        competenceIds: List<String> = emptyList(),
+        protectionPoints: Int? = null,
+    ) {
+        val groupId = activeGroupId.value ?: return
+        viewModelScope.launch {
+            updateItem(type, itemId, name, groupId, stat, bonus, competenceIds, protectionPoints).fold(
                 onSuccess = { _error.value = null; reload(groupId) },
                 onFailure = { error -> _error.value = error.message },
             )
