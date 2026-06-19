@@ -21,6 +21,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -141,6 +142,51 @@ class ReferenceHttpRepositoryTest {
             requestBody.contains("\"competenceIds\":[\"c-1\",\"c-2\"]"),
             "Body should carry competenceIds: $requestBody",
         )
+    }
+
+    @Test
+    fun `create armure sends protection points in the body`() = runTest {
+        val body =
+            """{"id":"a-1","name":"Cotte","createdAt":"2026-06-13T10:00:00.000Z","protectionPoints":5}"""
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).create(
+            ReferenceType.ARMURE,
+            "Cotte",
+            "g-1",
+            protectionPoints = 5,
+        )
+
+        assertIs<Result.Success<ReferenceItem>>(result)
+        assertEquals(5, result.value.protectionPoints)
+        assertTrue(
+            requestBody.contains("\"protectionPoints\":5"),
+            "Body should carry protectionPoints: $requestBody",
+        )
+    }
+
+    @Test
+    fun `list deserializes protection points tolerantly`() = runTest {
+        val body = """{"items":[
+            {"id":"a-1","name":"Cotte","createdAt":"2026-06-13T10:00:00.000Z","protectionPoints":3},
+            {"id":"a-2","name":"Épée","createdAt":"2026-06-13T10:00:00.000Z"}
+        ]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).list(ReferenceType.ARMURE, "g-1")
+
+        assertIs<Result.Success<List<ReferenceItem>>>(result)
+        assertEquals(3, result.value.first().protectionPoints)
+        assertNull(result.value[1].protectionPoints)
     }
 
     @Test

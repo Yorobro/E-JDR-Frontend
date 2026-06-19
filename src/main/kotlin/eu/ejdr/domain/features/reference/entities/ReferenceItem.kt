@@ -13,6 +13,7 @@ package eu.ejdr.domain.features.reference.entities
  *   (`dexterite`/`intelligence`/`perception`/`social`/`vigueur`), ou `null` si aucune.
  * @property bonus Montant du bonus appliqué à la [stat] (formation/peuple), ou `null` si aucune stat.
  * @property competenceIds Identifiants des compétences liées (formation uniquement ; vide sinon).
+ * @property protectionPoints Points de protection apportés (armure uniquement), ou `null` sinon.
  */
 data class ReferenceItem(
     val id: String,
@@ -21,4 +22,5 @@ data class ReferenceItem(
     val stat: String? = null,
     val bonus: Int? = null,
     val competenceIds: List<String> = emptyList(),
+    val protectionPoints: Int? = null,
 )

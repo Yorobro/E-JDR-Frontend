@@ -96,18 +96,19 @@ class ReferenceListViewModel(
     /**
      * Crée un élément dans le groupe actif puis recharge la liste en cas de succès.
      *
-     * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation ;
-     * pour les types simples, l'appelant passe `null`/`null`/`emptyList`.
+     * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation,
+     * [protectionPoints] à la seule armure ; pour les types simples, l'appelant passe les défauts.
      */
     fun create(
         name: String,
         stat: String? = null,
         bonus: Int? = null,
         competenceIds: List<String> = emptyList(),
+        protectionPoints: Int? = null,
     ) {
         val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            createItem(type, name, groupId, stat, bonus, competenceIds).fold(
+            createItem(type, name, groupId, stat, bonus, competenceIds, protectionPoints).fold(
                 onSuccess = { _error.value = null; reload(groupId) },
                 onFailure = { error -> _error.value = error.message },
             )

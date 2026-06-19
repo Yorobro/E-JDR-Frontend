@@ -109,9 +109,9 @@ fun ReferenceListPage(
             title = "Nouvel élément : ${type.singularLabel}",
             label = "Nom (${type.singularLabel})",
             onDismiss = { showCreate = false },
-            onConfirm = { name, stat, bonus, competenceIds ->
+            onConfirm = { name, stat, bonus, competenceIds, protectionPoints ->
                 showCreate = false
-                viewModel.create(name, stat, bonus, competenceIds)
+                viewModel.create(name, stat, bonus, competenceIds, protectionPoints)
             },
             availableCompetences = availableCompetences,
         )

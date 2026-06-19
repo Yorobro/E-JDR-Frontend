@@ -23,7 +23,8 @@ interface ReferenceRepository {
      * Crée un élément dans le catalogue du type donné, pour le groupe actif (admin requis).
      *
      * [stat]/[bonus]/[competenceIds] ne concernent que les formations/peuples (et les compétences
-     * pour la seule formation) ; les autres types passent `null`/`emptyList`.
+     * pour la seule formation) ; [protectionPoints] ne concerne que les armures ; les autres types
+     * passent `null`/`emptyList`.
      */
     suspend fun create(
         type: ReferenceType,
@@ -32,6 +33,7 @@ interface ReferenceRepository {
         stat: String? = null,
         bonus: Int? = null,
         competenceIds: List<String> = emptyList(),
+        protectionPoints: Int? = null,
     ): Result<ReferenceItem, ReferenceError>
 
     /** Supprime un élément du catalogue. */
