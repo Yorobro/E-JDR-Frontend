@@ -222,11 +222,11 @@ fun IdentiteSection(
 fun CaracteristiquesSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
     fun display(statKey: String, base: Int?) = statDisplay(statKey, base, sheet.formation, sheet.peuple)
     FieldColumn {
-        StatCell("Dextérité", editing, form.dexterite, display("dexterite", sheet.dexterite)) { form.dexterite = it }
-        StatCell("Intelligence", editing, form.intelligence, display("intelligence", sheet.intelligence)) { form.intelligence = it }
-        StatCell("Perception", editing, form.perception, display("perception", sheet.perception)) { form.perception = it }
-        StatCell("Social", editing, form.social, display("social", sheet.social)) { form.social = it }
-        StatCell("Vigueur", editing, form.vigueur, display("vigueur", sheet.vigueur)) { form.vigueur = it }
+        StatCell("Dextérité", editing, form.dexterite, display(StatKeys.DEXTERITE, sheet.dexterite)) { form.dexterite = it }
+        StatCell("Intelligence", editing, form.intelligence, display(StatKeys.INTELLIGENCE, sheet.intelligence)) { form.intelligence = it }
+        StatCell("Perception", editing, form.perception, display(StatKeys.PERCEPTION, sheet.perception)) { form.perception = it }
+        StatCell("Social", editing, form.social, display(StatKeys.SOCIAL, sheet.social)) { form.social = it }
+        StatCell("Vigueur", editing, form.vigueur, display(StatKeys.VIGUEUR, sheet.vigueur)) { form.vigueur = it }
     }
 }
 

@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
+import eu.ejdr.presentation.features.charactersheet.component.StatKeys
 import eu.ejdr.presentation.shared.component.atomic.AppCheckbox
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
@@ -53,16 +54,13 @@ private const val DEFAULT_BONUS = "1"
 
 /**
  * Options de statistique du dialog : libellé affiché ↔ slug serveur (`null` = aucune). Ordre et
- * libellés alignés sur la section caractéristiques de la fiche.
+ * libellés alignés sur la section caractéristiques de la fiche. Les slugs proviennent de
+ * [StatKeys] (source de vérité unique) ; seul le libellé « Aucune » est propre à ce dialog.
  */
-private val STAT_OPTIONS: List<Pair<String, String?>> = listOf(
-    NO_STAT_LABEL to null,
-    "Dextérité" to "dexterite",
-    "Intelligence" to "intelligence",
-    "Perception" to "perception",
-    "Social" to "social",
-    "Vigueur" to "vigueur",
-)
+private val STAT_OPTIONS: List<Pair<String, String?>> = buildList {
+    add(NO_STAT_LABEL to null)
+    StatKeys.ORDERED.forEach { (slug, label) -> add(label to slug) }
+}
 
 /**
  * Tuile d'un élément de référence dans la grille de gestion (composant bête) : nom centré + icône
@@ -167,7 +165,14 @@ fun CreateReferenceDialog(
             if (hasStatChoice) {
                 StatBonusFields(
                     statLabel = statLabel,
-                    onStatSelected = { statLabel = it },
+                    onStatSelected = { newLabel ->
+                        statLabel = newLabel
+                        // Quand l'utilisateur choisit une stat (non-Aucune) après avoir vidé le
+                        // champ bonus, on le remet à la valeur par défaut pour rester cohérent
+                        // avec « défaut 1 si stat choisie ».
+                        val newSlug = STAT_OPTIONS.firstOrNull { it.first == newLabel }?.second
+                        if (newSlug != null && bonus.isBlank()) bonus = DEFAULT_BONUS
+                    },
                     bonus = bonus,
                     onBonusChange = { bonus = it },
                     showBonus = selectedStat != null,
