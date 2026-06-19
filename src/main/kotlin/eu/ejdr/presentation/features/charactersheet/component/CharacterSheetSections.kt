@@ -2,8 +2,10 @@ package eu.ejdr.presentation.features.charactersheet.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
@@ -70,6 +72,68 @@ fun NumberCell(
         )
     } else {
         ReadCell(label, readValue?.toString())
+    }
+}
+
+/**
+ * Cellule de caractéristique : base éditable (comme [NumberCell]) PLUS, quand des bonus ciblent la
+ * stat, leur rendu en lecture seule à droite — « +N » par source puis « = total ». Sans bonus, le
+ * rendu est strictement identique à [NumberCell]. Le champ d'édition n'expose QUE la base : le PUT
+ * continue d'envoyer la base seule (bonus/total purement affichés).
+ *
+ * @param label Libellé de la caractéristique.
+ * @param editing Mode édition (la base reste éditable).
+ * @param editValue Valeur de base éditée (liée au formulaire).
+ * @param display Modèle d'affichage calculé (base + bonus + total).
+ * @param onChange Callback de modification de la base.
+ */
+@Composable
+fun StatCell(
+    label: String,
+    editing: Boolean,
+    editValue: String,
+    display: StatDisplay,
+    onChange: (String) -> Unit,
+) {
+    if (!display.hasBonus) {
+        NumberCell(label, editing, editValue, display.base, onChange)
+        return
+    }
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+    ) {
+        if (editing) {
+            AppNumberField(
+                value = editValue,
+                onValueChange = onChange,
+                label = label,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            StatBonusLine(prefix = "Base ${display.base ?: 0}", display = display)
+        } else {
+            AppText(text = label, style = AppTextStyle.Label, color = AppTheme.colors.textSecondary)
+            StatBonusLine(prefix = (display.base ?: 0).toString(), display = display)
+        }
+    }
+}
+
+/** Ligne « base +N +N = total » en lecture seule (bonus atténués, total accentué). */
+@Composable
+private fun StatBonusLine(prefix: String, display: StatDisplay) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+    ) {
+        AppText(text = prefix, style = AppTextStyle.Body)
+        display.bonuses.forEach { bonus ->
+            AppText(text = "+$bonus", style = AppTextStyle.Body, color = AppTheme.colors.textSecondary)
+        }
+        AppText(
+            text = "= ${display.total}",
+            style = AppTextStyle.Body,
+            color = AppTheme.colors.primary,
+        )
     }
 }
 
@@ -149,15 +213,20 @@ fun IdentiteSection(
     }
 }
 
-/** Section Caractéristiques : les 5 caractéristiques en colonne. */
+/**
+ * Section Caractéristiques : les 5 caractéristiques en colonne. Chaque cellule affiche, en plus de
+ * la base éditable, les bonus apportés par le peuple et la formation actifs (« base +N +N = total »).
+ * Le calcul est purement d'affichage (cf. [statDisplay]) ; la base reste seule persistée.
+ */
 @Composable
 fun CaracteristiquesSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
+    fun display(statKey: String, base: Int?) = statDisplay(statKey, base, sheet.formation, sheet.peuple)
     FieldColumn {
-        NumberCell("Dextérité", editing, form.dexterite, sheet.dexterite) { form.dexterite = it }
-        NumberCell("Intelligence", editing, form.intelligence, sheet.intelligence) { form.intelligence = it }
-        NumberCell("Perception", editing, form.perception, sheet.perception) { form.perception = it }
-        NumberCell("Social", editing, form.social, sheet.social) { form.social = it }
-        NumberCell("Vigueur", editing, form.vigueur, sheet.vigueur) { form.vigueur = it }
+        StatCell("Dextérité", editing, form.dexterite, display("dexterite", sheet.dexterite)) { form.dexterite = it }
+        StatCell("Intelligence", editing, form.intelligence, display("intelligence", sheet.intelligence)) { form.intelligence = it }
+        StatCell("Perception", editing, form.perception, display("perception", sheet.perception)) { form.perception = it }
+        StatCell("Social", editing, form.social, display("social", sheet.social)) { form.social = it }
+        StatCell("Vigueur", editing, form.vigueur, display("vigueur", sheet.vigueur)) { form.vigueur = it }
     }
 }
 

@@ -77,7 +77,7 @@ fun InventaireTab(
         ResponsiveColumns(
             columns = listOf(
                 { SheetCard("Équipements") { LinkedReferenceSection(ReferenceType.EQUIPEMENT, isEditing, refs) } },
-                { SheetCard("Compétences") { LinkedReferenceSection(ReferenceType.COMPETENCE, isEditing, refs) } },
+                { SheetCard("Compétences") { CompetencesSection(isEditing, refs, sheet.formation) } },
             ),
         )
         SheetCard("Notes") { LongTextBody(isEditing, form.notes, sheet.notes) { form.notes = it } }
