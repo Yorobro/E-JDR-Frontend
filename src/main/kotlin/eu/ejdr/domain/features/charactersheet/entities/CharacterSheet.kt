@@ -31,6 +31,11 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property purse Bourse du personnage (pièces d'or, d'argent et de cuivre).
  * @property sortsEtMiracles Description des sorts et miracles.
  * @property notes Notes libres.
+ * @property formation Formation **résolue** (nom + stat ciblée + bonus + compétences apportées),
+ *   ou `null` si aucune. Bloc dérivé renseigné par le détail ; purement d'affichage (n'altère pas
+ *   les stats de base).
+ * @property peuple Peuple **résolu** (nom + stat ciblée + bonus), ou `null` si aucun. Bloc dérivé
+ *   renseigné par le détail ; purement d'affichage.
  *
  * Note : armes, armures, compétences et équipements ne sont **plus** des champs ici — ce sont des
  * relations N‑N gérées à part (cf. feature `reference`).
@@ -58,4 +63,50 @@ data class CharacterSheet(
     val purse: Purse? = null,
     val sortsEtMiracles: String? = null,
     val notes: String? = null,
+    val formation: ResolvedFormation? = null,
+    val peuple: ResolvedReference? = null,
+)
+
+/**
+ * Élément de référence N‑1 **résolu** rattaché à une fiche (peuple, ou base d'une formation).
+ *
+ * @property id Identifiant de l'élément de référence.
+ * @property name Nom affiché.
+ * @property stat Statistique ciblée (slug serveur `dexterite`/.../`vigueur`), ou `null`.
+ * @property bonus Montant du bonus appliqué à [stat] (déjà calculé côté serveur), ou `null`.
+ */
+data class ResolvedReference(
+    val id: String,
+    val name: String,
+    val stat: String? = null,
+    val bonus: Int? = null,
+)
+
+/**
+ * Formation **résolue** rattachée à une fiche : comme [ResolvedReference] mais porte en plus les
+ * compétences apportées par la formation (dérivées, affichées en lecture seule).
+ *
+ * @property id Identifiant de la formation.
+ * @property name Nom affiché.
+ * @property stat Statistique ciblée (slug serveur), ou `null`.
+ * @property bonus Montant du bonus appliqué à [stat], ou `null`.
+ * @property competences Compétences apportées par la formation (lecture seule, non retirables).
+ */
+data class ResolvedFormation(
+    val id: String,
+    val name: String,
+    val stat: String? = null,
+    val bonus: Int? = null,
+    val competences: List<ResolvedCompetence> = emptyList(),
+)
+
+/**
+ * Compétence apportée par une formation (dérivée, lecture seule).
+ *
+ * @property id Identifiant de la compétence.
+ * @property name Nom affiché de la compétence.
+ */
+data class ResolvedCompetence(
+    val id: String,
+    val name: String,
 )

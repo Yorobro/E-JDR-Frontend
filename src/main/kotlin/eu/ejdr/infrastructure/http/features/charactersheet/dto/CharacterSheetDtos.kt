@@ -6,6 +6,37 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PurseDto(val gold: Int = 0, val silver: Int = 0, val copper: Int = 0)
 
+/** Compétence apportée par une formation (bloc dérivé du détail). */
+@Serializable
+data class ResolvedCompetenceDto(val id: String, val name: String)
+
+/**
+ * Référence N‑1 résolue (peuple) renvoyée dans le détail. Champs tolérants (défaut `null`/vide).
+ *
+ * @property stat Statistique ciblée (slug serveur), ou `null`.
+ * @property bonus Bonus appliqué à [stat] (déjà calculé serveur), ou `null`.
+ */
+@Serializable
+data class ResolvedReferenceDto(
+    val id: String,
+    val name: String,
+    val stat: String? = null,
+    val bonus: Int? = null,
+)
+
+/**
+ * Formation résolue renvoyée dans le détail : comme [ResolvedReferenceDto] + compétences apportées.
+ * Champs tolérants (défaut `null`/vide).
+ */
+@Serializable
+data class ResolvedFormationDto(
+    val id: String,
+    val name: String,
+    val stat: String? = null,
+    val bonus: Int? = null,
+    val competences: List<ResolvedCompetenceDto> = emptyList(),
+)
+
 /**
  * Représentation JSON d'une fiche renvoyée par l'API.
  *
@@ -42,6 +73,8 @@ data class CharacterSheetDto(
     val purse: PurseDto? = null,
     val sortsEtMiracles: String? = null,
     val notes: String? = null,
+    val formation: ResolvedFormationDto? = null,
+    val peuple: ResolvedReferenceDto? = null,
 )
 
 /** Corps de requête de création d'une fiche (`POST /character-sheets`). */
