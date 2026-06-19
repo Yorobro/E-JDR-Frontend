@@ -1,3 +1,14 @@
+## [1.14.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.13.0...v1.14.0) (2026-06-19)
+
+
+### Features
+
+* **charactersheet:** competences 100% derivees de la formation ([4783b41](https://github.com/Yorobro/E-JDR-Frontend/commit/4783b413ebc4d0e65e494ca3c5784a90f2590b15))
+* **charactersheet:** consume server stat totals and detail bonus sources ([05ccc91](https://github.com/Yorobro/E-JDR-Frontend/commit/05ccc914824a4deccd80ea43dec7f11c56344795))
+* **charactersheet:** points de vie et protection en lecture seule ([0d36b06](https://github.com/Yorobro/E-JDR-Frontend/commit/0d36b0666d26d5ce6866b883f98a0ebfd8cd011b))
+* **charactersheet:** show stat total first then base + bonus sources ([2c59cb1](https://github.com/Yorobro/E-JDR-Frontend/commit/2c59cb18de4067a5a42f4393b722225bb84a666f))
+* **reference:** champ points de protection a la creation d'une armure ([18b819b](https://github.com/Yorobro/E-JDR-Frontend/commit/18b819be14a32f4af899f85c1ba94ba714f4922e))
+
 ## [1.13.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.12.0...v1.13.0) (2026-06-19)
 
 
