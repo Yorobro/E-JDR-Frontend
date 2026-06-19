@@ -16,6 +16,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.parameter
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -39,9 +40,14 @@ class ReferenceHttpRepository(
     private val config: AppConfig,
 ) : ReferenceRepository {
 
-    override suspend fun list(type: ReferenceType): Result<List<ReferenceItem>, ReferenceError> =
+    override suspend fun list(
+        type: ReferenceType,
+        groupId: String,
+    ): Result<List<ReferenceItem>, ReferenceError> =
         runCatchingCancellable {
-            val response = client.get("${config.baseUrl}/reference/${type.slug}")
+            val response = client.get("${config.baseUrl}/reference/${type.slug}") {
+                parameter("groupId", groupId)
+            }
             if (response.status.isSuccess()) {
                 Result.Success(response.body<ReferenceListResponseDto>().items.map(ReferenceHttpMapper::toItem))
             } else {
@@ -52,11 +58,23 @@ class ReferenceHttpRepository(
     override suspend fun create(
         type: ReferenceType,
         name: String,
+        groupId: String,
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
     ): Result<ReferenceItem, ReferenceError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/reference/${type.slug}") {
                 contentType(ContentType.Application.Json)
-                setBody(CreateReferenceRequestDto(name))
+                setBody(
+                    CreateReferenceRequestDto(
+                        name = name,
+                        groupId = groupId,
+                        stat = stat,
+                        bonus = bonus,
+                        competenceIds = competenceIds.ifEmpty { null },
+                    ),
+                )
             }
             if (response.status.isSuccess()) {
                 Result.Success(ReferenceHttpMapper.toItem(response.body<ReferenceItemDto>()))

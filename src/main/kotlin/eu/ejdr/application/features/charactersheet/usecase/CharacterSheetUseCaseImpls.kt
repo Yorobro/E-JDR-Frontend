@@ -22,15 +22,17 @@ import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 class ListCharacterSheetsUseCaseImpl(
     private val repository: CharacterSheetRepository,
 ) : ListCharacterSheetsUseCase {
-    override suspend fun invoke(): Result<List<CharacterSheet>, CharacterSheetError> =
-        repository.list()
+    override suspend fun invoke(groupId: String): Result<List<CharacterSheet>, CharacterSheetError> =
+        repository.list(groupId)
 }
 
 class CreateCharacterSheetUseCaseImpl(
     private val repository: CharacterSheetRepository,
 ) : CreateCharacterSheetUseCase {
-    override suspend fun invoke(name: String): Result<CharacterSheet, CharacterSheetError> =
-        repository.create(name)
+    override suspend fun invoke(
+        name: String,
+        groupId: String,
+    ): Result<CharacterSheet, CharacterSheetError> = repository.create(name, groupId)
 }
 
 class GetCharacterSheetUseCaseImpl(

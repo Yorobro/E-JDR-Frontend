@@ -26,6 +26,7 @@ import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetRef
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.presentation.features.charactersheet.CharacterSheetDetailViewModel
+import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.charactersheet.component.CampagnesTab
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetFormState
 import eu.ejdr.presentation.features.charactersheet.component.CombatTab
@@ -40,6 +41,7 @@ import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import org.koin.compose.koinInject
 
 private val TabTitles = listOf("Identité", "Combat", "Inventaire", "Campagnes")
 
@@ -62,9 +64,11 @@ fun CharacterSheetDetailPage(
     name: String,
     modifier: Modifier = Modifier,
 ) {
+    val activeGroupState = koinInject<ActiveGroupState>()
     val viewModel = koinViewModel {
         CharacterSheetDetailViewModel(
             sheetId = id,
+            activeGroupId = activeGroupState.activeGroupId.value,
             getById = get<GetCharacterSheetUseCase>(),
             update = get<UpdateCharacterSheetUseCase>(),
             getCampaigns = get<GetSheetCampaignsUseCase>(),

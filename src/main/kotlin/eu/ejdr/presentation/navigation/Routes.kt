@@ -87,6 +87,23 @@ sealed interface Route : NavKey {
      */
     @Serializable
     data class CharacterSheetDetail(val id: String, val name: String) : Route
+
+    /** Liste des groupes d'amis de l'utilisateur et sélecteur de groupe actif. */
+    @Serializable
+    data object Groups : Route
+
+    /**
+     * Détail d'un groupe d'amis (membres, invitations).
+     *
+     * @property id Identifiant du groupe.
+     * @property name Nom du groupe (affiché en titre, évite un appel réseau).
+     */
+    @Serializable
+    data class GroupDetail(val id: String, val name: String) : Route
+
+    /** Invitations reçues en attente de traitement. */
+    @Serializable
+    data object Invitations : Route
 }
 
 /**
@@ -118,6 +135,9 @@ val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
             subclass(Route.ReferenceList::class)
             subclass(Route.CharacterSheets::class)
             subclass(Route.CharacterSheetDetail::class)
+            subclass(Route.Groups::class)
+            subclass(Route.GroupDetail::class)
+            subclass(Route.Invitations::class)
         }
     }
 }

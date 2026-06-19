@@ -12,11 +12,11 @@ import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
  * opérations renvoient un [Result] : aucune exception ne doit remonter.
  */
 interface CharacterSheetRepository {
-    /** Liste les fiches de l'utilisateur courant. */
-    suspend fun list(): Result<List<CharacterSheet>, CharacterSheetError>
+    /** Liste les fiches du groupe actif (visibilité « tout le groupe »). */
+    suspend fun list(groupId: String): Result<List<CharacterSheet>, CharacterSheetError>
 
-    /** Crée une fiche appartenant à l'utilisateur courant. */
-    suspend fun create(name: String): Result<CharacterSheet, CharacterSheetError>
+    /** Crée une fiche dans le groupe actif (propriétaire = utilisateur courant). */
+    suspend fun create(name: String, groupId: String): Result<CharacterSheet, CharacterSheetError>
 
     /** Récupère le détail complet d'une fiche par son identifiant. */
     suspend fun getById(id: String): Result<CharacterSheet, CharacterSheetError>

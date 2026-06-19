@@ -24,6 +24,7 @@ import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenc
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
+import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.reference.ReferenceListViewModel
 import eu.ejdr.presentation.features.reference.component.ConfirmDeleteReferenceDialog
 import eu.ejdr.presentation.features.reference.component.CreateReferenceDialog
@@ -34,6 +35,7 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import org.koin.compose.koinInject
 
 private val MinTileWidth = 180.dp
 private val GridBottomPadding = 96.dp
@@ -53,9 +55,11 @@ fun ReferenceListPage(
     type: ReferenceType,
     modifier: Modifier = Modifier,
 ) {
+    val activeGroupState = koinInject<ActiveGroupState>()
     val viewModel = koinViewModel {
         ReferenceListViewModel(
             type,
+            activeGroupState.activeGroupId,
             get<ListReferenceItemsUseCase>(),
             get<CreateReferenceItemUseCase>(),
             get<DeleteReferenceItemUseCase>(),
@@ -64,39 +68,52 @@ fun ReferenceListPage(
     val items by viewModel.items.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val needsGroup by viewModel.needsGroup.collectAsStateWithLifecycle()
+    val availableCompetences by viewModel.availableCompetences.collectAsStateWithLifecycle()
 
     var showCreate by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<ReferenceItem?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.xl),
-            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-        ) {
-            FormError(message = error)
-            ReferenceGrid(
-                items = items,
-                isLoading = isLoading,
-                onDeleteRequest = { pendingDelete = it },
+        if (needsGroup) {
+            AppText(
+                text = "Choisis ou crée un groupe pour gérer ses ${type.label.lowercase()}.",
+                style = AppTextStyle.Body,
+                color = AppTheme.colors.muted,
+                modifier = Modifier.align(Alignment.Center),
+            )
+        } else {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.xl),
+                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+            ) {
+                FormError(message = error)
+                ReferenceGrid(
+                    items = items,
+                    isLoading = isLoading,
+                    onDeleteRequest = { pendingDelete = it },
+                )
+            }
+
+            AppFab(
+                onClick = { showCreate = true },
+                contentDescription = "Ajouter une ${type.singularLabel}",
+                modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
             )
         }
-
-        AppFab(
-            onClick = { showCreate = true },
-            contentDescription = "Ajouter une ${type.singularLabel}",
-            modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
-        )
     }
 
     if (showCreate) {
         CreateReferenceDialog(
+            type = type,
             title = "Nouvel élément : ${type.singularLabel}",
             label = "Nom (${type.singularLabel})",
             onDismiss = { showCreate = false },
-            onConfirm = { name ->
+            onConfirm = { name, stat, bonus, competenceIds ->
                 showCreate = false
-                viewModel.create(name)
+                viewModel.create(name, stat, bonus, competenceIds)
             },
+            availableCompetences = availableCompetences,
         )
     }
 

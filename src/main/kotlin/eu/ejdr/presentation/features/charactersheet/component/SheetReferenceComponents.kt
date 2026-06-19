@@ -27,6 +27,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.presentation.shared.component.atomic.AppButton
@@ -149,6 +150,60 @@ fun LinkedReferenceSection(
                 refs.onLink(type, itemId)
             },
             onDismiss = { showPicker = false },
+        )
+    }
+}
+
+/**
+ * Section Compétences : les compétences manuelles N‑N (gérées comme avant via [LinkedReferenceSection])
+ * PLUS, en lecture seule, les compétences apportées par la formation active — badge « via <formation> »,
+ * sans croix de retrait (elles ne sont pas retirables individuellement). Si la fiche n'a pas de
+ * formation (ou pas de compétences dérivées), seules les compétences manuelles sont affichées.
+ *
+ * @param editing Mode édition (transmis à la sous-section N‑N).
+ * @param refs Données de référence (liaisons N‑N, catalogue, actions).
+ * @param formation Formation résolue de la fiche (source des compétences dérivées), ou `null`.
+ */
+@Composable
+fun CompetencesSection(
+    editing: Boolean,
+    refs: SheetReferences,
+    formation: ResolvedFormation?,
+) {
+    val sourceName = formation?.name
+    val derived = formation?.competences.orEmpty()
+    Column(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
+    ) {
+        LinkedReferenceSection(ReferenceType.COMPETENCE, editing, refs)
+        if (sourceName != null) {
+            derived.forEach { competence ->
+                DerivedCompetenceCard(name = competence.name, source = sourceName)
+            }
+        }
+    }
+}
+
+/** Carte d'une compétence dérivée (lecture seule) : nom + badge « via <formation> ». */
+@Composable
+private fun DerivedCompetenceCard(name: String, source: String) {
+    val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .background(AppTheme.colors.beige)
+            .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape)
+            .padding(horizontal = AppTheme.dimens.md, vertical = AppTheme.dimens.sm),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        AppText(text = name, style = AppTextStyle.Body)
+        AppText(
+            text = "via $source",
+            style = AppTextStyle.Caption,
+            color = AppTheme.colors.textSecondary,
         )
     }
 }

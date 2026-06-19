@@ -42,6 +42,7 @@ import kotlinx.coroutines.launch
  */
 class CharacterSheetDetailViewModel(
     private val sheetId: String,
+    private val activeGroupId: String?,
     private val getById: GetCharacterSheetUseCase,
     private val update: UpdateCharacterSheetUseCase,
     private val getCampaigns: GetSheetCampaignsUseCase,
@@ -116,16 +117,29 @@ class CharacterSheetDetailViewModel(
      * référence n'écrasent pas l'erreur principale de la fiche (sections simplement vides).
      */
     private suspend fun loadReferences() {
-        _formations.value = listReferenceItems(ReferenceType.FORMATION).getOrElse { emptyList() }
-        _peoples.value = listReferenceItems(ReferenceType.PEUPLE).getOrElse { emptyList() }
-
+        // Les éléments rattachés à la fiche (N‑N) dépendent de la fiche, pas du groupe : toujours chargés.
         val linked = mutableMapOf<ReferenceType, List<ReferenceItem>>()
-        val catalogues = mutableMapOf<ReferenceType, List<ReferenceItem>>()
         for (type in linkableTypes) {
             linked[type] = listSheetReferences(sheetId, type).getOrElse { emptyList() }
-            catalogues[type] = listReferenceItems(type).getOrElse { emptyList() }
         }
         _linked.value = linked
+
+        // Les catalogues (formations/peuples + catalogues liables) appartiennent au groupe actif :
+        // sans groupe actif, on n'a rien à proposer (sections de sélection vides).
+        val groupId = activeGroupId
+        if (groupId == null) {
+            _formations.value = emptyList()
+            _peoples.value = emptyList()
+            _catalogues.value = emptyMap()
+            return
+        }
+        _formations.value = listReferenceItems(ReferenceType.FORMATION, groupId).getOrElse { emptyList() }
+        _peoples.value = listReferenceItems(ReferenceType.PEUPLE, groupId).getOrElse { emptyList() }
+
+        val catalogues = mutableMapOf<ReferenceType, List<ReferenceItem>>()
+        for (type in linkableTypes) {
+            catalogues[type] = listReferenceItems(type, groupId).getOrElse { emptyList() }
+        }
         _catalogues.value = catalogues
     }
 
@@ -167,20 +181,36 @@ class CharacterSheetDetailViewModel(
         _isEditing.value = false
     }
 
-    /** Sauvegarde la fiche éditée ; en cas de succès, sort du mode édition et met à jour l'état. */
+    /**
+     * Sauvegarde la fiche éditée ; en cas de succès, sort du mode édition puis **recharge** la fiche.
+     *
+     * On ne stocke PAS la réponse du PUT directement : elle ne contient pas les blocs résolus
+     * `formation`/`peuple` (statistique bonus + compétences dérivées), calculés uniquement côté GET.
+     * Recharger garantit que l'écran reflète immédiatement les bonus et compétences de la
+     * formation/peuple sélectionnés, sans avoir à quitter puis revenir sur la fiche.
+     */
     fun save(edited: CharacterSheet) {
         viewModelScope.launch {
             _isLoading.value = true
             update(edited).fold(
                 onSuccess = {
-                    _sheet.value = it
                     _isEditing.value = false
                     _error.value = null
+                    refresh()
                 },
                 onFailure = { _error.value = it.message },
             )
             _isLoading.value = false
         }
+    }
+
+    /** Recharge la fiche et les données de référence dérivées (formation/peuple/compétences). */
+    private suspend fun refresh() {
+        getById(sheetId).fold(
+            onSuccess = { _sheet.value = it },
+            onFailure = { _error.value = it.message },
+        )
+        loadReferences()
     }
 
     /**

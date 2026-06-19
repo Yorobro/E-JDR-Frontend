@@ -2,10 +2,15 @@ package eu.ejdr.infrastructure.http.features.charactersheet
 
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.Purse
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedCompetence
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedReference
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.PurseDto
+import eu.ejdr.infrastructure.http.features.charactersheet.dto.ResolvedFormationDto
+import eu.ejdr.infrastructure.http.features.charactersheet.dto.ResolvedReferenceDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.SheetCampaignDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.UpdateCharacterSheetRequestDto
 import io.ktor.http.HttpStatusCode
@@ -41,7 +46,23 @@ object CharacterSheetHttpMapper {
             purse = dto.purse?.let { Purse(it.gold, it.silver, it.copper) },
             sortsEtMiracles = dto.sortsEtMiracles,
             notes = dto.notes,
+            formation = dto.formation?.let(::toResolvedFormation),
+            peuple = dto.peuple?.let(::toResolvedReference),
         )
+
+    /** Convertit le bloc formation résolu (dérivé, affichage seul) en vue domaine. */
+    private fun toResolvedFormation(dto: ResolvedFormationDto): ResolvedFormation =
+        ResolvedFormation(
+            id = dto.id,
+            name = dto.name,
+            stat = dto.stat,
+            bonus = dto.bonus,
+            competences = dto.competences.map { ResolvedCompetence(it.id, it.name) },
+        )
+
+    /** Convertit le bloc peuple résolu (dérivé, affichage seul) en vue domaine. */
+    private fun toResolvedReference(dto: ResolvedReferenceDto): ResolvedReference =
+        ResolvedReference(id = dto.id, name = dto.name, stat = dto.stat, bonus = dto.bonus)
 
     /** Convertit une campagne rattachée reçue de l'API en vue domaine (onglet Campagnes). */
     fun toSheetCampaign(dto: SheetCampaignDto): SheetCampaign =

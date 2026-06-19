@@ -20,6 +20,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 /**
  * Tests de l'adapter HTTP [CampaignHttpRepository] avec le MockEngine de Ktor.
@@ -58,30 +59,58 @@ class CampaignHttpRepositoryTest {
     private fun repository(client: HttpClient) = CampaignHttpRepository(client, config)
 
     @Test
-    fun `list success maps the wrapped campaigns`() = runTest {
+    fun `list scopes the request by the active group`() = runTest {
         val body = """{"campaigns":[{"id":"c-1","name":"Alpha","createdAt":"2026-06-13T10:00:00.000Z"}]}"""
-        val result = repository(clientReturning(HttpStatusCode.OK, body)).list()
+        var requestedUrl = ""
+        val engine = MockEngine { request ->
+            requestedUrl = request.url.toString()
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).list("g-1")
 
         assertIs<Result.Success<List<Campaign>>>(result)
-        val campaigns = result.value
-        assertEquals(1, campaigns.size)
-        assertEquals("Alpha", campaigns.first().name)
+        assertEquals(1, result.value.size)
+        assertEquals("Alpha", result.value.first().name)
+        assertTrue(requestedUrl.contains("groupId=g-1"), "URL should carry groupId: $requestedUrl")
     }
 
     @Test
-    fun `create success maps the campaign`() = runTest {
+    fun `create sends name and group in the body`() = runTest {
         val body = """{"id":"c-1","name":"Alpha","createdAt":"2026-06-13T10:00:00.000Z"}"""
-        val result = repository(clientReturning(HttpStatusCode.Created, body)).create("Alpha")
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).create("Alpha", "g-1")
 
         assertIs<Result.Success<Campaign>>(result)
         assertEquals("c-1", result.value.id)
+        assertTrue(requestBody.contains("\"groupId\":\"g-1\""), "Body should carry groupId: $requestBody")
+        assertTrue(requestBody.contains("\"name\":\"Alpha\""), "Body should carry name: $requestBody")
     }
 
     @Test
     fun `create 400 maps to InvalidName`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.BadRequest, """{"code":"INVALID_CAMPAIGN_NAME"}"""),
-        ).create("")
+        ).create("", "g-1")
 
         assertIs<Result.Failure<CampaignError>>(result)
         assertEquals(CampaignError.InvalidName, result.error)
@@ -121,7 +150,7 @@ class CampaignHttpRepositoryTest {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true }) }
         }
 
-        val result = repository(client).list()
+        val result = repository(client).list("g-1")
 
         assertIs<Result.Failure<CampaignError>>(result)
         assertEquals(CampaignError.Network, result.error)

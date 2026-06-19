@@ -13,11 +13,26 @@ import eu.ejdr.domain.features.reference.error.ReferenceError
  * son `slug`). Toutes les opérations renvoient un [Result] : aucune exception ne doit remonter.
  */
 interface ReferenceRepository {
-    /** Liste les éléments du catalogue de l'utilisateur pour le type donné. */
-    suspend fun list(type: ReferenceType): Result<List<ReferenceItem>, ReferenceError>
+    /** Liste les éléments du catalogue du groupe actif pour le type donné. */
+    suspend fun list(
+        type: ReferenceType,
+        groupId: String,
+    ): Result<List<ReferenceItem>, ReferenceError>
 
-    /** Crée un élément dans le catalogue du type donné. */
-    suspend fun create(type: ReferenceType, name: String): Result<ReferenceItem, ReferenceError>
+    /**
+     * Crée un élément dans le catalogue du type donné, pour le groupe actif (admin requis).
+     *
+     * [stat]/[bonus]/[competenceIds] ne concernent que les formations/peuples (et les compétences
+     * pour la seule formation) ; les autres types passent `null`/`emptyList`.
+     */
+    suspend fun create(
+        type: ReferenceType,
+        name: String,
+        groupId: String,
+        stat: String? = null,
+        bonus: Int? = null,
+        competenceIds: List<String> = emptyList(),
+    ): Result<ReferenceItem, ReferenceError>
 
     /** Supprime un élément du catalogue. */
     suspend fun delete(type: ReferenceType, itemId: String): Result<Unit, ReferenceError>

@@ -19,9 +19,10 @@ data class CampaignDto(val id: String, val name: String, val createdAt: String)
  * Corps de requête envoyé au serveur pour créer une campagne (`POST /campaigns`).
  *
  * @property name Nom de la campagne à créer.
+ * @property groupId Identifiant du groupe actif auquel rattacher la campagne.
  */
 @Serializable
-data class CreateCampaignRequestDto(val name: String)
+data class CreateCampaignRequestDto(val name: String, val groupId: String)
 
 /**
  * Corps de réponse de `GET /campaigns` : l'API enveloppe la liste sous la clé `campaigns`.

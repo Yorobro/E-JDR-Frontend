@@ -11,6 +11,8 @@ import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetRefer
 import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedReference
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
@@ -55,16 +57,18 @@ class CharacterSheetDetailViewModelTest {
      */
     private fun buildVm(
         getById: GetCharacterSheetUseCase,
+        activeGroupId: String? = "g-1",
         update: UpdateCharacterSheetUseCase = UpdateCharacterSheetUseCase { Result.Success(it) },
         getCampaigns: GetSheetCampaignsUseCase = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         exportPdf: ExportCharacterSheetPdfUseCase = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
         fileSaver: FileSaver = FileSaver { _, _ -> true },
-        listReferenceItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { Result.Success(emptyList<ReferenceItem>()) },
+        listReferenceItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
         listSheetReferences: ListSheetReferencesUseCase = ListSheetReferencesUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
         linkSheetReference: LinkSheetReferenceUseCase = LinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
         unlinkSheetReference: UnlinkSheetReferenceUseCase = UnlinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
     ) = CharacterSheetDetailViewModel(
         sheetId = "s-1",
+        activeGroupId = activeGroupId,
         getById = getById,
         update = update,
         getCampaigns = getCampaigns,
@@ -127,13 +131,18 @@ class CharacterSheetDetailViewModelTest {
     }
 
     @Test
-    fun `save success stores the returned sheet and exits edit mode`() = runTest {
+    fun `save success reloads the sheet via GET and exits edit mode`() = runTest {
+        // Le PUT (update) ne renvoie PAS les blocs résolus formation/peuple (calculés côté GET
+        // uniquement). Après save, l'écran doit refléter le GET, pas la réponse du PUT — sinon
+        // les bonus de stat et compétences dérivées disparaissent jusqu'au prochain chargement.
+        val getResult = sheet(name = "Strider", vigueur = 7).copy(
+            formation = ResolvedFormation(id = "f-1", name = "Mage", stat = "intelligence", bonus = 3),
+            peuple = ResolvedReference(id = "p-1", name = "Elfe", stat = "dexterite", bonus = 1),
+        )
         val vm = buildVm(
-            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
-            update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
-            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
-            fileSaver = FileSaver { _, _ -> true },
+            getById = GetCharacterSheetUseCase { Result.Success(getResult) },
+            // Le PUT renvoie une fiche SANS blocs résolus (comportement réel du back).
+            update = UpdateCharacterSheetUseCase { Result.Success(it.copy(formation = null, peuple = null)) },
         )
         advanceUntilIdle()
         vm.startEdit()
@@ -143,6 +152,10 @@ class CharacterSheetDetailViewModelTest {
 
         assertEquals("Strider", vm.sheet.value?.name)
         assertEquals(7, vm.sheet.value?.vigueur)
+        // Les blocs résolus sont présents car save a rechargé via GET.
+        assertEquals("Mage", vm.sheet.value?.formation?.name)
+        assertEquals(3, vm.sheet.value?.formation?.bonus)
+        assertEquals("Elfe", vm.sheet.value?.peuple?.name)
         assertFalse(vm.isEditing.value)
         assertNull(vm.error.value)
     }
@@ -243,7 +256,7 @@ class CharacterSheetDetailViewModelTest {
         val item = ReferenceItem("ref-1", "Épée", "2026-06-13T10:00:00.000Z")
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
-            listReferenceItems = ListReferenceItemsUseCase { Result.Success(listOf(item)) },
+            listReferenceItems = ListReferenceItemsUseCase { _, _ -> Result.Success(listOf(item)) },
             listSheetReferences = ListSheetReferencesUseCase { _, _ -> Result.Success(listOf(item)) },
         )
         advanceUntilIdle()
