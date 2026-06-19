@@ -1,3 +1,11 @@
+## [1.15.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.14.0...v1.15.0) (2026-06-19)
+
+
+### Features
+
+* **reference:** edit catalogue items ([1e31f0c](https://github.com/Yorobro/E-JDR-Frontend/commit/1e31f0c200b059cd9d00334853b2db6c2c709b0a))
+* **reference:** show type-specific details on catalogue cards ([8c75b44](https://github.com/Yorobro/E-JDR-Frontend/commit/8c75b44b20ddfda51dd1f1f7dfc98ecd6cda1fcc))
+
 ## [1.14.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.13.0...v1.14.0) (2026-06-19)
 
 
