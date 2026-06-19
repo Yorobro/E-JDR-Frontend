@@ -155,29 +155,23 @@ fun LinkedReferenceSection(
 }
 
 /**
- * Section Compétences : les compétences manuelles N‑N (gérées comme avant via [LinkedReferenceSection])
- * PLUS, en lecture seule, les compétences apportées par la formation active — badge « via <formation> »,
- * sans croix de retrait (elles ne sont pas retirables individuellement). Si la fiche n'a pas de
- * formation (ou pas de compétences dérivées), seules les compétences manuelles sont affichées.
+ * Section Compétences : **100 % dérivées de la formation active**, en lecture seule (badge
+ * « via <formation> », sans croix de retrait). Plus aucune liaison N‑N manuelle ni bouton
+ * d'ajout/retrait. Si la fiche n'a pas de formation (ou pas de compétences dérivées), affiche « — ».
  *
- * @param editing Mode édition (transmis à la sous-section N‑N).
- * @param refs Données de référence (liaisons N‑N, catalogue, actions).
  * @param formation Formation résolue de la fiche (source des compétences dérivées), ou `null`.
  */
 @Composable
-fun CompetencesSection(
-    editing: Boolean,
-    refs: SheetReferences,
-    formation: ResolvedFormation?,
-) {
+fun CompetencesSection(formation: ResolvedFormation?) {
     val sourceName = formation?.name
     val derived = formation?.competences.orEmpty()
     Column(
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
     ) {
-        LinkedReferenceSection(ReferenceType.COMPETENCE, editing, refs)
-        if (sourceName != null) {
+        if (sourceName == null || derived.isEmpty()) {
+            AppText(text = NONE_LABEL, style = AppTextStyle.Body, color = AppTheme.colors.muted)
+        } else {
             derived.forEach { competence ->
                 DerivedCompetenceCard(name = competence.name, source = sourceName)
             }

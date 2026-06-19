@@ -25,7 +25,9 @@ enum class ReferenceType(
     PEUPLE("peoples", "Peuples", "peuple", linkable = false),
     ARME("armes", "Armes", "arme", linkable = true),
     ARMURE("armures", "Armures", "armure", linkable = true),
-    COMPETENCE("competences", "Compétences", "compétence", linkable = true),
+    // Les compétences sont 100 % dérivées de la formation (lecture seule) : plus de liaison N‑N à
+    // la fiche. Le catalogue reste créable/supprimable via le hub ; seul le rattachement disparaît.
+    COMPETENCE("competences", "Compétences", "compétence", linkable = false),
     EQUIPEMENT("equipements", "Équipements", "équipement", linkable = true);
 
     companion object {
