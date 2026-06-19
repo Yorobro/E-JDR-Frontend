@@ -26,7 +26,7 @@ object FriendGroupHttpMapper {
         )
 
     fun toMember(dto: GroupMemberDto): GroupMember =
-        GroupMember(userId = dto.userId, role = dto.role, createdAt = dto.createdAt)
+        GroupMember(userId = dto.userId, pseudo = dto.pseudo, role = dto.role, createdAt = dto.createdAt)
 
     fun toInvitation(dto: GroupInvitationDto): GroupInvitation =
         GroupInvitation(
@@ -34,6 +34,7 @@ object FriendGroupHttpMapper {
             groupId = dto.groupId,
             groupName = dto.groupName,
             invitedBy = dto.invitedBy,
+            invitedByPseudo = dto.invitedByPseudo,
             createdAt = dto.createdAt,
         )
 

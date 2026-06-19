@@ -5,5 +5,6 @@ data class GroupInvitation(
     val groupId: String,
     val groupName: String,
     val invitedBy: String,
+    val invitedByPseudo: String,
     val createdAt: String,
 )

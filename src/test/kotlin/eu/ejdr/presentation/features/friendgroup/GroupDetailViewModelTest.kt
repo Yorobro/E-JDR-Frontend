@@ -31,7 +31,7 @@ class GroupDetailViewModelTest {
     @AfterTest fun tearDown() = Dispatchers.resetMain()
 
     private fun member(userId: String, role: String) =
-        GroupMember(userId = userId, role = role, createdAt = "2026-06-18T10:00:00.000Z")
+        GroupMember(userId = userId, pseudo = "pseudo-$userId", role = role, createdAt = "2026-06-18T10:00:00.000Z")
 
     private fun detail(vararg members: GroupMember) = FriendGroupDetail(
         id = "group-1",

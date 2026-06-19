@@ -32,6 +32,7 @@ class InvitationListViewModelTest {
         groupId = "group-1",
         groupName = "Mon Groupe",
         invitedBy = "user-a",
+        invitedByPseudo = "Alice",
         createdAt = "2026-06-18T10:00:00.000Z",
     )
 

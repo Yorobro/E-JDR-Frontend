@@ -160,7 +160,7 @@ fun MemberCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 AppText(
-                    text = member.userId.take(12) + if (member.userId.length > 12) "…" else "",
+                    text = member.pseudo.ifBlank { member.userId },
                     style = AppTextStyle.Body,
                 )
                 AppText(
@@ -201,7 +201,7 @@ fun InvitationCard(
         Column(modifier = Modifier.padding(AppTheme.dimens.md)) {
             AppText(text = invitation.groupName, style = AppTextStyle.Subtitle)
             AppText(
-                text = "Invité par ${invitation.invitedBy}",
+                text = "Invité par ${invitation.invitedByPseudo.ifBlank { invitation.invitedBy }}",
                 style = AppTextStyle.Body,
                 color = AppTheme.colors.textSecondary,
             )

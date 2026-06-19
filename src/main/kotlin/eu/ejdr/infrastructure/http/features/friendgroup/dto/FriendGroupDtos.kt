@@ -6,13 +6,17 @@ import kotlinx.serialization.Serializable
 data class FriendGroupDto(
     val id: String,
     val name: String,
-    val myRole: String,
+    // Tolérant : si la réponse omet myRole (anciens contrats), on retombe sur MEMBER plutôt que
+    // de lever une MissingFieldException qui serait alors masquée en « erreur réseau ».
+    val myRole: String = "MEMBER",
     val createdAt: String,
 )
 
 @Serializable
 data class GroupMemberDto(
     val userId: String,
+    // Tolérant : défaut vide si la réponse omet le pseudo, plutôt que de lever et masquer en erreur réseau.
+    val pseudo: String = "",
     val role: String,
     val createdAt: String,
 )
@@ -32,6 +36,8 @@ data class GroupInvitationDto(
     val groupId: String,
     val groupName: String,
     val invitedBy: String,
+    // Tolérant : défaut vide si la réponse omet le pseudo de l'invitant.
+    val invitedByPseudo: String = "",
     val createdAt: String,
 )
 
