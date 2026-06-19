@@ -1,3 +1,22 @@
+## [1.13.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.12.0...v1.13.0) (2026-06-19)
+
+
+### Features
+
+* **charactersheet:** map resolved formation/peuple blocks from the detail ([f19a445](https://github.com/Yorobro/E-JDR-Frontend/commit/f19a445b7d18b3d64690f73e129b22763a1b1fe0))
+* **charactersheet:** show stat bonuses and formation-derived skills ([30725e5](https://github.com/Yorobro/E-JDR-Frontend/commit/30725e5f1e71708584d088ab3d4261d1ef953646))
+* **friend-groups:** etape 2 front - campagnes et catalogues scopes au groupe actif ([ec62e30](https://github.com/Yorobro/E-JDR-Frontend/commit/ec62e30e5fd4bc23f3aff9f2ab2f21615733bb5e))
+* **friend-groups:** etape 3 front - fiches scopees au groupe actif ([b8e0bd2](https://github.com/Yorobro/E-JDR-Frontend/commit/b8e0bd2b56e46f7633e4abe99ea9eb405e4fa110))
+* **friend-groups:** implement step 1 — group foundations (front) ([9b727fe](https://github.com/Yorobro/E-JDR-Frontend/commit/9b727fe763cb5ab3f603e32556c5ddf8072ba24c))
+* **friend-groups:** rendre les invitations accessibles + UI changement de rôle ([9a5efd7](https://github.com/Yorobro/E-JDR-Frontend/commit/9a5efd79d767ea483c636f9cecc8dafdff7f3bb4))
+* **reference:** choisir statistique/bonus et compétences à la création ([284688f](https://github.com/Yorobro/E-JDR-Frontend/commit/284688f1cb8372612323b03ac0019a9ff9c20f88))
+
+
+### Bug Fixes
+
+* **charactersheet:** recharger la fiche apres enregistrement ([07978d1](https://github.com/Yorobro/E-JDR-Frontend/commit/07978d1d7eca5a4ca9bd6c28eec69f70fd180991))
+* **friend-groups:** tolerer myRole optionnel + afficher les pseudos ([9551a9b](https://github.com/Yorobro/E-JDR-Frontend/commit/9551a9b81e7150fa0b8fe0df79285eed9b3d4814))
+
 ## [1.12.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.11.0...v1.12.0) (2026-06-18)
 
 
