@@ -52,6 +52,9 @@ private const val NO_STAT_LABEL = "Aucune"
 /** Bonus par défaut proposé dès qu'une statistique est choisie (le serveur applique 1 sinon). */
 private const val DEFAULT_BONUS = "1"
 
+/** Points de protection par défaut proposés à la création d'une armure. */
+private const val DEFAULT_PROTECTION = "0"
+
 /**
  * Options de statistique du dialog : libellé affiché ↔ slug serveur (`null` = aucune). Ordre et
  * libellés alignés sur la section caractéristiques de la fiche. Les slugs proviennent de
@@ -109,14 +112,17 @@ fun ReferenceCard(
  *
  * Pour [ReferenceType.FORMATION]/[ReferenceType.PEUPLE], propose en plus un sélecteur de
  * statistique et un montant de bonus (visible seulement si une stat est choisie). Pour la seule
- * formation, propose aussi un picker multi‑sélection de compétences ([availableCompetences]). Les
- * autres types n'affichent que le champ nom. La validation porte `(name, stat, bonus, competenceIds)`.
+ * formation, propose aussi un picker multi‑sélection de compétences ([availableCompetences]). Pour
+ * la seule [ReferenceType.ARMURE], propose un champ « Points de protection » (défaut 0, optionnel).
+ * Les autres types n'affichent que le champ nom. La validation porte
+ * `(name, stat, bonus, competenceIds, protectionPoints)`.
  *
  * @param type Catégorie courante (détermine les champs proposés).
  * @param title Titre du dialog (ex. « Nouvelle formation »).
  * @param label Libellé du champ nom.
  * @param onDismiss Fermeture sans création.
- * @param onConfirm Confirmation : `(name, stat slug ou null, bonus ou null, ids de compétences)`.
+ * @param onConfirm Confirmation :
+ *   `(name, stat slug ou null, bonus ou null, ids de compétences, points de protection ou null)`.
  * @param availableCompetences Catalogue des compétences proposées (formation uniquement).
  * @param errorMessage Message d'erreur éventuel (ex. doublon).
  */
@@ -126,13 +132,20 @@ fun CreateReferenceDialog(
     title: String,
     label: String,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, stat: String?, bonus: Int?, competenceIds: List<String>) -> Unit,
+    onConfirm: (
+        name: String,
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
+        protectionPoints: Int?,
+    ) -> Unit,
     availableCompetences: List<ReferenceItem> = emptyList(),
     errorMessage: String? = null,
 ) {
     var name by remember { mutableStateOf("") }
     var statLabel by remember { mutableStateOf(NO_STAT_LABEL) }
     var bonus by remember { mutableStateOf(DEFAULT_BONUS) }
+    var protection by remember { mutableStateOf(DEFAULT_PROTECTION) }
     val selectedCompetences = remember { mutableStateListOf<String>() }
 
     val hasStatChoice = type == ReferenceType.FORMATION || type == ReferenceType.PEUPLE
@@ -148,6 +161,7 @@ fun CreateReferenceDialog(
                 selectedStat,
                 selectedStat?.let { bonus.toIntOrNull() ?: 1 },
                 selectedCompetences.toList(),
+                if (type == ReferenceType.ARMURE) protection.toIntOrNull() ?: 0 else null,
             )
         },
         confirmEnabled = name.isNotBlank(),
@@ -182,6 +196,14 @@ fun CreateReferenceDialog(
                 CompetencePicker(
                     competences = availableCompetences,
                     selectedIds = selectedCompetences,
+                )
+            }
+            if (type == ReferenceType.ARMURE) {
+                AppNumberField(
+                    value = protection,
+                    onValueChange = { protection = it },
+                    label = "Points de protection",
+                    modifier = Modifier.fillMaxWidth(),
                 )
             }
             FormError(message = errorMessage)

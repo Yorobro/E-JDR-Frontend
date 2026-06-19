@@ -16,8 +16,8 @@ fun interface ListReferenceItemsUseCase {
 /**
  * Use case : crée un élément dans le catalogue d'un type pour le groupe actif (admin requis).
  *
- * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation ; les
- * autres types passent `null`/`emptyList`.
+ * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation,
+ * [protectionPoints] à la seule armure ; les autres types passent `null`/`emptyList`.
  */
 fun interface CreateReferenceItemUseCase {
     suspend operator fun invoke(
@@ -27,6 +27,7 @@ fun interface CreateReferenceItemUseCase {
         stat: String?,
         bonus: Int?,
         competenceIds: List<String>,
+        protectionPoints: Int?,
     ): Result<ReferenceItem, ReferenceError>
 }
 

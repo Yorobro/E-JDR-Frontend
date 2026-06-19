@@ -48,6 +48,11 @@ data class ResolvedFormationDto(
  * @property ownerId Identifiant du propriétaire.
  * @property name Nom de la fiche.
  * @property createdAt Date de création au format ISO 8601.
+ * @property dexteriteTotale Total de dextérité calculé serveur (base + bonus peuple/formation), ou `null`.
+ * @property intelligenceTotale Total d'intelligence calculé serveur, ou `null`.
+ * @property perceptionTotale Total de perception calculé serveur, ou `null`.
+ * @property socialTotale Total social calculé serveur, ou `null`.
+ * @property vigueurTotale Total de vigueur calculé serveur, ou `null`.
  */
 @Serializable
 data class CharacterSheetDto(
@@ -75,6 +80,11 @@ data class CharacterSheetDto(
     val notes: String? = null,
     val formation: ResolvedFormationDto? = null,
     val peuple: ResolvedReferenceDto? = null,
+    val dexteriteTotale: Int? = null,
+    val intelligenceTotale: Int? = null,
+    val perceptionTotale: Int? = null,
+    val socialTotale: Int? = null,
+    val vigueurTotale: Int? = null,
 )
 
 /** Corps de requête de création d'une fiche (`POST /character-sheets`). */

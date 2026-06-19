@@ -36,9 +36,9 @@ class CharacterSheetFormState(source: CharacterSheet) {
     var perception by mutableStateOf(source.perception.toFieldText())
     var social by mutableStateOf(source.social.toFieldText())
     var vigueur by mutableStateOf(source.vigueur.toFieldText())
-    var pointsDeVie by mutableStateOf(source.pointsDeVie.toFieldText())
+    // pointsDeVie / protection ne sont PAS édités : calculés et renvoyés par le serveur
+    // (PV = 10 + vigueur totale ; protection = somme des armures liées), affichés en lecture seule.
     var pointsDeMagie by mutableStateOf(source.pointsDeMagie.toFieldText())
-    var protection by mutableStateOf(source.protection.toFieldText())
     var purseGold by mutableStateOf(source.purse?.gold.toFieldText())
     var purseSilver by mutableStateOf(source.purse?.silver.toFieldText())
     var purseCopper by mutableStateOf(source.purse?.copper.toFieldText())
@@ -66,9 +66,8 @@ class CharacterSheetFormState(source: CharacterSheet) {
         perception = perception.toNullableInt(),
         social = social.toNullableInt(),
         vigueur = vigueur.toNullableInt(),
-        pointsDeVie = pointsDeVie.toNullableInt(),
+        // pointsDeVie / protection : dérivés serveur, jamais réécrits depuis le formulaire (restent null).
         pointsDeMagie = pointsDeMagie.toNullableInt(),
-        protection = protection.toNullableInt(),
         purse = buildPurse(),
         sortsEtMiracles = sortsEtMiracles.toNullableText(),
         notes = notes.toNullableText(),

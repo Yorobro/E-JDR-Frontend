@@ -15,6 +15,7 @@ import kotlinx.serialization.Serializable
  * @property stat Statistique associée (slug serveur), ou `null`.
  * @property bonus Montant du bonus appliqué à la statistique, ou `null`.
  * @property competenceIds Identifiants des compétences liées (formation), vide sinon.
+ * @property protectionPoints Points de protection (armure uniquement), ou `null` ; tolérant.
  */
 @Serializable
 data class ReferenceItemDto(
@@ -24,6 +25,7 @@ data class ReferenceItemDto(
     val stat: String? = null,
     val bonus: Int? = null,
     val competenceIds: List<String> = emptyList(),
+    val protectionPoints: Int? = null,
 )
 
 /**
@@ -34,6 +36,7 @@ data class ReferenceItemDto(
  * @property stat Statistique associée (formation/peuple), ou `null` ; omise pour les autres types.
  * @property bonus Montant du bonus (le serveur applique `1` par défaut si [stat] est fournie sans).
  * @property competenceIds Compétences à lier (formation), ou `null` pour les autres types.
+ * @property protectionPoints Points de protection (armure uniquement), ou `null` pour les autres types.
  */
 @Serializable
 data class CreateReferenceRequestDto(
@@ -42,6 +45,7 @@ data class CreateReferenceRequestDto(
     val stat: String? = null,
     val bonus: Int? = null,
     val competenceIds: List<String>? = null,
+    val protectionPoints: Int? = null,
 )
 
 /**
