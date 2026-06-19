@@ -77,9 +77,9 @@ fun NumberCell(
 
 /**
  * Cellule de caractéristique : base éditable (comme [NumberCell]) PLUS, quand des bonus ciblent la
- * stat, leur rendu en lecture seule à droite — « +N » par source puis « = total ». Sans bonus, le
- * rendu est strictement identique à [NumberCell]. Le champ d'édition n'expose QUE la base : le PUT
- * continue d'envoyer la base seule (bonus/total purement affichés).
+ * stat, le détail des sources en lecture seule — total mis en avant, puis « = base + sources ».
+ * Sans bonus, le rendu est strictement identique à [NumberCell]. Le champ d'édition n'expose QUE la
+ * base : le PUT continue d'envoyer la base seule (bonus/total purement affichés).
  *
  * @param label Libellé de la caractéristique.
  * @param editing Mode édition (la base reste éditable).
@@ -110,30 +110,37 @@ fun StatCell(
                 label = label,
                 modifier = Modifier.fillMaxWidth(),
             )
-            StatBonusLine(prefix = "Base ${display.base ?: 0}", display = display)
         } else {
             AppText(text = label, style = AppTextStyle.Label, color = AppTheme.colors.textSecondary)
-            StatBonusLine(prefix = (display.base ?: 0).toString(), display = display)
         }
+        StatBonusLine(display = display)
     }
 }
 
-/** Ligne « base +N +N = total » en lecture seule (bonus atténués, total accentué). */
+/**
+ * Ligne récap du total et de ses sources : « 15 = 3 base + 12 peuple ». Le total est mis en avant
+ * (accent primary, style un peu plus fort) ; suit le détail « = {base} base » puis « + {montant}
+ * {source} » pour chaque bonus, dans l'ordre peuple → formation.
+ */
 @Composable
-private fun StatBonusLine(prefix: String, display: StatDisplay) {
+private fun StatBonusLine(display: StatDisplay) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
     ) {
-        AppText(text = prefix, style = AppTextStyle.Body)
-        display.bonuses.forEach { bonus ->
-            AppText(text = "+$bonus", style = AppTextStyle.Body, color = AppTheme.colors.textSecondary)
-        }
         AppText(
-            text = "= ${display.total}",
-            style = AppTextStyle.Body,
+            text = display.total.toString(),
+            style = AppTextStyle.Subtitle,
             color = AppTheme.colors.primary,
         )
+        AppText(text = "= ${display.base ?: 0} base", style = AppTextStyle.Body)
+        display.bonuses.forEach { bonus ->
+            AppText(
+                text = "+ ${bonus.amount} ${bonus.source.label}",
+                style = AppTextStyle.Body,
+                color = AppTheme.colors.textSecondary,
+            )
+        }
     }
 }
 
@@ -215,18 +222,20 @@ fun IdentiteSection(
 
 /**
  * Section Caractéristiques : les 5 caractéristiques en colonne. Chaque cellule affiche, en plus de
- * la base éditable, les bonus apportés par le peuple et la formation actifs (« base +N +N = total »).
- * Le calcul est purement d'affichage (cf. [statDisplay]) ; la base reste seule persistée.
+ * la base éditable, le total calculé serveur et le détail de ses sources (« total = base + peuple
+ * + formation »). Le total vient des champs `*Totale` de la fiche ; le détail des sources est
+ * reconstruit côté front (cf. [statDisplay]). La base reste seule persistée.
  */
 @Composable
 fun CaracteristiquesSection(sheet: CharacterSheet, editing: Boolean, form: CharacterSheetFormState) {
-    fun display(statKey: String, base: Int?) = statDisplay(statKey, base, sheet.formation, sheet.peuple)
+    fun display(statKey: String, base: Int?, total: Int?) =
+        statDisplay(statKey, base, total, sheet.formation, sheet.peuple)
     FieldColumn {
-        StatCell("Dextérité", editing, form.dexterite, display(StatKeys.DEXTERITE, sheet.dexterite)) { form.dexterite = it }
-        StatCell("Intelligence", editing, form.intelligence, display(StatKeys.INTELLIGENCE, sheet.intelligence)) { form.intelligence = it }
-        StatCell("Perception", editing, form.perception, display(StatKeys.PERCEPTION, sheet.perception)) { form.perception = it }
-        StatCell("Social", editing, form.social, display(StatKeys.SOCIAL, sheet.social)) { form.social = it }
-        StatCell("Vigueur", editing, form.vigueur, display(StatKeys.VIGUEUR, sheet.vigueur)) { form.vigueur = it }
+        StatCell("Dextérité", editing, form.dexterite, display(StatKeys.DEXTERITE, sheet.dexterite, sheet.dexteriteTotale)) { form.dexterite = it }
+        StatCell("Intelligence", editing, form.intelligence, display(StatKeys.INTELLIGENCE, sheet.intelligence, sheet.intelligenceTotale)) { form.intelligence = it }
+        StatCell("Perception", editing, form.perception, display(StatKeys.PERCEPTION, sheet.perception, sheet.perceptionTotale)) { form.perception = it }
+        StatCell("Social", editing, form.social, display(StatKeys.SOCIAL, sheet.social, sheet.socialTotale)) { form.social = it }
+        StatCell("Vigueur", editing, form.vigueur, display(StatKeys.VIGUEUR, sheet.vigueur, sheet.vigueurTotale)) { form.vigueur = it }
     }
 }
 
