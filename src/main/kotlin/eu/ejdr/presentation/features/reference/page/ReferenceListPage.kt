@@ -69,6 +69,7 @@ fun ReferenceListPage(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val needsGroup by viewModel.needsGroup.collectAsStateWithLifecycle()
+    val availableCompetences by viewModel.availableCompetences.collectAsStateWithLifecycle()
 
     var showCreate by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<ReferenceItem?>(null) }
@@ -104,13 +105,15 @@ fun ReferenceListPage(
 
     if (showCreate) {
         CreateReferenceDialog(
+            type = type,
             title = "Nouvel élément : ${type.singularLabel}",
             label = "Nom (${type.singularLabel})",
             onDismiss = { showCreate = false },
-            onConfirm = { name ->
+            onConfirm = { name, stat, bonus, competenceIds ->
                 showCreate = false
-                viewModel.create(name)
+                viewModel.create(name, stat, bonus, competenceIds)
             },
+            availableCompetences = availableCompetences,
         )
     }
 

@@ -18,7 +18,14 @@ object ReferenceHttpMapper {
      * @return L'[ReferenceItem] correspondant.
      */
     fun toItem(dto: ReferenceItemDto): ReferenceItem =
-        ReferenceItem(id = dto.id, name = dto.name, createdAt = dto.createdAt)
+        ReferenceItem(
+            id = dto.id,
+            name = dto.name,
+            createdAt = dto.createdAt,
+            stat = dto.stat,
+            bonus = dto.bonus,
+            competenceIds = dto.competenceIds,
+        )
 
     /**
      * Traduit un échec HTTP en erreur métier référence.

@@ -33,7 +33,11 @@ class CreateReferenceItemUseCaseImpl(
         type: ReferenceType,
         name: String,
         groupId: String,
-    ): Result<ReferenceItem, ReferenceError> = repository.create(type, name, groupId)
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
+    ): Result<ReferenceItem, ReferenceError> =
+        repository.create(type, name, groupId, stat, bonus, competenceIds)
 }
 
 class DeleteReferenceItemUseCaseImpl(

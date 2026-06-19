@@ -13,12 +13,20 @@ fun interface ListReferenceItemsUseCase {
     ): Result<List<ReferenceItem>, ReferenceError>
 }
 
-/** Use case : crée un élément dans le catalogue d'un type pour le groupe actif (admin requis). */
+/**
+ * Use case : crée un élément dans le catalogue d'un type pour le groupe actif (admin requis).
+ *
+ * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation ; les
+ * autres types passent `null`/`emptyList`.
+ */
 fun interface CreateReferenceItemUseCase {
     suspend operator fun invoke(
         type: ReferenceType,
         name: String,
         groupId: String,
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
     ): Result<ReferenceItem, ReferenceError>
 }
 

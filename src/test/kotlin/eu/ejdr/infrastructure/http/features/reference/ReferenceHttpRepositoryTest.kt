@@ -106,6 +106,63 @@ class ReferenceHttpRepositoryTest {
     }
 
     @Test
+    fun `create sends stat bonus and competence ids in the body`() = runTest {
+        val body =
+            """{"id":"f-1","name":"Rôdeur","createdAt":"2026-06-13T10:00:00.000Z","stat":"dexterite","bonus":3,"competenceIds":["c-1","c-2"]}"""
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).create(
+            ReferenceType.FORMATION,
+            "Rôdeur",
+            "g-1",
+            stat = "dexterite",
+            bonus = 3,
+            competenceIds = listOf("c-1", "c-2"),
+        )
+
+        assertIs<Result.Success<ReferenceItem>>(result)
+        assertEquals("dexterite", result.value.stat)
+        assertEquals(3, result.value.bonus)
+        assertEquals(listOf("c-1", "c-2"), result.value.competenceIds)
+        assertTrue(requestBody.contains("\"stat\":\"dexterite\""), "Body should carry stat: $requestBody")
+        assertTrue(requestBody.contains("\"bonus\":3"), "Body should carry bonus: $requestBody")
+        assertTrue(
+            requestBody.contains("\"competenceIds\":[\"c-1\",\"c-2\"]"),
+            "Body should carry competenceIds: $requestBody",
+        )
+    }
+
+    @Test
+    fun `list deserializes stat bonus and competence ids tolerantly`() = runTest {
+        val body = """{"items":[
+            {"id":"f-1","name":"Rôdeur","createdAt":"2026-06-13T10:00:00.000Z","stat":"vigueur","bonus":2,"competenceIds":["c-1"]},
+            {"id":"a-1","name":"Épée","createdAt":"2026-06-13T10:00:00.000Z"}
+        ]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).list(ReferenceType.FORMATION, "g-1")
+
+        assertIs<Result.Success<List<ReferenceItem>>>(result)
+        val formation = result.value.first()
+        assertEquals("vigueur", formation.stat)
+        assertEquals(2, formation.bonus)
+        assertEquals(listOf("c-1"), formation.competenceIds)
+        val weapon = result.value[1]
+        assertEquals(null, weapon.stat)
+        assertEquals(null, weapon.bonus)
+        assertTrue(weapon.competenceIds.isEmpty())
+    }
+
+    @Test
     fun `create 409 maps to NameAlreadyUsed`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.Conflict, """{"code":"REFERENCE_NAME_ALREADY_USED"}"""),

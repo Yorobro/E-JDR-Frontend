@@ -59,11 +59,22 @@ class ReferenceHttpRepository(
         type: ReferenceType,
         name: String,
         groupId: String,
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
     ): Result<ReferenceItem, ReferenceError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/reference/${type.slug}") {
                 contentType(ContentType.Application.Json)
-                setBody(CreateReferenceRequestDto(name, groupId))
+                setBody(
+                    CreateReferenceRequestDto(
+                        name = name,
+                        groupId = groupId,
+                        stat = stat,
+                        bonus = bonus,
+                        competenceIds = competenceIds.ifEmpty { null },
+                    ),
+                )
             }
             if (response.status.isSuccess()) {
                 Result.Success(ReferenceHttpMapper.toItem(response.body<ReferenceItemDto>()))

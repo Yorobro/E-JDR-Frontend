@@ -19,11 +19,19 @@ interface ReferenceRepository {
         groupId: String,
     ): Result<List<ReferenceItem>, ReferenceError>
 
-    /** Crée un élément dans le catalogue du type donné, pour le groupe actif (admin requis). */
+    /**
+     * Crée un élément dans le catalogue du type donné, pour le groupe actif (admin requis).
+     *
+     * [stat]/[bonus]/[competenceIds] ne concernent que les formations/peuples (et les compétences
+     * pour la seule formation) ; les autres types passent `null`/`emptyList`.
+     */
     suspend fun create(
         type: ReferenceType,
         name: String,
         groupId: String,
+        stat: String? = null,
+        bonus: Int? = null,
+        competenceIds: List<String> = emptyList(),
     ): Result<ReferenceItem, ReferenceError>
 
     /** Supprime un élément du catalogue. */

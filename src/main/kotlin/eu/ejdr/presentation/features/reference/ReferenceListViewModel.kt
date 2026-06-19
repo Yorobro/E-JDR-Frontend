@@ -46,6 +46,13 @@ class ReferenceListViewModel(
     private val _needsGroup = MutableStateFlow(false)
     val needsGroup: StateFlow<Boolean> = _needsGroup.asStateFlow()
 
+    /**
+     * Catalogue des compétences du groupe actif, proposé au dialog de création d'une formation pour
+     * la liaison formation→compétences. Vide pour les autres types (non chargé).
+     */
+    private val _availableCompetences = MutableStateFlow<List<ReferenceItem>>(emptyList())
+    val availableCompetences: StateFlow<List<ReferenceItem>> = _availableCompetences.asStateFlow()
+
     init {
         viewModelScope.launch {
             activeGroupId.collect { groupId -> reload(groupId) }
@@ -61,6 +68,7 @@ class ReferenceListViewModel(
         if (groupId == null) {
             _needsGroup.value = true
             _items.value = emptyList()
+            _availableCompetences.value = emptyList()
             return
         }
         _needsGroup.value = false
@@ -70,13 +78,36 @@ class ReferenceListViewModel(
             onFailure = { error -> _error.value = error.message },
         )
         _isLoading.value = false
+        loadAvailableCompetences(groupId)
     }
 
-    /** Crée un élément dans le groupe actif puis recharge la liste en cas de succès. */
-    fun create(name: String) {
+    /**
+     * Charge le catalogue des compétences du groupe (pour le picker du dialog de formation).
+     * No-op silencieux pour les autres types ou en cas d'échec (le picker reste vide).
+     */
+    private suspend fun loadAvailableCompetences(groupId: String) {
+        if (type != ReferenceType.FORMATION) return
+        listItems(ReferenceType.COMPETENCE, groupId).fold(
+            onSuccess = { list -> _availableCompetences.value = list },
+            onFailure = { _availableCompetences.value = emptyList() },
+        )
+    }
+
+    /**
+     * Crée un élément dans le groupe actif puis recharge la liste en cas de succès.
+     *
+     * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation ;
+     * pour les types simples, l'appelant passe `null`/`null`/`emptyList`.
+     */
+    fun create(
+        name: String,
+        stat: String? = null,
+        bonus: Int? = null,
+        competenceIds: List<String> = emptyList(),
+    ) {
         val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            createItem(type, name, groupId).fold(
+            createItem(type, name, groupId, stat, bonus, competenceIds).fold(
                 onSuccess = { _error.value = null; reload(groupId) },
                 onFailure = { error -> _error.value = error.message },
             )

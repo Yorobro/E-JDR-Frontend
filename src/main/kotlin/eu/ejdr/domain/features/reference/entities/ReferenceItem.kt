@@ -9,9 +9,16 @@ package eu.ejdr.domain.features.reference.entities
  * @property id Identifiant unique stable de l'élément.
  * @property name Nom affiché de l'élément.
  * @property createdAt Date de création au format ISO 8601 (telle que renvoyée par l'API).
+ * @property stat Statistique associée (formation/peuple) — slug serveur
+ *   (`dexterite`/`intelligence`/`perception`/`social`/`vigueur`), ou `null` si aucune.
+ * @property bonus Montant du bonus appliqué à la [stat] (formation/peuple), ou `null` si aucune stat.
+ * @property competenceIds Identifiants des compétences liées (formation uniquement ; vide sinon).
  */
 data class ReferenceItem(
     val id: String,
     val name: String,
     val createdAt: String,
+    val stat: String? = null,
+    val bonus: Int? = null,
+    val competenceIds: List<String> = emptyList(),
 )

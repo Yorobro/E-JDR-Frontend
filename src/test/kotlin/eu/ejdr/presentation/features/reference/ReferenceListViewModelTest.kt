@@ -45,7 +45,7 @@ class ReferenceListViewModelTest {
                 requestedGroup = groupId
                 Result.Success(listOf(item("a")))
             },
-            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _ -> Result.Success(item("a")) },
             deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
         )
         advanceUntilIdle()
@@ -64,7 +64,7 @@ class ReferenceListViewModelTest {
             ReferenceType.ARME,
             activeGroupId = MutableStateFlow(null),
             listItems = ListReferenceItemsUseCase { _, _ -> called = true; Result.Success(emptyList()) },
-            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _ -> Result.Success(item("a")) },
             deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
         )
         advanceUntilIdle()
@@ -81,7 +81,7 @@ class ReferenceListViewModelTest {
             ReferenceType.ARME,
             activeGroupId = active,
             listItems = ListReferenceItemsUseCase { _, groupId -> Result.Success(listOf(item(groupId))) },
-            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _ -> Result.Success(item("a")) },
             deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
         )
         advanceUntilIdle()
@@ -101,7 +101,7 @@ class ReferenceListViewModelTest {
             ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, groupId ->
+            createItem = CreateReferenceItemUseCase { _, _, groupId, _, _, _ ->
                 createdGroup = groupId
                 stored = listOf(item("f"))
                 Result.Success(item("f"))
@@ -124,7 +124,7 @@ class ReferenceListViewModelTest {
             ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList()) },
-            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
             deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
         )
         advanceUntilIdle()
@@ -142,7 +142,7 @@ class ReferenceListViewModelTest {
             ReferenceType.ARME,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _ -> Result.Success(item("a")) },
             deleteItem = DeleteReferenceItemUseCase { _, _ ->
                 stored = emptyList()
                 Result.Success(Unit)
@@ -155,5 +155,106 @@ class ReferenceListViewModelTest {
 
         assertEquals(0, vm.items.value.size)
         assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `create formation forwards stat bonus and competence ids and reloads`() = runTest {
+        var capturedStat: String? = "untouched"
+        var capturedBonus: Int? = -999
+        var capturedCompetences: List<String>? = null
+        var stored = emptyList<ReferenceItem>()
+        val vm = ReferenceListViewModel(
+            ReferenceType.FORMATION,
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
+            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds ->
+                capturedStat = stat
+                capturedBonus = bonus
+                capturedCompetences = competenceIds
+                stored = listOf(item("f"))
+                Result.Success(item("f"))
+            },
+            deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+
+        vm.create("Rôdeur", stat = "dexterite", bonus = 3, competenceIds = listOf("c-1", "c-2"))
+        advanceUntilIdle()
+
+        assertEquals("dexterite", capturedStat)
+        assertEquals(3, capturedBonus)
+        assertEquals(listOf("c-1", "c-2"), capturedCompetences)
+        assertEquals(1, vm.items.value.size)
+        assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `create simple type forwards null stat null bonus and empty competences`() = runTest {
+        var capturedStat: String? = "untouched"
+        var capturedBonus: Int? = -999
+        var capturedCompetences: List<String>? = listOf("dirty")
+        val vm = ReferenceListViewModel(
+            ReferenceType.ARME,
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList()) },
+            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds ->
+                capturedStat = stat
+                capturedBonus = bonus
+                capturedCompetences = competenceIds
+                Result.Success(item("a"))
+            },
+            deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+
+        vm.create("Épée")
+        advanceUntilIdle()
+
+        assertNull(capturedStat)
+        assertNull(capturedBonus)
+        assertEquals(emptyList(), capturedCompetences)
+    }
+
+    @Test
+    fun `loads available competences when type is formation`() = runTest {
+        val requestedTypes = mutableListOf<ReferenceType>()
+        val vm = ReferenceListViewModel(
+            ReferenceType.FORMATION,
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { type, _ ->
+                requestedTypes += type
+                if (type == ReferenceType.COMPETENCE) {
+                    Result.Success(listOf(item("c")))
+                } else {
+                    Result.Success(emptyList())
+                }
+            },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _ -> Result.Success(item("f")) },
+            deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+
+        assertTrue(requestedTypes.contains(ReferenceType.COMPETENCE))
+        assertEquals(1, vm.availableCompetences.value.size)
+        assertEquals("c", vm.availableCompetences.value.first().id)
+    }
+
+    @Test
+    fun `does not load available competences for simple types`() = runTest {
+        val requestedTypes = mutableListOf<ReferenceType>()
+        val vm = ReferenceListViewModel(
+            ReferenceType.ARME,
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { type, _ ->
+                requestedTypes += type
+                Result.Success(emptyList())
+            },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _ -> Result.Success(item("a")) },
+            deleteItem = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
+        )
+        advanceUntilIdle()
+
+        assertEquals(false, requestedTypes.contains(ReferenceType.COMPETENCE))
+        assertTrue(vm.availableCompetences.value.isEmpty())
     }
 }
