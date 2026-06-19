@@ -20,11 +20,16 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property tailleEtPoids Taille et poids du personnage.
  * @property age Âge du personnage (entier).
  * @property apparence Description de l'apparence.
- * @property dexterite Caractéristique de dextérité.
- * @property intelligence Caractéristique d'intelligence.
- * @property perception Caractéristique de perception.
- * @property social Caractéristique sociale.
- * @property vigueur Caractéristique de vigueur.
+ * @property dexterite Caractéristique de dextérité (base éditable).
+ * @property intelligence Caractéristique d'intelligence (base éditable).
+ * @property perception Caractéristique de perception (base éditable).
+ * @property social Caractéristique sociale (base éditable).
+ * @property vigueur Caractéristique de vigueur (base éditable).
+ * @property dexteriteTotale Total de dextérité (base + bonus peuple/formation) calculé serveur, ou `null`.
+ * @property intelligenceTotale Total d'intelligence calculé serveur, ou `null`.
+ * @property perceptionTotale Total de perception calculé serveur, ou `null`.
+ * @property socialTotale Total social calculé serveur, ou `null`.
+ * @property vigueurTotale Total de vigueur calculé serveur, ou `null`.
  * @property pointsDeVie Points de vie.
  * @property pointsDeMagie Points de magie.
  * @property protection Valeur de protection / armure.
@@ -57,6 +62,11 @@ data class CharacterSheet(
     val perception: Int? = null,
     val social: Int? = null,
     val vigueur: Int? = null,
+    val dexteriteTotale: Int? = null,
+    val intelligenceTotale: Int? = null,
+    val perceptionTotale: Int? = null,
+    val socialTotale: Int? = null,
+    val vigueurTotale: Int? = null,
     val pointsDeVie: Int? = null,
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
