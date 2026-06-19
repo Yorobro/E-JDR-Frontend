@@ -12,12 +12,14 @@ import eu.ejdr.infrastructure.http.features.reference.dto.CreateReferenceRequest
 import eu.ejdr.infrastructure.http.features.reference.dto.LinkReferenceRequestDto
 import eu.ejdr.infrastructure.http.features.reference.dto.ReferenceItemDto
 import eu.ejdr.infrastructure.http.features.reference.dto.ReferenceListResponseDto
+import eu.ejdr.infrastructure.http.features.reference.dto.UpdateReferenceRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
 import io.ktor.http.ContentType
@@ -69,6 +71,37 @@ class ReferenceHttpRepository(
                 contentType(ContentType.Application.Json)
                 setBody(
                     CreateReferenceRequestDto(
+                        name = name,
+                        groupId = groupId,
+                        stat = stat,
+                        bonus = bonus,
+                        competenceIds = competenceIds.ifEmpty { null },
+                        protectionPoints = protectionPoints,
+                    ),
+                )
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(ReferenceHttpMapper.toItem(response.body<ReferenceItemDto>()))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(ReferenceError.Network) }
+
+    override suspend fun update(
+        type: ReferenceType,
+        itemId: String,
+        name: String,
+        groupId: String,
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
+        protectionPoints: Int?,
+    ): Result<ReferenceItem, ReferenceError> =
+        runCatchingCancellable {
+            val response = client.put("${config.baseUrl}/reference/${type.slug}/$itemId") {
+                contentType(ContentType.Application.Json)
+                setBody(
+                    UpdateReferenceRequestDto(
                         name = name,
                         groupId = groupId,
                         stat = stat,

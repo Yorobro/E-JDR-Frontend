@@ -7,6 +7,7 @@ import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetRefer
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
+import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
@@ -39,6 +40,22 @@ class CreateReferenceItemUseCaseImpl(
         protectionPoints: Int?,
     ): Result<ReferenceItem, ReferenceError> =
         repository.create(type, name, groupId, stat, bonus, competenceIds, protectionPoints)
+}
+
+class UpdateReferenceItemUseCaseImpl(
+    private val repository: ReferenceRepository,
+) : UpdateReferenceItemUseCase {
+    override suspend fun invoke(
+        type: ReferenceType,
+        itemId: String,
+        name: String,
+        groupId: String,
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
+        protectionPoints: Int?,
+    ): Result<ReferenceItem, ReferenceError> =
+        repository.update(type, itemId, name, groupId, stat, bonus, competenceIds, protectionPoints)
 }
 
 class DeleteReferenceItemUseCaseImpl(

@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -65,19 +66,36 @@ private val STAT_OPTIONS: List<Pair<String, String?>> = buildList {
     StatKeys.ORDERED.forEach { (slug, label) -> add(label to slug) }
 }
 
+/** Libellé de stat pré-sélectionné dans le dropdown pour [initial] (ou « Aucune » à la création). */
+private fun initialStatLabel(initial: ReferenceItem?): String =
+    STAT_OPTIONS.firstOrNull { it.second == initial?.stat }?.first ?: NO_STAT_LABEL
+
 /**
- * Tuile d'un élément de référence dans la grille de gestion (composant bête) : nom centré + icône
- * de suppression. Clone de `CampaignCard`, sans clic d'ouverture (les éléments n'ont pas de détail).
+ * Tuile d'un élément de référence dans la grille de gestion (composant bête) : nom centré, contenu
+ * spécifique au [type] sous le nom, et icônes éditer/supprimer. Clone de `CampaignCard`, sans clic
+ * d'ouverture (les éléments n'ont pas de détail).
+ *
+ * Le contenu sous le nom dépend du [type] :
+ * - armure : points de protection ;
+ * - formation : stat/bonus (si présent) + noms des compétences liées (résolus via [competenceNames]) ;
+ * - peuple : stat/bonus (si présent) ;
+ * - autres : rien (nom seul).
  *
  * @param item Élément à afficher.
+ * @param type Catégorie de l'élément (détermine le contenu affiché sous le nom).
+ * @param onEdit Callback de modification.
  * @param onDelete Callback de suppression.
  * @param modifier Modifier Compose appliqué à la tuile.
+ * @param competenceNames Index `id → nom` des compétences (formation uniquement ; vide sinon).
  */
 @Composable
 fun ReferenceCard(
     item: ReferenceItem,
+    type: ReferenceType,
+    onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    competenceNames: Map<String, String> = emptyMap(),
 ) {
     val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
     Box(
@@ -88,15 +106,28 @@ fun ReferenceCard(
             .background(AppTheme.colors.surface)
             .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape),
     ) {
-        AppText(
-            text = item.name,
-            style = AppTextStyle.Subtitle,
-            maxLines = 2,
-            textAlign = TextAlign.Center,
+        Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = AppTheme.dimens.md),
-        )
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+        ) {
+            AppText(
+                text = item.name,
+                style = AppTextStyle.Subtitle,
+                maxLines = 2,
+                textAlign = TextAlign.Center,
+            )
+            ReferenceCardDetails(item = item, type = type, competenceNames = competenceNames)
+        }
+        IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
+            AppIcon(
+                imageVector = Icons.Filled.Edit,
+                contentDescription = "Modifier",
+                tint = AppTheme.colors.primary,
+            )
+        }
         IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
             AppIcon(
                 imageVector = Icons.Filled.Delete,
@@ -108,7 +139,59 @@ fun ReferenceCard(
 }
 
 /**
- * Dialog de création d'un élément de référence (composant bête).
+ * Détail affiché sous le nom d'une carte, selon le [type] (cf. [ReferenceCard]). Composant privé
+ * extrait pour garder [ReferenceCard] court et lisible.
+ */
+@Composable
+private fun ReferenceCardDetails(
+    item: ReferenceItem,
+    type: ReferenceType,
+    competenceNames: Map<String, String>,
+) {
+    when (type) {
+        ReferenceType.ARMURE ->
+            CardDetailLine("Protection : ${item.protectionPoints ?: 0} pt")
+
+        ReferenceType.PEUPLE -> StatLine(item)
+
+        ReferenceType.FORMATION -> {
+            StatLine(item)
+            val names = item.competenceIds.mapNotNull { competenceNames[it] }
+            if (names.isNotEmpty()) {
+                CardDetailLine("Compétences : ${names.joinToString(", ")}")
+            }
+        }
+
+        ReferenceType.ARME, ReferenceType.COMPETENCE, ReferenceType.EQUIPEMENT -> Unit
+    }
+}
+
+/** Ligne « Stat : {libellé FR} (+{bonus}) » d'une carte formation/peuple, si une stat est définie. */
+@Composable
+private fun StatLine(item: ReferenceItem) {
+    val stat = item.stat ?: return
+    val label = StatKeys.ORDERED.firstOrNull { it.first == stat }?.second ?: stat
+    CardDetailLine("Stat : $label (+${item.bonus ?: 0})")
+}
+
+/** Ligne de détail discrète (texte secondaire centré) d'une carte de référence. */
+@Composable
+private fun CardDetailLine(text: String) {
+    AppText(
+        text = text,
+        style = AppTextStyle.Body,
+        color = AppTheme.colors.muted,
+        maxLines = 2,
+        textAlign = TextAlign.Center,
+    )
+}
+
+/**
+ * Dialog de création **ou** de modification d'un élément de référence (composant bête).
+ *
+ * Quand [initial] est `null` le dialog crée un élément (champs vides) ; sinon il modifie [initial]
+ * (champs pré-remplis avec ses valeurs : nom, stat/bonus, compétences cochées, protection) et le
+ * `onConfirm` porte alors un **remplacement complet**.
  *
  * Pour [ReferenceType.FORMATION]/[ReferenceType.PEUPLE], propose en plus un sélecteur de
  * statistique et un montant de bonus (visible seulement si une stat est choisie). Pour la seule
@@ -120,17 +203,20 @@ fun ReferenceCard(
  * @param type Catégorie courante (détermine les champs proposés).
  * @param title Titre du dialog (ex. « Nouvelle formation »).
  * @param label Libellé du champ nom.
- * @param onDismiss Fermeture sans création.
+ * @param confirmLabel Libellé du bouton de confirmation (ex. « Créer » / « Enregistrer »).
+ * @param onDismiss Fermeture sans enregistrement.
  * @param onConfirm Confirmation :
  *   `(name, stat slug ou null, bonus ou null, ids de compétences, points de protection ou null)`.
+ * @param initial Élément à éditer (champs pré-remplis), ou `null` pour une création.
  * @param availableCompetences Catalogue des compétences proposées (formation uniquement).
  * @param errorMessage Message d'erreur éventuel (ex. doublon).
  */
 @Composable
-fun CreateReferenceDialog(
+fun ReferenceFormDialog(
     type: ReferenceType,
     title: String,
     label: String,
+    confirmLabel: String,
     onDismiss: () -> Unit,
     onConfirm: (
         name: String,
@@ -139,14 +225,17 @@ fun CreateReferenceDialog(
         competenceIds: List<String>,
         protectionPoints: Int?,
     ) -> Unit,
+    initial: ReferenceItem? = null,
     availableCompetences: List<ReferenceItem> = emptyList(),
     errorMessage: String? = null,
 ) {
-    var name by remember { mutableStateOf("") }
-    var statLabel by remember { mutableStateOf(NO_STAT_LABEL) }
-    var bonus by remember { mutableStateOf(DEFAULT_BONUS) }
-    var protection by remember { mutableStateOf(DEFAULT_PROTECTION) }
-    val selectedCompetences = remember { mutableStateListOf<String>() }
+    var name by remember { mutableStateOf(initial?.name ?: "") }
+    var statLabel by remember { mutableStateOf(initialStatLabel(initial)) }
+    var bonus by remember { mutableStateOf(initial?.bonus?.toString() ?: DEFAULT_BONUS) }
+    var protection by remember {
+        mutableStateOf(initial?.protectionPoints?.toString() ?: DEFAULT_PROTECTION)
+    }
+    val selectedCompetences = remember { mutableStateListOf<String>().apply { addAll(initial?.competenceIds.orEmpty()) } }
 
     val hasStatChoice = type == ReferenceType.FORMATION || type == ReferenceType.PEUPLE
     val selectedStat = STAT_OPTIONS.firstOrNull { it.first == statLabel }?.second
@@ -154,7 +243,7 @@ fun CreateReferenceDialog(
     AppDialog(
         title = title,
         onDismiss = onDismiss,
-        confirmLabel = "Créer",
+        confirmLabel = confirmLabel,
         onConfirm = {
             onConfirm(
                 name.trim(),

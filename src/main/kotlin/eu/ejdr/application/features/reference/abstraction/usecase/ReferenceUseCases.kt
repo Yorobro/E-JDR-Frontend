@@ -31,6 +31,26 @@ fun interface CreateReferenceItemUseCase {
     ): Result<ReferenceItem, ReferenceError>
 }
 
+/**
+ * Use case : modifie un élément du catalogue (remplacement **complet**, admin requis).
+ *
+ * Mêmes règles de champs par type que [CreateReferenceItemUseCase] : [stat]/[bonus] pour
+ * formations/peuples, [competenceIds] pour la seule formation, [protectionPoints] pour la seule
+ * armure ; les autres types passent `null`/`emptyList`.
+ */
+fun interface UpdateReferenceItemUseCase {
+    suspend operator fun invoke(
+        type: ReferenceType,
+        itemId: String,
+        name: String,
+        groupId: String,
+        stat: String?,
+        bonus: Int?,
+        competenceIds: List<String>,
+        protectionPoints: Int?,
+    ): Result<ReferenceItem, ReferenceError>
+}
+
 /** Use case : supprime un élément du catalogue. */
 fun interface DeleteReferenceItemUseCase {
     suspend operator fun invoke(type: ReferenceType, itemId: String): Result<Unit, ReferenceError>
