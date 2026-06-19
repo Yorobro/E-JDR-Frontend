@@ -181,20 +181,36 @@ class CharacterSheetDetailViewModel(
         _isEditing.value = false
     }
 
-    /** Sauvegarde la fiche éditée ; en cas de succès, sort du mode édition et met à jour l'état. */
+    /**
+     * Sauvegarde la fiche éditée ; en cas de succès, sort du mode édition puis **recharge** la fiche.
+     *
+     * On ne stocke PAS la réponse du PUT directement : elle ne contient pas les blocs résolus
+     * `formation`/`peuple` (statistique bonus + compétences dérivées), calculés uniquement côté GET.
+     * Recharger garantit que l'écran reflète immédiatement les bonus et compétences de la
+     * formation/peuple sélectionnés, sans avoir à quitter puis revenir sur la fiche.
+     */
     fun save(edited: CharacterSheet) {
         viewModelScope.launch {
             _isLoading.value = true
             update(edited).fold(
                 onSuccess = {
-                    _sheet.value = it
                     _isEditing.value = false
                     _error.value = null
+                    refresh()
                 },
                 onFailure = { _error.value = it.message },
             )
             _isLoading.value = false
         }
+    }
+
+    /** Recharge la fiche et les données de référence dérivées (formation/peuple/compétences). */
+    private suspend fun refresh() {
+        getById(sheetId).fold(
+            onSuccess = { _sheet.value = it },
+            onFailure = { _error.value = it.message },
+        )
+        loadReferences()
     }
 
     /**

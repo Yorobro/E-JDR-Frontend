@@ -11,6 +11,8 @@ import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetRefer
 import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
+import eu.ejdr.domain.features.charactersheet.entities.ResolvedReference
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
@@ -129,13 +131,18 @@ class CharacterSheetDetailViewModelTest {
     }
 
     @Test
-    fun `save success stores the returned sheet and exits edit mode`() = runTest {
+    fun `save success reloads the sheet via GET and exits edit mode`() = runTest {
+        // Le PUT (update) ne renvoie PAS les blocs résolus formation/peuple (calculés côté GET
+        // uniquement). Après save, l'écran doit refléter le GET, pas la réponse du PUT — sinon
+        // les bonus de stat et compétences dérivées disparaissent jusqu'au prochain chargement.
+        val getResult = sheet(name = "Strider", vigueur = 7).copy(
+            formation = ResolvedFormation(id = "f-1", name = "Mage", stat = "intelligence", bonus = 3),
+            peuple = ResolvedReference(id = "p-1", name = "Elfe", stat = "dexterite", bonus = 1),
+        )
         val vm = buildVm(
-            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
-            update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
-            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
-            fileSaver = FileSaver { _, _ -> true },
+            getById = GetCharacterSheetUseCase { Result.Success(getResult) },
+            // Le PUT renvoie une fiche SANS blocs résolus (comportement réel du back).
+            update = UpdateCharacterSheetUseCase { Result.Success(it.copy(formation = null, peuple = null)) },
         )
         advanceUntilIdle()
         vm.startEdit()
@@ -145,6 +152,10 @@ class CharacterSheetDetailViewModelTest {
 
         assertEquals("Strider", vm.sheet.value?.name)
         assertEquals(7, vm.sheet.value?.vigueur)
+        // Les blocs résolus sont présents car save a rechargé via GET.
+        assertEquals("Mage", vm.sheet.value?.formation?.name)
+        assertEquals(3, vm.sheet.value?.formation?.bonus)
+        assertEquals("Elfe", vm.sheet.value?.peuple?.name)
         assertFalse(vm.isEditing.value)
         assertNull(vm.error.value)
     }
