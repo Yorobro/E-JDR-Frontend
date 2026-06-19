@@ -327,6 +327,24 @@ class ReferenceListViewModelTest {
     }
 
     @Test
+    fun `exposes competence names index for formation`() = runTest {
+        val vm = viewModel(
+            type = ReferenceType.FORMATION,
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { type, _ ->
+                if (type == ReferenceType.COMPETENCE) {
+                    Result.Success(listOf(ReferenceItem("c-1", "Esquive", "2026-06-13T10:00:00.000Z")))
+                } else {
+                    Result.Success(emptyList())
+                }
+            },
+        )
+        advanceUntilIdle()
+
+        assertEquals(mapOf("c-1" to "Esquive"), vm.competenceNames.value)
+    }
+
+    @Test
     fun `does not load available competences for simple types`() = runTest {
         val requestedTypes = mutableListOf<ReferenceType>()
         val vm = viewModel(
@@ -341,5 +359,6 @@ class ReferenceListViewModelTest {
 
         assertEquals(false, requestedTypes.contains(ReferenceType.COMPETENCE))
         assertTrue(vm.availableCompetences.value.isEmpty())
+        assertTrue(vm.competenceNames.value.isEmpty())
     }
 }

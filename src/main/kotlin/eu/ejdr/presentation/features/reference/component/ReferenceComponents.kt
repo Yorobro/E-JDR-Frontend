@@ -71,20 +71,31 @@ private fun initialStatLabel(initial: ReferenceItem?): String =
     STAT_OPTIONS.firstOrNull { it.second == initial?.stat }?.first ?: NO_STAT_LABEL
 
 /**
- * Tuile d'un élément de référence dans la grille de gestion (composant bête) : nom centré + icônes
- * éditer/supprimer. Clone de `CampaignCard`, sans clic d'ouverture (les éléments n'ont pas de détail).
+ * Tuile d'un élément de référence dans la grille de gestion (composant bête) : nom centré, contenu
+ * spécifique au [type] sous le nom, et icônes éditer/supprimer. Clone de `CampaignCard`, sans clic
+ * d'ouverture (les éléments n'ont pas de détail).
+ *
+ * Le contenu sous le nom dépend du [type] :
+ * - armure : points de protection ;
+ * - formation : stat/bonus (si présent) + noms des compétences liées (résolus via [competenceNames]) ;
+ * - peuple : stat/bonus (si présent) ;
+ * - autres : rien (nom seul).
  *
  * @param item Élément à afficher.
+ * @param type Catégorie de l'élément (détermine le contenu affiché sous le nom).
  * @param onEdit Callback de modification.
  * @param onDelete Callback de suppression.
  * @param modifier Modifier Compose appliqué à la tuile.
+ * @param competenceNames Index `id → nom` des compétences (formation uniquement ; vide sinon).
  */
 @Composable
 fun ReferenceCard(
     item: ReferenceItem,
+    type: ReferenceType,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
     modifier: Modifier = Modifier,
+    competenceNames: Map<String, String> = emptyMap(),
 ) {
     val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
     Box(
@@ -95,15 +106,21 @@ fun ReferenceCard(
             .background(AppTheme.colors.surface)
             .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape),
     ) {
-        AppText(
-            text = item.name,
-            style = AppTextStyle.Subtitle,
-            maxLines = 2,
-            textAlign = TextAlign.Center,
+        Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = AppTheme.dimens.md),
-        )
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+        ) {
+            AppText(
+                text = item.name,
+                style = AppTextStyle.Subtitle,
+                maxLines = 2,
+                textAlign = TextAlign.Center,
+            )
+            ReferenceCardDetails(item = item, type = type, competenceNames = competenceNames)
+        }
         IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
             AppIcon(
                 imageVector = Icons.Filled.Edit,
@@ -119,6 +136,54 @@ fun ReferenceCard(
             )
         }
     }
+}
+
+/**
+ * Détail affiché sous le nom d'une carte, selon le [type] (cf. [ReferenceCard]). Composant privé
+ * extrait pour garder [ReferenceCard] court et lisible.
+ */
+@Composable
+private fun ReferenceCardDetails(
+    item: ReferenceItem,
+    type: ReferenceType,
+    competenceNames: Map<String, String>,
+) {
+    when (type) {
+        ReferenceType.ARMURE ->
+            CardDetailLine("Protection : ${item.protectionPoints ?: 0} pt")
+
+        ReferenceType.PEUPLE -> StatLine(item)
+
+        ReferenceType.FORMATION -> {
+            StatLine(item)
+            val names = item.competenceIds.mapNotNull { competenceNames[it] }
+            if (names.isNotEmpty()) {
+                CardDetailLine("Compétences : ${names.joinToString(", ")}")
+            }
+        }
+
+        ReferenceType.ARME, ReferenceType.COMPETENCE, ReferenceType.EQUIPEMENT -> Unit
+    }
+}
+
+/** Ligne « Stat : {libellé FR} (+{bonus}) » d'une carte formation/peuple, si une stat est définie. */
+@Composable
+private fun StatLine(item: ReferenceItem) {
+    val stat = item.stat ?: return
+    val label = StatKeys.ORDERED.firstOrNull { it.first == stat }?.second ?: stat
+    CardDetailLine("Stat : $label (+${item.bonus ?: 0})")
+}
+
+/** Ligne de détail discrète (texte secondaire centré) d'une carte de référence. */
+@Composable
+private fun CardDetailLine(text: String) {
+    AppText(
+        text = text,
+        style = AppTextStyle.Body,
+        color = AppTheme.colors.muted,
+        maxLines = 2,
+        textAlign = TextAlign.Center,
+    )
 }
 
 /**

@@ -10,8 +10,11 @@ import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -55,6 +58,16 @@ class ReferenceListViewModel(
      */
     private val _availableCompetences = MutableStateFlow<List<ReferenceItem>>(emptyList())
     val availableCompetences: StateFlow<List<ReferenceItem>> = _availableCompetences.asStateFlow()
+
+    /**
+     * Index `id → nom` du catalogue des compétences ([availableCompetences]), pour résoudre les
+     * [ReferenceItem.competenceIds] d'une formation en libellés affichables sur sa carte. Vide pour
+     * les autres types (le catalogue n'est pas chargé).
+     */
+    val competenceNames: StateFlow<Map<String, String>> =
+        _availableCompetences
+            .map { list -> list.associate { it.id to it.name } }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
     init {
         viewModelScope.launch {

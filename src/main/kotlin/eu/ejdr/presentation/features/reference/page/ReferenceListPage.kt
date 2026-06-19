@@ -72,6 +72,7 @@ fun ReferenceListPage(
     val error by viewModel.error.collectAsStateWithLifecycle()
     val needsGroup by viewModel.needsGroup.collectAsStateWithLifecycle()
     val availableCompetences by viewModel.availableCompetences.collectAsStateWithLifecycle()
+    val competenceNames by viewModel.competenceNames.collectAsStateWithLifecycle()
 
     var showCreate by remember { mutableStateOf(false) }
     var pendingEdit by remember { mutableStateOf<ReferenceItem?>(null) }
@@ -92,8 +93,10 @@ fun ReferenceListPage(
             ) {
                 FormError(message = error)
                 ReferenceGrid(
+                    type = type,
                     items = items,
                     isLoading = isLoading,
+                    competenceNames = competenceNames,
                     onEditRequest = { pendingEdit = it },
                     onDeleteRequest = { pendingDelete = it },
                 )
@@ -176,8 +179,10 @@ private fun ReferenceFormDialogs(
 /** Zone de contenu : chargement initial, message si vide, ou grille de tuiles. */
 @Composable
 private fun ReferenceGrid(
+    type: ReferenceType,
     items: List<ReferenceItem>,
     isLoading: Boolean,
+    competenceNames: Map<String, String>,
     onEditRequest: (ReferenceItem) -> Unit,
     onDeleteRequest: (ReferenceItem) -> Unit,
 ) {
@@ -207,6 +212,8 @@ private fun ReferenceGrid(
                 items(items, key = { it.id }) { item ->
                     ReferenceCard(
                         item = item,
+                        type = type,
+                        competenceNames = competenceNames,
                         onEdit = { onEditRequest(item) },
                         onDelete = { onDeleteRequest(item) },
                     )
