@@ -68,7 +68,7 @@ fun CharacterSheetDetailPage(
     val viewModel = koinViewModel {
         CharacterSheetDetailViewModel(
             sheetId = id,
-            activeGroupId = activeGroupState.activeGroupId.value,
+            activeGroupId = activeGroupState.activeGroupId,
             getById = get<GetCharacterSheetUseCase>(),
             update = get<UpdateCharacterSheetUseCase>(),
             getCampaigns = get<GetSheetCampaignsUseCase>(),
