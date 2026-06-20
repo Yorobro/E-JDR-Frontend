@@ -16,7 +16,6 @@ fun EntryProviderScope<Any>.referenceEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = "Mes éléments",
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },
@@ -32,7 +31,6 @@ fun EntryProviderScope<Any>.referenceEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = type?.label ?: "Mes éléments",
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },

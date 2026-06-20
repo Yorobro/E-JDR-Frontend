@@ -14,7 +14,6 @@ fun EntryProviderScope<Any>.sessionEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = key.title,
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },

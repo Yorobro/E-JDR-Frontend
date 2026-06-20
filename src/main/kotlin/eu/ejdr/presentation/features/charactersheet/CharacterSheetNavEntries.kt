@@ -15,7 +15,6 @@ fun EntryProviderScope<Any>.characterSheetEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = "Mes fiches",
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },
@@ -30,7 +29,6 @@ fun EntryProviderScope<Any>.characterSheetEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = key.name,
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },

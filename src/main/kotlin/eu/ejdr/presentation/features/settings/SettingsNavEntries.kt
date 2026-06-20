@@ -14,7 +14,6 @@ fun EntryProviderScope<Any>.settingsEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = "Paramètres",
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },

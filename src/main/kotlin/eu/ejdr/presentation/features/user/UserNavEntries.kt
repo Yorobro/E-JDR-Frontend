@@ -20,7 +20,6 @@ fun EntryProviderScope<Any>.userEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = "E-JDR",
-                    onLogout = actions.onLogout,
                     onCampaigns = activeGroupId?.let { { actions.backStack.add(Route.Campaigns) } },
                     onCharacterSheets = activeGroupId?.let { { actions.backStack.add(Route.CharacterSheets) } },
                     onReferences = activeGroupId?.let { { actions.backStack.add(Route.ReferenceHub) } },

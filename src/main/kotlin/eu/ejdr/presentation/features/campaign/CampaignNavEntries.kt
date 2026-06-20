@@ -15,7 +15,6 @@ fun EntryProviderScope<Any>.campaignEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = "Campagnes",
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },
@@ -30,7 +29,6 @@ fun EntryProviderScope<Any>.campaignEntries(actions: NavActions) {
             topBar = {
                 AppTopBar(
                     title = key.name,
-                    onLogout = actions.onLogout,
                     onBack = { actions.backStack.removeLastOrNull() },
                 )
             },
