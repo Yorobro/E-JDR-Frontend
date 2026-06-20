@@ -1,6 +1,5 @@
 package eu.ejdr.di
 
-import eu.ejdr.application.features.friendgroup.abstraction.repository.ActiveGroupRepository
 import eu.ejdr.application.features.friendgroup.abstraction.repository.FriendGroupRepository
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.AcceptInvitationUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMemberRoleUseCase
@@ -26,16 +25,18 @@ import eu.ejdr.application.features.friendgroup.usecase.ListMyGroupsUseCaseImpl
 import eu.ejdr.application.features.friendgroup.usecase.ListMyInvitationsUseCaseImpl
 import eu.ejdr.application.features.friendgroup.usecase.RemoveMemberUseCaseImpl
 import eu.ejdr.application.features.friendgroup.usecase.SetActiveGroupIdUseCaseImpl
-import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.features.friendgroup.FriendGroupHttpRepository
-import eu.ejdr.infrastructure.settings.ActiveGroupFileRepository
-import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import org.koin.dsl.module
-import java.io.File
 
+/**
+ * Module Koin de la feature groupes d'amis (groupes, invitations, groupe actif).
+ *
+ * Le binding de [eu.ejdr.application.features.friendgroup.abstraction.repository.ActiveGroupRepository]
+ * (persistance locale) et celui de l'état global [eu.ejdr.presentation.features.friendgroup.ActiveGroupState]
+ * sont platform-specific et vivent dans le module d'infrastructure de chaque plateforme.
+ */
 val friendGroupModule = module {
     single<FriendGroupRepository> { FriendGroupHttpRepository(get(), get()) }
-    single<ActiveGroupRepository> { ActiveGroupFileRepository(File(get<AppConfig>().dataDir)) }
 
     single<ListMyGroupsUseCase> { ListMyGroupsUseCaseImpl(get()) }
     single<GetGroupUseCase> { GetGroupUseCaseImpl(get()) }
@@ -50,6 +51,4 @@ val friendGroupModule = module {
 
     single<GetActiveGroupIdUseCase> { GetActiveGroupIdUseCaseImpl(get()) }
     single<SetActiveGroupIdUseCase> { SetActiveGroupIdUseCaseImpl(get()) }
-
-    single { ActiveGroupState(get(), get(), get()) }
 }
