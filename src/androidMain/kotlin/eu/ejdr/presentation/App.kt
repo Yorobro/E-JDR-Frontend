@@ -1,10 +1,13 @@
 package eu.ejdr.presentation
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
@@ -71,13 +74,21 @@ fun App() {
             }
         }
 
-        AppNavDisplay(
-            backStack = backStack,
-            sessionStatus = rootState.sessionStatus,
-            activeGroupId = activeGroupState.activeGroupId,
-            onLogout = { scope.launch { logout(); resetTo(Route.Login) } },
-            onThemeChange = rootState::setTheme,
-            resetTo = ::resetTo,
-        )
+        // Fond global de l'app : sans ce Surface, le conteneur racine resterait sur le blanc
+        // par défaut de la fenêtre (seules les cartes étaient colorées) → fond clair persistant
+        // en thème sombre. On utilise la couleur de fond du thème.
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = AppTheme.colors.background,
+        ) {
+            AppNavDisplay(
+                backStack = backStack,
+                sessionStatus = rootState.sessionStatus,
+                activeGroupId = activeGroupState.activeGroupId,
+                onLogout = { scope.launch { logout(); resetTo(Route.Login) } },
+                onThemeChange = rootState::setTheme,
+                resetTo = ::resetTo,
+            )
+        }
     }
 }
