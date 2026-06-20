@@ -1,3 +1,22 @@
+## [1.17.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.16.1...v1.17.0) (2026-06-20)
+
+
+### Features
+
+* **acl:** édition des fiches réservée au propriétaire ou aux éditeurs du groupe ([c626797](https://github.com/Yorobro/E-JDR-Frontend/commit/c626797f829edb0a002d960ab72351adf539b4ef))
+* **acl:** lecture seule sur le détail de session + exclure user.component de kover ([2b6ce1e](https://github.com/Yorobro/E-JDR-Frontend/commit/2b6ce1e130f2cfba36adccfec598f9acb905040d))
+* **acl:** masquer les actions d'édition des catalogues et campagnes pour les membres ([a74f61f](https://github.com/Yorobro/E-JDR-Frontend/commit/a74f61f6dbd2994df4054c9d66e150f5f3362d86))
+* **auth:** changeEmail et changePassword (repository + use cases) ([8a1ec15](https://github.com/Yorobro/E-JDR-Frontend/commit/8a1ec1501ca28d3e1704d95aff552e63837d6032))
+* **group:** exposer le rôle du groupe actif et canEdit ([d3cc91d](https://github.com/Yorobro/E-JDR-Frontend/commit/d3cc91d537f06ade670c050fef365672deeafbf8))
+* **group:** permettre d'attribuer le rôle MJ dans la gestion des membres ([611e268](https://github.com/Yorobro/E-JDR-Frontend/commit/611e268fbb3003b422b5e3e4cf6a6f45c43fd702))
+* **nav:** masquer Formations/Fiches/Campagnes tant qu'aucun groupe actif ([24b7e53](https://github.com/Yorobro/E-JDR-Frontend/commit/24b7e532512ce9b8f07d85bda5c09e2625102c5d))
+* **user:** page profil avec changement d'email, de mot de passe et déconnexion ([4f84c92](https://github.com/Yorobro/E-JDR-Frontend/commit/4f84c92023fc11ae4f2477eca5beff9d350f09ba))
+
+
+### Bug Fixes
+
+* **charactersheet:** n'afficher Exporter qu'en mode lecture (pas pendant l'édition) ([6d67ec1](https://github.com/Yorobro/E-JDR-Frontend/commit/6d67ec13cbcbcddb066fee7362153b82c66a5f96))
+
 ## [1.16.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.16.0...v1.16.1) (2026-06-20)
 
 
