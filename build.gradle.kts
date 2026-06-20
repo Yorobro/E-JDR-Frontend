@@ -32,6 +32,10 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
 
+    // JNA : accès à DPAPI (Crypt32 CryptProtectData/CryptUnprotectData) sous Windows pour
+    // protéger le mot de passe du KeyStore par un secret lié à l'utilisateur Windows.
+    implementation("net.java.dev.jna:jna-platform:5.18.1")
+
     // Koin (BOM)
     implementation(project.dependencies.platform("io.insert-koin:koin-bom:$koinBom"))
     implementation("io.insert-koin:koin-core")
@@ -177,7 +181,10 @@ kover {
                     "eu.ejdr.presentation.features.reference.page",
                     "eu.ejdr.presentation.features.reference.component",
                     "eu.ejdr.presentation.features.charactersheet.page",
-                    "eu.ejdr.presentation.features.charactersheet.component",
+                    // NB : charactersheet.component n'est PAS exclu en bloc — ce package contient
+                    // aussi de la LOGIQUE PURE testable (PurseFormat, StatDisplay, StatKeys) qu'une
+                    // exclusion récursive masquait. On exclut donc ses composables UI un par un,
+                    // classe par classe, ci-dessous (section classes()).
                     "eu.ejdr.presentation.features.friendgroup.page",
                     "eu.ejdr.presentation.features.friendgroup.component",
                     "eu.ejdr.infrastructure.file",
@@ -195,6 +202,20 @@ kover {
                     "eu.ejdr.presentation.features.charactersheet.CharacterSheetNavEntriesKt",
                     "eu.ejdr.presentation.features.friendgroup.FriendGroupNavEntriesKt",
                     "eu.ejdr.presentation.navigation.NavActions",
+                    // Composables UI du package charactersheet.component (exclus nommément à la
+                    // place de l'ancienne exclusion de package, qui emportait aussi la logique
+                    // pure PurseFormat/StatDisplay/StatKeys — désormais comptée et testée).
+                    "eu.ejdr.presentation.features.charactersheet.component.CampagnesTabKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCardKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetSectionsKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetTabsKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.ConfirmDeleteSheetDialogKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.CreateCharacterSheetDialogKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.SheetCardKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.SheetLayoutKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.SheetReferenceComponentsKt",
+                    // État d'édition couplé à Compose (mutableStateOf) : pas de couverture unitaire utile.
+                    "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetFormState",
                 )
                 // N.B. : les ViewModels (AuthViewModel, UserViewModel, SettingsViewModel),
                 // UpdateController et RootState restent COMPTÉS — ils portent de la logique testée.
