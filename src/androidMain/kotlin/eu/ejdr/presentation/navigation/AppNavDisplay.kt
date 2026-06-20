@@ -21,6 +21,7 @@ import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.SessionStatus
 import eu.ejdr.presentation.features.auth.authEntries
+import eu.ejdr.presentation.features.charactersheet.characterSheetEntries
 import eu.ejdr.presentation.features.friendgroup.friendGroupEntries
 import eu.ejdr.presentation.features.settings.settingsEntries
 import eu.ejdr.presentation.features.user.userEntries
@@ -74,6 +75,7 @@ fun AppNavDisplay(
                     userEntries(actions)
                     friendGroupEntries(actions)
                     settingsEntries(actions)
+                    characterSheetEntries(actions)
                 },
             )
         }
