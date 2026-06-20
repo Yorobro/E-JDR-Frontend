@@ -33,7 +33,7 @@ class AuthViewModelTest {
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
-    private val user = User(id = "1", email = "a@b.com")
+    private val user = User(id = "1", email = "a@b.com", pseudo = "user1")
 
     @Test
     fun `empty fields produce a validation error without calling the use case`() = runTest {

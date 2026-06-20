@@ -18,7 +18,7 @@ class GetCurrentUserUseCaseImplTest {
 
     @Test
     fun `returns user on success`() = runTest {
-        coEvery { repository.me() } returns Result.Success(User("1", "a@b.c"))
+        coEvery { repository.me() } returns Result.Success(User("1", "a@b.c", "user1"))
 
         val result = useCase()
 

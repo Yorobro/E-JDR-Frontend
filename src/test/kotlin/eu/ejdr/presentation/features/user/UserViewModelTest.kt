@@ -33,7 +33,7 @@ class UserViewModelTest {
     @AfterTest
     fun tearDown() = Dispatchers.resetMain()
 
-    private val user = User(id = "1", email = "a@b.com")
+    private val user = User(id = "1", email = "a@b.com", pseudo = "user1")
 
     private fun vm(
         getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(user) },

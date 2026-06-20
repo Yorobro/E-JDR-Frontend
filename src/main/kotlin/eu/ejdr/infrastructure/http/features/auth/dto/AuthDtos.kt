@@ -29,9 +29,10 @@ data class RegisterRequestDto(val email: String, val password: String, val pseud
  *
  * @property userId Identifiant unique de l'utilisateur authentifié.
  * @property email Adresse e-mail de l'utilisateur authentifié.
+ * @property pseudo Nom d'affichage de l'utilisateur authentifié.
  */
 @Serializable
-data class AuthResponseDto(val userId: String, val email: String)
+data class AuthResponseDto(val userId: String, val email: String, val pseudo: String)
 
 /**
  * Corps d'erreur renvoyé par l'API lorsqu'une requête échoue.

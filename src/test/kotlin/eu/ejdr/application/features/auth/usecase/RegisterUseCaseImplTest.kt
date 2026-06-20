@@ -21,7 +21,7 @@ class RegisterUseCaseImplTest {
 
     @Test
     fun `returns user on successful registration`() = runTest {
-        coEvery { repository.register(creds) } returns Result.Success(User("42", "new@user.com"))
+        coEvery { repository.register(creds) } returns Result.Success(User("42", "new@user.com", "newuser"))
 
         val result = useCase(creds)
 

@@ -113,7 +113,7 @@ class AuthHttpRepositoryTest {
         runTest {
             val repo =
                 repository(
-                    clientReturning(HttpStatusCode.OK, """{"userId":"u-1","email":"user@test.com"}"""),
+                    clientReturning(HttpStatusCode.OK, """{"userId":"u-1","email":"user@test.com","pseudo":"user1"}"""),
                 )
 
             val result = repo.login(creds)
@@ -162,7 +162,7 @@ class AuthHttpRepositoryTest {
                             path.endsWith("/auth/refresh") ->
                                 HttpStatusCode.OK to """{"message":"Jetons rafraîchis."}"""
                             path.endsWith("/me") ->
-                                HttpStatusCode.OK to """{"userId":"u-1","email":"user@test.com","createdAt":"2026-06-10T08:00:00.000Z"}"""
+                                HttpStatusCode.OK to """{"userId":"u-1","email":"user@test.com","pseudo":"user1","createdAt":"2026-06-10T08:00:00.000Z"}"""
                             else -> HttpStatusCode.NotFound to "{}"
                         }
                     },
@@ -219,7 +219,7 @@ class AuthHttpRepositoryTest {
                 repository(
                     clientReturning(
                         HttpStatusCode.OK,
-                        """{"userId":"u-1","email":"user@test.com","createdAt":"2026-06-10T08:00:00.000Z"}""",
+                        """{"userId":"u-1","email":"user@test.com","pseudo":"user1","createdAt":"2026-06-10T08:00:00.000Z"}""",
                     ),
                 )
 

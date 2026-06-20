@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.material.icons.filled.MailOutline
@@ -33,6 +34,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  *
  * @param title Titre affiché à gauche.
  * @param modifier Modifier Compose appliqué à la barre.
+ * @param onProfile Callback pour ouvrir le profil ; si `null`, l'icône est masquée.
  * @param onCampaigns Callback pour ouvrir les campagnes ; si `null`, l'icône est masquée.
  * @param onCharacterSheets Callback pour ouvrir les fiches ; si `null`, l'icône est masquée.
  * @param onGroups Callback pour ouvrir les groupes ; si `null`, l'icône est masquée.
@@ -45,6 +47,8 @@ import eu.ejdr.presentation.shared.theme.AppTheme
 fun AppTopBar(
     title: String,
     modifier: Modifier = Modifier,
+    onProfile: (() -> Unit)? = null,
+    profileActive: Boolean = false,
     onCampaigns: (() -> Unit)? = null,
     onCharacterSheets: (() -> Unit)? = null,
     onReferences: (() -> Unit)? = null,
@@ -84,6 +88,7 @@ fun AppTopBar(
             TopBarAction(onGroups, Icons.Default.Group, "Mes groupes")
             TopBarAction(onInvitations, Icons.Default.MailOutline, "Invitations")
             TopBarAction(onSettings, Icons.Default.Settings, "Paramètres")
+            TopBarAction(onProfile, Icons.Default.AccountCircle, "Mon profil", active = profileActive)
         }
     }
 }
@@ -102,10 +107,15 @@ private fun TopBarAction(
     onClick: (() -> Unit)?,
     icon: ImageVector,
     contentDescription: String,
+    active: Boolean = false,
 ) {
     if (onClick != null) {
         IconButton(onClick = onClick) {
-            AppIcon(imageVector = icon, contentDescription = contentDescription)
+            AppIcon(
+                imageVector = icon,
+                contentDescription = contentDescription,
+                tint = if (active) AppTheme.colors.primary else AppTheme.colors.text,
+            )
         }
     }
 }

@@ -20,7 +20,7 @@ object AuthHttpMapper {
      * @param dto Réponse JSON désérialisée renvoyée par le serveur.
      * @return L'[User] correspondant.
      */
-    fun toUser(dto: AuthResponseDto): User = User(id = dto.userId, email = dto.email)
+    fun toUser(dto: AuthResponseDto): User = User(id = dto.userId, email = dto.email, pseudo = dto.pseudo)
 
     /**
      * Traduit un échec HTTP en erreur métier d'authentification.

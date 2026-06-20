@@ -18,7 +18,7 @@ class RestoreSessionUseCaseImplTest {
 
     @Test
     fun `delegates to session service and returns user on success`() = runTest {
-        coEvery { service.restore() } returns Result.Success(User("u-1", "a@b.c"))
+        coEvery { service.restore() } returns Result.Success(User("u-1", "a@b.c", "user1"))
 
         val result = useCase()
 

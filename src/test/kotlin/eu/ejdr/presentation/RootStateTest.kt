@@ -39,7 +39,7 @@ class RootStateTest {
 
     @Test
     fun `restoreSession exposes Authenticated on success`() = runTest {
-        val state = rootState(this, restore = Result.Success(User(id = "u1", email = "a@b.c")))
+        val state = rootState(this, restore = Result.Success(User(id = "u1", email = "a@b.c", pseudo = "user1")))
         state.restoreSession()
         testScheduler.advanceUntilIdle()
         assertEquals(SessionStatus.Authenticated, state.sessionStatus.value)

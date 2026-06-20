@@ -40,7 +40,7 @@ class MyCharacterSheetsViewModelTest {
         listSheets: ListCharacterSheetsUseCase = ListCharacterSheetsUseCase { Result.Success(emptyList()) },
         createSheet: CreateCharacterSheetUseCase = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
         deleteSheet: DeleteCharacterSheetUseCase = DeleteCharacterSheetUseCase { Result.Success(Unit) },
-        getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com")) },
+        getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com", "current")) },
     ) = MyCharacterSheetsViewModel(
         activeGroupId = MutableStateFlow(activeGroupId),
         listSheets = listSheets,
@@ -90,7 +90,7 @@ class MyCharacterSheetsViewModelTest {
             listSheets = ListCharacterSheetsUseCase { groupId -> Result.Success(listOf(sheet(groupId))) },
             createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
-            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com")) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com", "current")) },
         )
         advanceUntilIdle()
         assertEquals("g-1", vm.sheets.value.first().id)
@@ -155,7 +155,7 @@ class MyCharacterSheetsViewModelTest {
     @Test
     fun `currentUserId expose l'id de l'utilisateur courant après chargement`() = runTest {
         val vm = buildVm(
-            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-42", "u42@test.com")) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-42", "u42@test.com", "u42")) },
         )
         advanceUntilIdle()
 

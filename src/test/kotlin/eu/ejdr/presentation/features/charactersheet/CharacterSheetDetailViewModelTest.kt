@@ -69,7 +69,7 @@ class CharacterSheetDetailViewModelTest {
         listSheetReferences: ListSheetReferencesUseCase = ListSheetReferencesUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
         linkSheetReference: LinkSheetReferenceUseCase = LinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
         unlinkSheetReference: UnlinkSheetReferenceUseCase = UnlinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
-        getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-owner", "owner@test.com")) },
+        getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-owner", "owner@test.com", "owner")) },
     ) = CharacterSheetDetailViewModel(
         sheetId = "s-1",
         activeGroupId = MutableStateFlow(activeGroupId),
@@ -299,7 +299,7 @@ class CharacterSheetDetailViewModelTest {
     fun `isOwner vrai quand l'utilisateur courant possède la fiche`() = runTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet(ownerId = "u-owner")) },
-            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-owner", "owner@test.com")) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-owner", "owner@test.com", "owner")) },
         )
         advanceUntilIdle()
 
@@ -310,7 +310,7 @@ class CharacterSheetDetailViewModelTest {
     fun `isOwner faux quand un autre utilisateur`() = runTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet(ownerId = "u-owner")) },
-            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("autre", "autre@test.com")) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("autre", "autre@test.com", "autre")) },
         )
         advanceUntilIdle()
 

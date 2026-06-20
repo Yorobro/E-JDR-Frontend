@@ -30,7 +30,7 @@ class SessionServiceImplTest {
     @Test
     fun `restore delegates to repository refresh when session persisted`() = runTest {
         every { repository.hasPersistedSession() } returns true
-        coEvery { repository.refresh() } returns Result.Success(User("u-1", "a@b.c"))
+        coEvery { repository.refresh() } returns Result.Success(User("u-1", "a@b.c", "user1"))
 
         val result = service.restore()
 

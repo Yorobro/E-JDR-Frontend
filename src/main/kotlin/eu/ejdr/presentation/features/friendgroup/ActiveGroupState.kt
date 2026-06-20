@@ -44,7 +44,11 @@ class ActiveGroupState(
         scope.launch {
             val id = getActiveGroupId()
             _activeGroupId.value = id
-            loadRole(id)
+            val role = loadRole(id)
+            if (id != null && role == null) {
+                _activeGroupId.value = null
+                setActiveGroupId(null)
+            }
         }
     }
 
@@ -56,12 +60,9 @@ class ActiveGroupState(
         }
     }
 
-    private suspend fun loadRole(id: String?) {
-        _activeGroupRole.value =
-            if (id == null) {
-                null
-            } else {
-                getGroup(id).fold(onSuccess = { it.myRole }, onFailure = { null })
-            }
+    private suspend fun loadRole(id: String?): String? {
+        val role = if (id == null) null else getGroup(id).fold(onSuccess = { it.myRole }, onFailure = { null })
+        _activeGroupRole.value = role
+        return role
     }
 }

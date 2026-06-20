@@ -79,9 +79,12 @@ fun AppButton(
 
         ButtonVariant.Secondary -> OutlinedButton(
             onClick = onClick, enabled = isEnabled, shape = shape, modifier = modifier,
-            border = BorderStroke(AppTheme.dimens.borderWidth, colors.primary),
-            colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.primary),
-        ) { content(colors.primary) }
+            border = BorderStroke(AppTheme.dimens.borderWidth, if (isEnabled) colors.primary else colors.muted),
+            colors = ButtonDefaults.outlinedButtonColors(
+                contentColor = colors.primary,
+                disabledContentColor = colors.muted,
+            ),
+        ) { content(if (isEnabled) colors.primary else colors.muted) }
 
         ButtonVariant.Text -> TextButton(
             onClick = onClick, enabled = isEnabled, shape = shape, modifier = modifier,
