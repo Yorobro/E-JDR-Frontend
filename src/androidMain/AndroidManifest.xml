@@ -4,6 +4,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:name=".EjdrApplication"
         android:allowBackup="true"
         android:label="E-JDR"
         android:supportsRtl="true"

@@ -1,0 +1,108 @@
+package eu.ejdr.presentation.navigation
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
+import eu.ejdr.presentation.SessionStatus
+import eu.ejdr.presentation.shared.component.atomic.AppIcon
+import eu.ejdr.presentation.shared.component.atomic.AppText
+import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.theme.AppTheme
+import kotlinx.coroutines.flow.StateFlow
+
+/**
+ * Rend l'écran courant à partir du back-stack possédé par [eu.ejdr.presentation.App] (Android).
+ *
+ * Pendant mobile de l'`AppNavDisplay` desktop : même back-stack Navigation3 et même décorateur de
+ * rétention des ViewModels par destination, mais la navigation principale est une **bottom bar**
+ * (`NavigationBar`) alimentée par `appNavItems` partagés, au lieu d'une sidebar.
+ *
+ * Tant que les pages Android par feature ne sont pas implémentées, les destinations sans rendu
+ * affichent un écran d'attente ([ComingSoon]). Seul [Route.Splash] est défini ici.
+ */
+@Composable
+fun AppNavDisplay(
+    backStack: NavBackStack<NavKey>,
+    sessionStatus: StateFlow<SessionStatus>,
+    activeGroupId: StateFlow<String?>,
+    onLogout: () -> Unit,
+    onThemeChange: (ThemeVariant) -> Unit,
+    resetTo: (Route) -> Unit,
+) {
+    val status by sessionStatus.collectAsStateWithLifecycle()
+    val groupId by activeGroupId.collectAsStateWithLifecycle()
+
+    val visibleItems = appNavItems.filter { it.isVisible(status, groupId) }
+    val currentRoute = backStack.lastOrNull()
+
+    Column(Modifier.fillMaxSize()) {
+        Box(Modifier.weight(1f)) {
+            NavDisplay(
+                backStack = backStack,
+                onBack = { backStack.removeLastOrNull() },
+                entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
+                // fallback : toute destination encore sans rendu Android affiche ComingSoon
+                // (les pages Android par feature seront ajoutées ici en Tasks 14-15).
+                entryProvider = entryProvider(fallback = { key -> NavEntry(key) { ComingSoon(key) } }) {
+                    entry<Route.Splash> { SplashScreen() }
+                },
+            )
+        }
+
+        if (status == SessionStatus.Authenticated && visibleItems.isNotEmpty()) {
+            NavigationBar(Modifier.fillMaxWidth()) {
+                visibleItems.forEach { item ->
+                    NavigationBarItem(
+                        selected = currentRoute?.let { it::class == item.route::class } ?: false,
+                        onClick = {
+                            if (currentRoute?.let { it::class != item.route::class } != false) {
+                                backStack.add(item.route)
+                            }
+                        },
+                        icon = { AppIcon(item.icon, contentDescription = item.label) },
+                        label = { AppText(item.label, style = AppTextStyle.Caption) },
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Écran de démarrage affiché pendant la restauration de session. */
+@Composable
+private fun SplashScreen() {
+    Box(
+        Modifier.fillMaxSize().background(AppTheme.colors.background),
+        Alignment.Center,
+    ) { CircularProgressIndicator(color = AppTheme.colors.primary) }
+}
+
+/** Placeholder temporaire pour une destination dont la page Android n'est pas encore écrite. */
+@Composable
+private fun ComingSoon(key: Any) {
+    Box(
+        Modifier.fillMaxSize().background(AppTheme.colors.background),
+        Alignment.Center,
+    ) {
+        AppText(
+            text = "Écran Android à venir\n${key::class.simpleName}",
+            style = AppTextStyle.Subtitle,
+        )
+    }
+}
