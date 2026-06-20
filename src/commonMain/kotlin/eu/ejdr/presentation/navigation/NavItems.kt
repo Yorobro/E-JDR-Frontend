@@ -1,10 +1,11 @@
 package eu.ejdr.presentation.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Badge
+import androidx.compose.material.icons.filled.Castle
 import androidx.compose.material.icons.filled.Groups
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.LibraryBooks
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import eu.ejdr.presentation.SessionStatus
@@ -26,19 +27,19 @@ val appNavItems: List<NavItem> = listOf(
     NavItem(
         route = Route.Campaigns,
         label = "Campagnes",
-        icon = Icons.Default.LibraryBooks,
+        icon = Icons.Default.Castle,
         isVisible = { s, g -> s == SessionStatus.Authenticated && g != null },
     ),
     NavItem(
         route = Route.CharacterSheets,
         label = "Fiches",
-        icon = Icons.Default.Person,
+        icon = Icons.Default.Badge,
         isVisible = { s, _ -> s == SessionStatus.Authenticated },
     ),
     NavItem(
         route = Route.ReferenceHub,
         label = "Références",
-        icon = Icons.Default.LibraryBooks,
+        icon = Icons.Default.MenuBook,
         isVisible = { s, _ -> s == SessionStatus.Authenticated },
     ),
     NavItem(

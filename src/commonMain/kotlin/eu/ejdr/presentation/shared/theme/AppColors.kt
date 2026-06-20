@@ -19,6 +19,9 @@ import androidx.compose.ui.graphics.Color
  * @property onPrimary Couleur du contenu posé sur [primary].
  * @property danger Couleur des erreurs et actions destructives.
  * @property onDanger Couleur du contenu posé sur [danger].
+ * @property isDark Vrai si cette palette est sombre : sert de base au [ColorScheme] Material3
+ * (darkColorScheme vs lightColorScheme) pour que les composants Material bruts (Surface,
+ * NavigationBar, dialogs…) suivent eux aussi le thème.
  */
 data class AppColors(
     val background: Color,
@@ -32,6 +35,7 @@ data class AppColors(
     val onPrimary: Color,
     val danger: Color,
     val onDanger: Color,
+    val isDark: Boolean,
 )
 
 /** Palette claire par défaut (gris/beige, accent taupe). */
@@ -47,6 +51,7 @@ fun lightColors(): AppColors = AppColors(
     onPrimary = Color(0xFFFFFFFF),
     danger = Color(0xFFA13D33),
     onDanger = Color(0xFFFFFFFF),
+    isDark = false,
 )
 
 /** Palette sombre (même vibe gris/beige chaud, luminosité inversée). */
@@ -62,4 +67,5 @@ fun darkColors(): AppColors = AppColors(
     onPrimary = Color(0xFF1C1A16),
     danger = Color(0xFFC04D43),
     onDanger = Color(0xFFFFFFFF),
+    isDark = true,
 )

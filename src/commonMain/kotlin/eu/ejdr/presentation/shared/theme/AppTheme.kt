@@ -1,6 +1,9 @@
 package eu.ejdr.presentation.shared.theme
 
 import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -54,6 +57,34 @@ fun AppTheme(
         // LocalContentColor (ex. AppIcon sans tint explicite) héritent de `text`. Les
         // conteneurs Material (FAB, bouton…) la surchargent localement par leur contentColor.
         LocalContentColor provides colors.text,
-        content = content,
-    )
+    ) {
+        // Material3 ColorScheme dérivé de nos AppColors : sans ça, les composants Material
+        // BRUTS (Surface, NavigationBar, AlertDialog, indicateurs…) resteraient sur le schéma
+        // clair par défaut → fond clair persistant en thème sombre. On part du schéma de base
+        // correspondant (light/dark, qui remplit tous les rôles cohéremment) puis on surcharge
+        // les rôles clés avec la palette du design system.
+        MaterialTheme(colorScheme = colors.toMaterialColorScheme(), content = content)
+    }
 }
+
+/** Projette nos [AppColors] sur un [androidx.compose.material3.ColorScheme] Material3. */
+private fun AppColors.toMaterialColorScheme() =
+    (if (isDark) darkColorScheme() else lightColorScheme()).copy(
+        primary = primary,
+        onPrimary = onPrimary,
+        background = background,
+        onBackground = text,
+        surface = surface,
+        onSurface = text,
+        surfaceVariant = beige,
+        onSurfaceVariant = textSecondary,
+        surfaceContainer = surface,
+        surfaceContainerHigh = surface,
+        surfaceContainerHighest = beige,
+        surfaceContainerLow = background,
+        surfaceContainerLowest = background,
+        outline = border,
+        outlineVariant = border,
+        error = danger,
+        onError = onDanger,
+    )
