@@ -28,8 +28,8 @@ Créer `features/<feature>/` avec le sous-dossier `abstraction/` (ports) et les
 implémentations (`usecase/`, `service/`). Déclarer les use cases en
 `fun interface … { suspend operator fun invoke(…): Result<…> }`, puis enregistrer
 l'implémentation dans le module Koin dédié à la feature : `di/<feature>Module.kt`
-(ex. `authModule`, `settingsModule`, `updateModule`), sur le modèle de
-`realtimeModule`. Les ports d'infrastructure (repositories) y sont également liés.
+(ex. `authModule`, `settingsModule`, `updateModule`). Les ports d'infrastructure
+(repositories) y sont également liés.
 Seul le socle transverse (config, sécurité, HttpClient) reste dans
 `infrastructureModule`.
 
