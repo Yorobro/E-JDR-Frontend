@@ -1,3 +1,13 @@
+## [1.16.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.16.0...v1.16.1) (2026-06-20)
+
+
+### Bug Fixes
+
+* **charactersheet:** rendre le groupe actif réactif dans le détail de fiche ([62511c0](https://github.com/Yorobro/E-JDR-Frontend/commit/62511c0e12e2318d6db86e87b547bbbf591dab20))
+* **security:** protéger le mot de passe du KeyStore via DPAPI ([a77f270](https://github.com/Yorobro/E-JDR-Frontend/commit/a77f270897e4430882bdc3fd86c58221a4b34ece))
+* **update:** utiliser runCatchingCancellable dans fetchLatestRelease ([ec92bee](https://github.com/Yorobro/E-JDR-Frontend/commit/ec92bee4cd00e9e4c0cfdfc83801458639f1e8e8))
+* **update:** vérifier l'intégrité de l'installeur avant exécution ([163faf0](https://github.com/Yorobro/E-JDR-Frontend/commit/163faf0ce293fe0cf825640ac6bff3b3b1932d0e))
+
 ## [1.16.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.15.0...v1.16.0) (2026-06-20)
 
 
