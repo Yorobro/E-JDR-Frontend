@@ -130,6 +130,11 @@ kotlin {
                 implementation("androidx.security:security-crypto:1.1.0-alpha06")
                 implementation("androidx.activity:activity-compose:1.10.1")
                 implementation("androidx.core:core-ktx:1.16.0")
+                // Koin Android (androidContext) — version alignée sur le BOM commun
+                implementation(project.dependencies.platform("io.insert-koin:koin-bom:$koinBom"))
+                implementation("io.insert-koin:koin-android")
+                // Dispatchers.Main sur Android (requis par RootState / ActiveGroupState au runtime)
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
             }
         }
 
