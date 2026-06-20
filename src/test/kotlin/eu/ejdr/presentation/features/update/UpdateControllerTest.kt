@@ -13,7 +13,7 @@ class UpdateControllerTest {
     @Test
     fun `starts idle`() = runTest {
         val vm = UpdateController(
-            DownloadAndInstallUpdateUseCase { _, _ -> Result.Success(Unit) },
+            DownloadAndInstallUpdateUseCase { _, _, _ -> Result.Success(Unit) },
             this,
         )
         assertIs<DownloadState.Idle>(vm.state.value)
@@ -23,10 +23,12 @@ class UpdateControllerTest {
     fun `successful download keeps downloading state (launcher exits app)`() = runTest {
         var progressSeen = false
         val vm = UpdateController(
-            DownloadAndInstallUpdateUseCase { _, onProgress -> onProgress(0.5f); progressSeen = true; Result.Success(Unit) },
+            DownloadAndInstallUpdateUseCase { _, _, onProgress ->
+                onProgress(0.5f); progressSeen = true; Result.Success(Unit)
+            },
             this,
         )
-        vm.download("https://example.com/app.exe")
+        vm.download("https://example.com/app.exe", "https://example.com/app.exe.sha256")
         testScheduler.advanceUntilIdle()
         assertEquals(true, progressSeen)
         assertIs<DownloadState.Downloading>(vm.state.value)
@@ -35,10 +37,10 @@ class UpdateControllerTest {
     @Test
     fun `failed download moves to Error`() = runTest {
         val vm = UpdateController(
-            DownloadAndInstallUpdateUseCase { _, _ -> Result.Failure(UpdateError.DownloadFailed) },
+            DownloadAndInstallUpdateUseCase { _, _, _ -> Result.Failure(UpdateError.DownloadFailed) },
             this,
         )
-        vm.download("https://example.com/app.exe")
+        vm.download("https://example.com/app.exe", "https://example.com/app.exe.sha256")
         testScheduler.advanceUntilIdle()
         assertIs<DownloadState.Error>(vm.state.value)
     }

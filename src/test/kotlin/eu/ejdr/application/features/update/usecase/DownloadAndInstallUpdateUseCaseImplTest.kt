@@ -37,30 +37,31 @@ class DownloadAndInstallUpdateUseCaseImplTest {
     @Test
     fun `downloads then hands the installer to the system launcher`() = runTest {
         val installer = File("E-JDR-update.exe")
-        coEvery { repository.downloadUpdate(any(), any()) } returns installer
+        coEvery { repository.downloadUpdate(any(), any(), any()) } returns installer
         every { launcher.launchInstallerAndExit(installer) } answers { throw ProcessExitedSignal() }
 
         assertFailsWith<ProcessExitedSignal> {
-            useCase("https://example.com/E-JDR-update.exe") {}
+            useCase("https://example.com/E-JDR-update.exe", "https://example.com/E-JDR-update.exe.sha256") {}
         }
 
         verify { launcher.launchInstallerAndExit(installer) }
     }
 
     @Test
-    fun `forwards the download url and progress callback to the repository`() = runTest {
+    fun `forwards the urls and progress callback to the repository`() = runTest {
         val installer = File("E-JDR-update.exe")
         val url = "https://example.com/E-JDR-update.exe"
+        val sha = "https://example.com/E-JDR-update.exe.sha256"
         val seenProgress = mutableListOf<Float?>()
-        coEvery { repository.downloadUpdate(url, any()) } answers {
-            val onProgress = secondArg<(Float?) -> Unit>()
+        coEvery { repository.downloadUpdate(url, sha, any()) } answers {
+            val onProgress = thirdArg<(Float?) -> Unit>()
             onProgress(0.5f)
             installer
         }
         every { launcher.launchInstallerAndExit(any()) } answers { throw ProcessExitedSignal() }
 
         assertFailsWith<ProcessExitedSignal> {
-            useCase(url) { progress -> seenProgress.add(progress) }
+            useCase(url, sha) { progress -> seenProgress.add(progress) }
         }
 
         assertEquals(listOf<Float?>(0.5f), seenProgress)
@@ -69,11 +70,25 @@ class DownloadAndInstallUpdateUseCaseImplTest {
 
     @Test
     fun `returns DownloadFailed when the download throws`() = runTest {
-        coEvery { repository.downloadUpdate(any(), any()) } throws RuntimeException("network down")
+        coEvery { repository.downloadUpdate(any(), any(), any()) } throws RuntimeException("network down")
 
-        val result = useCase("https://example.com/E-JDR-update.exe") {}
+        val result = useCase("https://example.com/E-JDR-update.exe", "https://example.com/x.sha256") {}
 
         assertIs<Result.Failure<UpdateError>>(result)
         assertEquals(UpdateError.DownloadFailed, result.error)
+    }
+
+    @Test
+    fun `returns IntegrityCheckFailed when the repository rejects the binary`() = runTest {
+        // Le repository lève SecurityException si l'intégrité n'est pas garantie (hash absent,
+        // hôte non autorisé, empreinte différente) : aucun installeur ne doit alors être lancé.
+        coEvery { repository.downloadUpdate(any(), any(), any()) } throws
+            SecurityException("hash mismatch")
+
+        val result = useCase("https://example.com/E-JDR-update.exe", null) {}
+
+        assertIs<Result.Failure<UpdateError>>(result)
+        assertEquals(UpdateError.IntegrityCheckFailed, result.error)
+        verify(exactly = 0) { launcher.launchInstallerAndExit(any()) }
     }
 }

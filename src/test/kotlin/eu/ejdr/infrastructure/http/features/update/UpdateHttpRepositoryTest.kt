@@ -48,7 +48,8 @@ class UpdateHttpRepositoryTest {
               "html_url": "https://github.com/owner/repo/releases/tag/v1.2.3",
               "assets": [
                 {"name": "E-JDR-1.2.3.msi", "browser_download_url": "https://example.com/app.msi"},
-                {"name": "E-JDR-1.2.3.exe", "browser_download_url": "https://example.com/app.exe"}
+                {"name": "E-JDR-1.2.3.exe", "browser_download_url": "https://example.com/app.exe"},
+                {"name": "E-JDR-1.2.3.exe.sha256", "browser_download_url": "https://example.com/app.exe.sha256"}
               ]
             }
         """.trimIndent()
@@ -58,6 +59,26 @@ class UpdateHttpRepositoryTest {
         assertEquals("v1.2.3", info?.version)
         assertEquals("https://github.com/owner/repo/releases/tag/v1.2.3", info?.releaseUrl)
         assertEquals("https://example.com/app.exe", info?.downloadUrl)
+        // L'empreinte SHA-256 de l'installeur retenu est associée (asset "<installeur>.sha256").
+        assertEquals("https://example.com/app.exe.sha256", info?.sha256Url)
+    }
+
+    @Test
+    fun `leaves the sha256 url null when no checksum asset matches the installer`() = runTest {
+        val body = """
+            {
+              "tag_name": "v1.2.3",
+              "html_url": "https://example.com/release",
+              "assets": [
+                {"name": "E-JDR-1.2.3.exe", "browser_download_url": "https://example.com/app.exe"}
+              ]
+            }
+        """.trimIndent()
+
+        val info = repositoryReturning(HttpStatusCode.OK, body).fetchLatestRelease()
+
+        assertEquals("https://example.com/app.exe", info?.downloadUrl)
+        assertNull(info?.sha256Url)
     }
 
     @Test

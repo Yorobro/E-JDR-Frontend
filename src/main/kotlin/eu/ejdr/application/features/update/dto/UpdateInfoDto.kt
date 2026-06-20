@@ -14,5 +14,13 @@ package eu.ejdr.application.features.update.dto
  * @property version Tag de la release la plus récente (ex. `"v1.2.3"`).
  * @property releaseUrl URL de la page de release (repli si aucun installeur n'est joint).
  * @property downloadUrl URL de l'installeur à télécharger, ou `null` si absent.
+ * @property sha256Url URL de l'empreinte SHA-256 publiée à côté de l'installeur
+ *   (asset `<installeur>.sha256`), ou `null` si la release n'en fournit pas. Sert à vérifier
+ *   l'intégrité du binaire avant exécution ; son absence fait échouer la vérification.
  */
-data class UpdateInfoDto(val version: String, val releaseUrl: String, val downloadUrl: String?)
+data class UpdateInfoDto(
+    val version: String,
+    val releaseUrl: String,
+    val downloadUrl: String?,
+    val sha256Url: String? = null,
+)
