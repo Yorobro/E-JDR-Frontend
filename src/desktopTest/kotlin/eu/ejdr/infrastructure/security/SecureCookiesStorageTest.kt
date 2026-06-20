@@ -23,7 +23,9 @@ class SecureCookiesStorageTest {
         tmpDir.deleteRecursively()
     }
 
-    private fun newStorage() = SecureCookiesStorage(tmpDir, cipher, backendUrl, AcceptAllCookiesStorage())
+    private fun newSessionStorage() = FileSessionStorage(tmpDir, cipher)
+
+    private fun newStorage() = SecureCookiesStorage(newSessionStorage(), backendUrl, AcceptAllCookiesStorage())
 
     @Test
     fun `persists refresh_token and reports hasPersistedSession`() = runTest {

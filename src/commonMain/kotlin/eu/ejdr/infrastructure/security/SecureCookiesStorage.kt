@@ -1,11 +1,11 @@
 package eu.ejdr.infrastructure.security
 
 import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
+import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
 import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.http.Cookie
 import io.ktor.http.Url
 import io.ktor.http.isSecure
-import java.io.File
 
 /**
  * Décore un CookiesStorage en mémoire. Persiste UNIQUEMENT le refresh_token,
@@ -27,21 +27,19 @@ import java.io.File
  * backend, et pas seulement `/auth/refresh`.
  */
 class SecureCookiesStorage(
-    dataDir: File,
-    private val cipher: CookieCipher,
+    private val sessionStorage: SessionStorage,
     backendUrl: String,
-    private val delegate: CookiesStorage,
+    private val delegate: CookiesStorage = AcceptAllCookiesStorage(),
 ) : CookiesStorage, SessionPersistence {
 
     private val refreshTokenName = "refresh_token"
-    private val storeFile = File(dataDir, "secure-cookies.enc")
     private val backend = Url(backendUrl)
-    private var pendingRefreshToken: String? = loadPersistedValue()
+    private var pendingRefreshToken: String? = sessionStorage.load()
 
     override suspend fun addCookie(requestUrl: Url, cookie: Cookie) {
         delegate.addCookie(requestUrl, cookie)
         if (cookie.name == refreshTokenName) {
-            persist(cookie.value)
+            sessionStorage.save(cookie.value)
         }
     }
 
@@ -60,11 +58,9 @@ class SecureCookiesStorage(
 
     override fun close() = delegate.close()
 
-    override fun hasPersistedSession(): Boolean = storeFile.exists()
+    override fun hasPersistedSession(): Boolean = sessionStorage.exists()
 
-    override fun clearPersisted() {
-        if (storeFile.exists()) storeFile.delete()
-    }
+    override fun clearPersisted() = sessionStorage.clear()
 
     /**
      * Reconstruit le cookie refresh_token avec les attributs posés par le backend.
@@ -81,13 +77,4 @@ class SecureCookiesStorage(
         secure = backend.protocol.isSecure(),
         httpOnly = true,
     )
-
-    private fun persist(value: String) {
-        storeFile.writeText(cipher.encrypt(value))
-    }
-
-    private fun loadPersistedValue(): String? {
-        if (!storeFile.exists()) return null
-        return runCatching { cipher.decrypt(storeFile.readText()) }.getOrNull()
-    }
 }

@@ -5,6 +5,7 @@ import eu.ejdr.domain.features.auth.entities.Credentials
 import eu.ejdr.domain.features.auth.error.AuthError
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.security.CookieCipher
+import eu.ejdr.infrastructure.security.FileSessionStorage
 import eu.ejdr.infrastructure.security.KeyStoreProvider
 import eu.ejdr.infrastructure.security.SecureCookiesStorage
 import io.ktor.client.HttpClient
@@ -43,10 +44,9 @@ class AuthHttpRepositoryTest {
         )
     private val cookiesStorage =
         SecureCookiesStorage(
-            tmpDir,
-            CookieCipher(KeyStoreProvider(tmpDir)),
-            config.baseUrl,
-            AcceptAllCookiesStorage(),
+            sessionStorage = FileSessionStorage(tmpDir, CookieCipher(KeyStoreProvider(tmpDir))),
+            backendUrl = config.baseUrl,
+            delegate = AcceptAllCookiesStorage(),
         )
 
     @AfterTest
