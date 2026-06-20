@@ -147,7 +147,7 @@ kotlin {
 
 android {
     namespace = "eu.ejdr"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "eu.ejdr"
