@@ -1,3 +1,10 @@
+## [1.18.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.17.0...v1.18.0) (2026-06-20)
+
+
+### Features
+
+* **ux:** refonte navigation principale + profil enrichi ([9582818](https://github.com/Yorobro/E-JDR-Frontend/commit/9582818138f1195951682659da27fc5f84a06e28))
+
 ## [1.17.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.16.1...v1.17.0) (2026-06-20)
 
 
