@@ -177,6 +177,51 @@ class ReferenceHttpRepositoryTest {
     }
 
     @Test
+    fun `create sort sends description in the body`() = runTest {
+        val body =
+            """{"id":"s-1","name":"Boule de feu","createdAt":"2026-06-13T10:00:00.000Z","description":"3d6 dégâts de feu."}"""
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).create(
+            ReferenceType.SORT,
+            "Boule de feu",
+            "g-1",
+            description = "3d6 dégâts de feu.",
+        )
+
+        assertIs<Result.Success<ReferenceItem>>(result)
+        assertEquals("3d6 dégâts de feu.", result.value.description)
+        assertTrue(
+            requestBody.contains("\"description\":\"3d6 dégâts de feu.\""),
+            "Body should carry description: $requestBody",
+        )
+    }
+
+    @Test
+    fun `list deserializes description tolerantly`() = runTest {
+        val body = """{"items":[
+            {"id":"s-1","name":"Boule de feu","createdAt":"2026-06-13T10:00:00.000Z","description":"3d6 feu"},
+            {"id":"s-2","name":"Lumière","createdAt":"2026-06-13T10:00:00.000Z"}
+        ]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).list(ReferenceType.SORT, "g-1")
+
+        assertIs<Result.Success<List<ReferenceItem>>>(result)
+        assertEquals("3d6 feu", result.value.first().description)
+        assertNull(result.value[1].description)
+    }
+
+    @Test
     fun `update sends a PUT to the item url with the full body`() = runTest {
         val body =
             """{"id":"f-1","name":"Rôdeur+","createdAt":"2026-06-13T10:00:00.000Z","stat":"vigueur","bonus":4,"competenceIds":["c-1"]}"""

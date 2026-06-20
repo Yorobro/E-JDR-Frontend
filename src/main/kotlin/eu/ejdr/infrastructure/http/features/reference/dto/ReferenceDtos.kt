@@ -16,6 +16,7 @@ import kotlinx.serialization.Serializable
  * @property bonus Montant du bonus appliqué à la statistique, ou `null`.
  * @property competenceIds Identifiants des compétences liées (formation), vide sinon.
  * @property protectionPoints Points de protection (armure uniquement), ou `null` ; tolérant.
+ * @property description Description libre (sort/miracle uniquement), ou `null` ; tolérant.
  */
 @Serializable
 data class ReferenceItemDto(
@@ -26,6 +27,7 @@ data class ReferenceItemDto(
     val bonus: Int? = null,
     val competenceIds: List<String> = emptyList(),
     val protectionPoints: Int? = null,
+    val description: String? = null,
 )
 
 /**
@@ -37,6 +39,7 @@ data class ReferenceItemDto(
  * @property bonus Montant du bonus (le serveur applique `1` par défaut si [stat] est fournie sans).
  * @property competenceIds Compétences à lier (formation), ou `null` pour les autres types.
  * @property protectionPoints Points de protection (armure uniquement), ou `null` pour les autres types.
+ * @property description Description libre (sort/miracle uniquement), ou `null` pour les autres types.
  */
 @Serializable
 data class CreateReferenceRequestDto(
@@ -46,6 +49,7 @@ data class CreateReferenceRequestDto(
     val bonus: Int? = null,
     val competenceIds: List<String>? = null,
     val protectionPoints: Int? = null,
+    val description: String? = null,
 )
 
 /**
@@ -60,6 +64,7 @@ data class CreateReferenceRequestDto(
  * @property bonus Montant du bonus (le serveur applique `1` par défaut si [stat] est fournie sans).
  * @property competenceIds Compétences à lier (formation), ou `null` pour les autres types.
  * @property protectionPoints Points de protection (armure uniquement), ou `null` pour les autres types.
+ * @property description Description libre (sort/miracle uniquement), ou `null` pour les autres types.
  */
 @Serializable
 data class UpdateReferenceRequestDto(
@@ -69,6 +74,7 @@ data class UpdateReferenceRequestDto(
     val bonus: Int? = null,
     val competenceIds: List<String>? = null,
     val protectionPoints: Int? = null,
+    val description: String? = null,
 )
 
 /**

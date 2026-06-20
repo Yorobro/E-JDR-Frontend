@@ -76,7 +76,6 @@ data class CharacterSheetDto(
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
     val purse: PurseDto? = null,
-    val sortsEtMiracles: String? = null,
     val notes: String? = null,
     val formation: ResolvedFormationDto? = null,
     val peuple: ResolvedReferenceDto? = null,
@@ -116,7 +115,6 @@ data class UpdateCharacterSheetRequestDto(
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
     val purse: PurseDto? = null,
-    val sortsEtMiracles: String? = null,
     val notes: String? = null,
 )
 

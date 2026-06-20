@@ -41,9 +41,9 @@ class ReferenceListViewModelTest {
         activeGroupId: StateFlow<String?> = MutableStateFlow("g-1"),
         listItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList()) },
         createItem: CreateReferenceItemUseCase =
-            CreateReferenceItemUseCase { _, _, _, _, _, _, _ -> Result.Success(item("a")) },
+            CreateReferenceItemUseCase { _, _, _, _, _, _, _, _ -> Result.Success(item("a")) },
         updateItem: UpdateReferenceItemUseCase =
-            UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _ -> Result.Success(item("a")) },
+            UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _, _ -> Result.Success(item("a")) },
         deleteItem: DeleteReferenceItemUseCase = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
     ) = ReferenceListViewModel(type, activeGroupId, listItems, createItem, updateItem, deleteItem)
 
@@ -109,7 +109,7 @@ class ReferenceListViewModelTest {
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, groupId, _, _, _, _ ->
+            createItem = CreateReferenceItemUseCase { _, _, groupId, _, _, _, _, _ ->
                 createdGroup = groupId
                 stored = listOf(item("f"))
                 Result.Success(item("f"))
@@ -130,7 +130,7 @@ class ReferenceListViewModelTest {
         val vm = viewModel(
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
-            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
         )
         advanceUntilIdle()
 
@@ -171,7 +171,7 @@ class ReferenceListViewModelTest {
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds, _ ->
+            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds, _, _ ->
                 capturedStat = stat
                 capturedBonus = bonus
                 capturedCompetences = competenceIds
@@ -199,7 +199,7 @@ class ReferenceListViewModelTest {
             type = ReferenceType.ARMURE,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, protectionPoints ->
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, protectionPoints, _ ->
                 capturedProtection = protectionPoints
                 stored = listOf(item("a"))
                 Result.Success(item("a"))
@@ -216,19 +216,21 @@ class ReferenceListViewModelTest {
     }
 
     @Test
-    fun `create simple type forwards null stat null bonus empty competences and null protection`() = runTest {
+    fun `create simple type forwards null stat null bonus empty competences null protection and null description`() = runTest {
         var capturedStat: String? = "untouched"
         var capturedBonus: Int? = -999
         var capturedCompetences: List<String>? = listOf("dirty")
         var capturedProtection: Int? = -999
+        var capturedDescription: String? = "untouched"
         val vm = viewModel(
             type = ReferenceType.ARME,
             activeGroupId = MutableStateFlow("g-1"),
-            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds, protectionPoints ->
+            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds, protectionPoints, description ->
                 capturedStat = stat
                 capturedBonus = bonus
                 capturedCompetences = competenceIds
                 capturedProtection = protectionPoints
+                capturedDescription = description
                 Result.Success(item("a"))
             },
         )
@@ -241,6 +243,31 @@ class ReferenceListViewModelTest {
         assertNull(capturedBonus)
         assertEquals(emptyList(), capturedCompetences)
         assertNull(capturedProtection)
+        assertNull(capturedDescription)
+    }
+
+    @Test
+    fun `create sort forwards description and reloads`() = runTest {
+        var capturedDescription: String? = "untouched"
+        var stored = emptyList<ReferenceItem>()
+        val vm = viewModel(
+            type = ReferenceType.SORT,
+            activeGroupId = MutableStateFlow("g-1"),
+            listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
+            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, _, description ->
+                capturedDescription = description
+                stored = listOf(item("s"))
+                Result.Success(item("s"))
+            },
+        )
+        advanceUntilIdle()
+
+        vm.create("Boule de feu", description = "3d6 dégâts de feu.")
+        advanceUntilIdle()
+
+        assertEquals("3d6 dégâts de feu.", capturedDescription)
+        assertEquals(1, vm.items.value.size)
+        assertNull(vm.error.value)
     }
 
     @Test
@@ -257,7 +284,7 @@ class ReferenceListViewModelTest {
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            updateItem = UpdateReferenceItemUseCase { _, itemId, name, groupId, stat, bonus, competenceIds, protectionPoints ->
+            updateItem = UpdateReferenceItemUseCase { _, itemId, name, groupId, stat, bonus, competenceIds, protectionPoints, _ ->
                 capturedId = itemId
                 capturedName = name
                 capturedGroup = groupId
@@ -292,7 +319,7 @@ class ReferenceListViewModelTest {
             type = ReferenceType.ARME,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> listed++; Result.Success(emptyList()) },
-            updateItem = UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
+            updateItem = UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
         )
         advanceUntilIdle()
         val listedAfterInit = listed

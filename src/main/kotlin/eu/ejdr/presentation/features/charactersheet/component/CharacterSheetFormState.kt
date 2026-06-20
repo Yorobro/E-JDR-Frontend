@@ -42,7 +42,6 @@ class CharacterSheetFormState(source: CharacterSheet) {
     var purseGold by mutableStateOf(source.purse?.gold.toFieldText())
     var purseSilver by mutableStateOf(source.purse?.silver.toFieldText())
     var purseCopper by mutableStateOf(source.purse?.copper.toFieldText())
-    var sortsEtMiracles by mutableStateOf(source.sortsEtMiracles.orEmpty())
     var notes by mutableStateOf(source.notes.orEmpty())
 
     /** Le nom est-il valide (non vide après trim) ? Sert à (dés)activer le bouton Enregistrer. */
@@ -69,7 +68,6 @@ class CharacterSheetFormState(source: CharacterSheet) {
         // pointsDeVie / protection : dérivés serveur, jamais réécrits depuis le formulaire (restent null).
         pointsDeMagie = pointsDeMagie.toNullableInt(),
         purse = buildPurse(),
-        sortsEtMiracles = sortsEtMiracles.toNullableText(),
         notes = notes.toNullableText(),
     )
 

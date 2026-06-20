@@ -26,6 +26,7 @@ object ReferenceHttpMapper {
             bonus = dto.bonus,
             competenceIds = dto.competenceIds,
             protectionPoints = dto.protectionPoints,
+            description = dto.description,
         )
 
     /**

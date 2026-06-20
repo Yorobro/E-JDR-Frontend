@@ -22,6 +22,7 @@ class ReferenceHttpMapperTest {
             bonus = 2,
             competenceIds = listOf("c-1", "c-2"),
             protectionPoints = 5,
+            description = "Protège efficacement le torse.",
         )
 
         val item = ReferenceHttpMapper.toItem(dto)
@@ -33,6 +34,7 @@ class ReferenceHttpMapperTest {
         assertEquals(2, item.bonus)
         assertEquals(listOf("c-1", "c-2"), item.competenceIds)
         assertEquals(5, item.protectionPoints)
+        assertEquals("Protège efficacement le torse.", item.description)
     }
 
     @Test
@@ -45,5 +47,6 @@ class ReferenceHttpMapperTest {
         assertNull(item.bonus)
         assertTrue(item.competenceIds.isEmpty())
         assertNull(item.protectionPoints)
+        assertNull(item.description)
     }
 }

@@ -65,6 +65,7 @@ class ReferenceHttpRepository(
         bonus: Int?,
         competenceIds: List<String>,
         protectionPoints: Int?,
+        description: String?,
     ): Result<ReferenceItem, ReferenceError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/reference/${type.slug}") {
@@ -77,6 +78,7 @@ class ReferenceHttpRepository(
                         bonus = bonus,
                         competenceIds = competenceIds.ifEmpty { null },
                         protectionPoints = protectionPoints,
+                        description = description,
                     ),
                 )
             }
@@ -96,6 +98,7 @@ class ReferenceHttpRepository(
         bonus: Int?,
         competenceIds: List<String>,
         protectionPoints: Int?,
+        description: String?,
     ): Result<ReferenceItem, ReferenceError> =
         runCatchingCancellable {
             val response = client.put("${config.baseUrl}/reference/${type.slug}/$itemId") {
@@ -108,6 +111,7 @@ class ReferenceHttpRepository(
                         bonus = bonus,
                         competenceIds = competenceIds.ifEmpty { null },
                         protectionPoints = protectionPoints,
+                        description = description,
                     ),
                 )
             }
