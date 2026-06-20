@@ -20,8 +20,8 @@ import org.koin.dsl.module
 
 /**
  * Module Koin de la feature authentification : ports application (use cases, service) +
- * adaptateurs infrastructure (repository HTTP, mapper). Découpage par feature à l'image de
- * [realtimeModule], pour éviter les god-modules.
+ * adaptateurs infrastructure (repository HTTP, mapper). Découpage par feature, pour éviter
+ * les god-modules.
  */
 val authModule = module {
     single { AuthHttpMapper }

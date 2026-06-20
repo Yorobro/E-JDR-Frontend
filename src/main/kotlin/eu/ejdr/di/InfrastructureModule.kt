@@ -6,7 +6,10 @@ import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.file.DesktopFileSaver
 import eu.ejdr.infrastructure.http.KtorClientFactory
 import eu.ejdr.infrastructure.security.CookieCipher
+import eu.ejdr.infrastructure.security.DpapiSecretProtector
 import eu.ejdr.infrastructure.security.KeyStoreProvider
+import eu.ejdr.infrastructure.security.PlaintextSecretProtector
+import eu.ejdr.infrastructure.security.SecretProtector
 import eu.ejdr.infrastructure.security.SecureCookiesStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.cookies.AcceptAllCookiesStorage
@@ -19,7 +22,12 @@ import org.koin.dsl.module
  */
 val infrastructureModule = module {
     single { AppConfig.load() }
-    single { KeyStoreProvider(get<AppConfig>().dataDir) }
+    // DPAPI sous Windows (secret lié à l'utilisateur), repli en clair ailleurs (OS non ciblé).
+    single<SecretProtector> {
+        if (System.getProperty("os.name").orEmpty().startsWith("Windows")) DpapiSecretProtector()
+        else PlaintextSecretProtector()
+    }
+    single { KeyStoreProvider(get<AppConfig>().dataDir, get<SecretProtector>()) }
     single { CookieCipher(get()) }
     single {
         SecureCookiesStorage(

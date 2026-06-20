@@ -101,7 +101,9 @@ fun App() {
         updateInfo?.let { info ->
             val updateController = remember { UpdateController(downloadAndInstall, scope) }
             val downloadState by updateController.state.collectAsStateWithLifecycle()
-            val startDownload: () -> Unit = { info.downloadUrl?.let(updateController::download) }
+            val startDownload: () -> Unit = {
+                info.downloadUrl?.let { url -> updateController.download(url, info.sha256Url) }
+            }
             UpdateDialog(
                 info = info,
                 state = downloadState,

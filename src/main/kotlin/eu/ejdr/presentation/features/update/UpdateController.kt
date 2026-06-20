@@ -36,11 +36,18 @@ class UpdateController(
     private val _state = MutableStateFlow<DownloadState>(DownloadState.Idle)
     val state: StateFlow<DownloadState> = _state.asStateFlow()
 
-    /** Lance le téléchargement de l'installeur à [url], en publiant la progression dans [state]. */
-    fun download(url: String) {
+    /**
+     * Lance le téléchargement de l'installeur à [url], en publiant la progression dans [state].
+     *
+     * @param sha256Url URL de l'empreinte SHA-256 publiée, transmise au use case pour la
+     *   vérification d'intégrité avant lancement (`null` fera échouer la vérification).
+     */
+    fun download(url: String, sha256Url: String?) {
         _state.value = DownloadState.Downloading(null)
         scope.launch {
-            downloadAndInstall(url) { progress -> _state.value = DownloadState.Downloading(progress) }
+            downloadAndInstall(url, sha256Url) { progress ->
+                _state.value = DownloadState.Downloading(progress)
+            }
                 .fold(
                     onSuccess = { /* le launcher quitte l'app ; rien à faire */ },
                     onFailure = { _state.value = DownloadState.Error },

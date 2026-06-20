@@ -4,6 +4,7 @@ import java.nio.file.Files
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
+import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
@@ -36,5 +37,26 @@ class KeyStoreProviderTest {
 
         assertNotNull(key)
         assertTrue(key.encoded.isNotEmpty())
+    }
+
+    /** Protecteur factice : simule DPAPI en préfixant les octets (chiffrement réversible trivial). */
+    private class ReversibleProtector : SecretProtector {
+        override fun protect(data: ByteArray) = ByteArray(1) { 0x42 } + data
+        override fun reveal(data: ByteArray) = data.copyOfRange(1, data.size)
+    }
+
+    @Test
+    fun `persists a protected random password and reuses it across instances`() {
+        val protector = ReversibleProtector()
+
+        val first = KeyStoreProvider(tmpDir, protector).getOrCreateKey()
+        // Le mot de passe aléatoire est persisté CHIFFRÉ (jamais en clair) dans store.pwd.
+        val pwdFile = tmpDir.resolve("store.pwd")
+        assertTrue(pwdFile.exists())
+        assertEquals(0x42.toByte(), pwdFile.readBytes().first()) // marqueur du protecteur
+
+        // Une seconde instance déchiffre le même mot de passe et rouvre le MÊME coffre → même clé.
+        val second = KeyStoreProvider(tmpDir, protector).getOrCreateKey()
+        assertContentEquals(first.encoded, second.encoded)
     }
 }

@@ -20,6 +20,7 @@ import eu.ejdr.domain.features.reference.entities.ReferenceType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 /**
@@ -42,7 +43,7 @@ import kotlinx.coroutines.launch
  */
 class CharacterSheetDetailViewModel(
     private val sheetId: String,
-    private val activeGroupId: String?,
+    private val activeGroupId: StateFlow<String?>,
     private val getById: GetCharacterSheetUseCase,
     private val update: UpdateCharacterSheetUseCase,
     private val getCampaigns: GetSheetCampaignsUseCase,
@@ -89,6 +90,12 @@ class CharacterSheetDetailViewModel(
 
     init {
         load()
+        // Si le groupe actif change pendant que la page reste ouverte (le VM est retenu par la
+        // destination), les catalogues proposés à la sélection (formation/peuple + N‑N) doivent
+        // suivre le nouveau groupe. On ignore la valeur initiale (drop(1)) déjà couverte par load().
+        viewModelScope.launch {
+            activeGroupId.drop(1).collect { loadReferences() }
+        }
     }
 
     /** Types de référence rattachables en N‑N à une fiche. */
@@ -126,7 +133,7 @@ class CharacterSheetDetailViewModel(
 
         // Les catalogues (formations/peuples + catalogues liables) appartiennent au groupe actif :
         // sans groupe actif, on n'a rien à proposer (sections de sélection vides).
-        val groupId = activeGroupId
+        val groupId = activeGroupId.value
         if (groupId == null) {
             _formations.value = emptyList()
             _peoples.value = emptyList()

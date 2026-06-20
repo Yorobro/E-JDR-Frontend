@@ -18,6 +18,7 @@ import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -68,7 +69,7 @@ class CharacterSheetDetailViewModelTest {
         unlinkSheetReference: UnlinkSheetReferenceUseCase = UnlinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
     ) = CharacterSheetDetailViewModel(
         sheetId = "s-1",
-        activeGroupId = activeGroupId,
+        activeGroupId = MutableStateFlow(activeGroupId),
         getById = getById,
         update = update,
         getCampaigns = getCampaigns,

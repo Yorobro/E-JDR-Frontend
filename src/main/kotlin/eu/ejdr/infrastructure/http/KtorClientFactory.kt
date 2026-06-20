@@ -10,7 +10,6 @@ import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.plugin
-import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -29,14 +28,12 @@ private val RefreshRetryKey = AttributeKey<Unit>("RefreshRetry")
  * - [HttpCookies] branché sur le [SecureCookiesStorage] fourni ;
  * - [ContentNegotiation] en JSON tolérant (clés inconnues ignorées, mode lenient) ;
  * - [Logging] HTTP optionnel, activé selon [AppConfig.enableHttpLogging] ;
- * - [WebSockets] pour les connexions temps réel (cf. couche `realtime`) ;
  * - Intercepteur 401 : sur toute route hors `/auth/`, tente un rafraîchissement silencieux
  *   de session puis rejoue la requête originale. Si le refresh renvoie 401/403, la session
  *   persistée est effacée (token réellement expiré) ; tout autre **code HTTP** d'échec (5xx)
  *   conserve la session (panne transitoire). Une erreur **réseau** (timeout, DNS) lève une
  *   exception qui sort de l'intercepteur et est gérée par l'appelant — la session n'est pas
- *   effacée là non plus. (N.B. cet intercepteur ne couvre PAS les connexions WebSocket
- *   longue durée : leur ré-authentification est gérée par la couche `realtime`.)
+ *   effacée là non plus.
  *
  * `expectSuccess = false` laisse l'appelant inspecter lui-même les statuts d'échec.
  */
@@ -51,7 +48,6 @@ class KtorClientFactory(
             install(ContentNegotiation) {
                 json(Json { ignoreUnknownKeys = true; isLenient = true })
             }
-            install(WebSockets)
             if (config.enableHttpLogging) {
                 install(Logging) { level = LogLevel.INFO }
             }
