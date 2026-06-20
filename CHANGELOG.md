@@ -1,3 +1,10 @@
+## [1.16.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.15.0...v1.16.0) (2026-06-20)
+
+
+### Features
+
+* **reference:** dissocier sorts et miracles en deux catalogues ([9fc208c](https://github.com/Yorobro/E-JDR-Frontend/commit/9fc208cb388390069cfa6a8d82846a6205bce455))
+
 ## [1.15.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.14.0...v1.15.0) (2026-06-19)
 
 
