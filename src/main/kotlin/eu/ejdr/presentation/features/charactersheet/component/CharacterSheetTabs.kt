@@ -38,7 +38,7 @@ fun IdentiteTab(
     }
 }
 
-/** Onglet Combat : [Combat · Bourse], [Armes · Armures] (N‑N), puis Sorts & Miracles. */
+/** Onglet Combat : [Combat · Bourse], [Armes · Armures] (N‑N), puis [Sorts · Miracles] (N‑N). */
 @Composable
 fun CombatTab(
     sheet: CharacterSheet,
@@ -59,9 +59,12 @@ fun CombatTab(
                 { SheetCard("Armures") { LinkedReferenceSection(ReferenceType.ARMURE, isEditing, refs) } },
             ),
         )
-        SheetCard("Sorts & Miracles") {
-            LongTextBody(isEditing, form.sortsEtMiracles, sheet.sortsEtMiracles) { form.sortsEtMiracles = it }
-        }
+        ResponsiveColumns(
+            columns = listOf(
+                { SheetCard("Sorts") { LinkedReferenceSection(ReferenceType.SORT, isEditing, refs) } },
+                { SheetCard("Miracles") { LinkedReferenceSection(ReferenceType.MIRACLE, isEditing, refs) } },
+            ),
+        )
     }
 }
 

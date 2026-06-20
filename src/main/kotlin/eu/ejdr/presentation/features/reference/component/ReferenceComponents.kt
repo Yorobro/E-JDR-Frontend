@@ -162,6 +162,13 @@ private fun ReferenceCardDetails(
             }
         }
 
+        ReferenceType.SORT, ReferenceType.MIRACLE -> {
+            val description = item.description?.takeIf { it.isNotBlank() }
+            if (description != null) {
+                CardDetailLine(description)
+            }
+        }
+
         ReferenceType.ARME, ReferenceType.COMPETENCE, ReferenceType.EQUIPEMENT -> Unit
     }
 }
@@ -197,8 +204,9 @@ private fun CardDetailLine(text: String) {
  * statistique et un montant de bonus (visible seulement si une stat est choisie). Pour la seule
  * formation, propose aussi un picker multi‑sélection de compétences ([availableCompetences]). Pour
  * la seule [ReferenceType.ARMURE], propose un champ « Points de protection » (défaut 0, optionnel).
- * Les autres types n'affichent que le champ nom. La validation porte
- * `(name, stat, bonus, competenceIds, protectionPoints)`.
+ * Pour [ReferenceType.SORT]/[ReferenceType.MIRACLE], propose un champ « Description » (texte libre,
+ * optionnel). Les autres types n'affichent que le champ nom. La validation porte
+ * `(name, stat, bonus, competenceIds, protectionPoints, description)`.
  *
  * @param type Catégorie courante (détermine les champs proposés).
  * @param title Titre du dialog (ex. « Nouvelle formation »).
@@ -206,7 +214,8 @@ private fun CardDetailLine(text: String) {
  * @param confirmLabel Libellé du bouton de confirmation (ex. « Créer » / « Enregistrer »).
  * @param onDismiss Fermeture sans enregistrement.
  * @param onConfirm Confirmation :
- *   `(name, stat slug ou null, bonus ou null, ids de compétences, points de protection ou null)`.
+ *   `(name, stat slug ou null, bonus ou null, ids de compétences, points de protection ou null,
+ *   description ou null)`.
  * @param initial Élément à éditer (champs pré-remplis), ou `null` pour une création.
  * @param availableCompetences Catalogue des compétences proposées (formation uniquement).
  * @param errorMessage Message d'erreur éventuel (ex. doublon).
@@ -224,6 +233,7 @@ fun ReferenceFormDialog(
         bonus: Int?,
         competenceIds: List<String>,
         protectionPoints: Int?,
+        description: String?,
     ) -> Unit,
     initial: ReferenceItem? = null,
     availableCompetences: List<ReferenceItem> = emptyList(),
@@ -235,9 +245,11 @@ fun ReferenceFormDialog(
     var protection by remember {
         mutableStateOf(initial?.protectionPoints?.toString() ?: DEFAULT_PROTECTION)
     }
+    var description by remember { mutableStateOf(initial?.description.orEmpty()) }
     val selectedCompetences = remember { mutableStateListOf<String>().apply { addAll(initial?.competenceIds.orEmpty()) } }
 
     val hasStatChoice = type == ReferenceType.FORMATION || type == ReferenceType.PEUPLE
+    val hasDescription = type == ReferenceType.SORT || type == ReferenceType.MIRACLE
     val selectedStat = STAT_OPTIONS.firstOrNull { it.first == statLabel }?.second
 
     AppDialog(
@@ -251,6 +263,7 @@ fun ReferenceFormDialog(
                 selectedStat?.let { bonus.toIntOrNull() ?: 1 },
                 selectedCompetences.toList(),
                 if (type == ReferenceType.ARMURE) protection.toIntOrNull() ?: 0 else null,
+                if (hasDescription) description.trim().ifBlank { null } else null,
             )
         },
         confirmEnabled = name.isNotBlank(),
@@ -292,6 +305,15 @@ fun ReferenceFormDialog(
                     value = protection,
                     onValueChange = { protection = it },
                     label = "Points de protection",
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
+            if (hasDescription) {
+                AppTextField(
+                    value = description,
+                    onValueChange = { description = it },
+                    label = "Description",
+                    singleLine = false,
                     modifier = Modifier.fillMaxWidth(),
                 )
             }

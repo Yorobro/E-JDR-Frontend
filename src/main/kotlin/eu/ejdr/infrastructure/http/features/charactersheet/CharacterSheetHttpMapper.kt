@@ -49,7 +49,6 @@ object CharacterSheetHttpMapper {
             pointsDeMagie = dto.pointsDeMagie,
             protection = dto.protection,
             purse = dto.purse?.let { Purse(it.gold, it.silver, it.copper) },
-            sortsEtMiracles = dto.sortsEtMiracles,
             notes = dto.notes,
             formation = dto.formation?.let(::toResolvedFormation),
             peuple = dto.peuple?.let(::toResolvedReference),
@@ -99,7 +98,6 @@ object CharacterSheetHttpMapper {
             pointsDeMagie = sheet.pointsDeMagie,
             protection = null,
             purse = sheet.purse?.let { PurseDto(it.gold, it.silver, it.copper) },
-            sortsEtMiracles = sheet.sortsEtMiracles,
             notes = sheet.notes,
         )
 

@@ -28,7 +28,9 @@ enum class ReferenceType(
     // Les compétences sont 100 % dérivées de la formation (lecture seule) : plus de liaison N‑N à
     // la fiche. Le catalogue reste créable/supprimable via le hub ; seul le rattachement disparaît.
     COMPETENCE("competences", "Compétences", "compétence", linkable = false),
-    EQUIPEMENT("equipements", "Équipements", "équipement", linkable = true);
+    EQUIPEMENT("equipements", "Équipements", "équipement", linkable = true),
+    SORT("sorts", "Sorts", "sort", linkable = true),
+    MIRACLE("miracles", "Miracles", "miracle", linkable = true);
 
     companion object {
         /** Retrouve un type par son [slug] d'URL, ou `null` si inconnu. */

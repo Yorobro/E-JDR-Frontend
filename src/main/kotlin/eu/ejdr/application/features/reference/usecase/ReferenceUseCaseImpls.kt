@@ -38,8 +38,18 @@ class CreateReferenceItemUseCaseImpl(
         bonus: Int?,
         competenceIds: List<String>,
         protectionPoints: Int?,
+        description: String?,
     ): Result<ReferenceItem, ReferenceError> =
-        repository.create(type, name, groupId, stat, bonus, competenceIds, protectionPoints)
+        repository.create(
+            type,
+            name,
+            groupId,
+            stat,
+            bonus,
+            competenceIds,
+            protectionPoints,
+            description,
+        )
 }
 
 class UpdateReferenceItemUseCaseImpl(
@@ -54,8 +64,19 @@ class UpdateReferenceItemUseCaseImpl(
         bonus: Int?,
         competenceIds: List<String>,
         protectionPoints: Int?,
+        description: String?,
     ): Result<ReferenceItem, ReferenceError> =
-        repository.update(type, itemId, name, groupId, stat, bonus, competenceIds, protectionPoints)
+        repository.update(
+            type,
+            itemId,
+            name,
+            groupId,
+            stat,
+            bonus,
+            competenceIds,
+            protectionPoints,
+            description,
+        )
 }
 
 class DeleteReferenceItemUseCaseImpl(

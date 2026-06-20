@@ -34,7 +34,6 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property pointsDeMagie Points de magie.
  * @property protection Valeur de protection / armure.
  * @property purse Bourse du personnage (pièces d'or, d'argent et de cuivre).
- * @property sortsEtMiracles Description des sorts et miracles.
  * @property notes Notes libres.
  * @property formation Formation **résolue** (nom + stat ciblée + bonus + compétences apportées),
  *   ou `null` si aucune. Bloc dérivé renseigné par le détail ; purement d'affichage (n'altère pas
@@ -42,8 +41,8 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property peuple Peuple **résolu** (nom + stat ciblée + bonus), ou `null` si aucun. Bloc dérivé
  *   renseigné par le détail ; purement d'affichage.
  *
- * Note : armes, armures, compétences et équipements ne sont **plus** des champs ici — ce sont des
- * relations N‑N gérées à part (cf. feature `reference`).
+ * Note : armes, armures, compétences, équipements, sorts et miracles ne sont **plus** des champs
+ * ici — ce sont des relations N‑N gérées à part (cf. feature `reference`).
  */
 data class CharacterSheet(
     val id: String,
@@ -71,7 +70,6 @@ data class CharacterSheet(
     val pointsDeMagie: Int? = null,
     val protection: Int? = null,
     val purse: Purse? = null,
-    val sortsEtMiracles: String? = null,
     val notes: String? = null,
     val formation: ResolvedFormation? = null,
     val peuple: ResolvedReference? = null,

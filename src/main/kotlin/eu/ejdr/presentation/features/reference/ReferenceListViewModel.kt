@@ -113,7 +113,8 @@ class ReferenceListViewModel(
      * Crée un élément dans le groupe actif puis recharge la liste en cas de succès.
      *
      * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation,
-     * [protectionPoints] à la seule armure ; pour les types simples, l'appelant passe les défauts.
+     * [protectionPoints] à la seule armure, [description] aux seuls sorts/miracles ; pour les types
+     * simples, l'appelant passe les défauts.
      */
     fun create(
         name: String,
@@ -121,13 +122,15 @@ class ReferenceListViewModel(
         bonus: Int? = null,
         competenceIds: List<String> = emptyList(),
         protectionPoints: Int? = null,
+        description: String? = null,
     ) {
         val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            createItem(type, name, groupId, stat, bonus, competenceIds, protectionPoints).fold(
-                onSuccess = { _error.value = null; reload(groupId) },
-                onFailure = { error -> _error.value = error.message },
-            )
+            createItem(type, name, groupId, stat, bonus, competenceIds, protectionPoints, description)
+                .fold(
+                    onSuccess = { _error.value = null; reload(groupId) },
+                    onFailure = { error -> _error.value = error.message },
+                )
         }
     }
 
@@ -142,10 +145,21 @@ class ReferenceListViewModel(
         bonus: Int? = null,
         competenceIds: List<String> = emptyList(),
         protectionPoints: Int? = null,
+        description: String? = null,
     ) {
         val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            updateItem(type, itemId, name, groupId, stat, bonus, competenceIds, protectionPoints).fold(
+            updateItem(
+                type,
+                itemId,
+                name,
+                groupId,
+                stat,
+                bonus,
+                competenceIds,
+                protectionPoints,
+                description,
+            ).fold(
                 onSuccess = { _error.value = null; reload(groupId) },
                 onFailure = { error -> _error.value = error.message },
             )

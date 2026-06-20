@@ -116,14 +116,14 @@ fun ReferenceListPage(
         pendingEdit = pendingEdit,
         availableCompetences = availableCompetences,
         onCreateDismiss = { showCreate = false },
-        onCreateConfirm = { name, stat, bonus, competenceIds, protectionPoints ->
+        onCreateConfirm = { name, stat, bonus, competenceIds, protectionPoints, description ->
             showCreate = false
-            viewModel.create(name, stat, bonus, competenceIds, protectionPoints)
+            viewModel.create(name, stat, bonus, competenceIds, protectionPoints, description)
         },
         onEditDismiss = { pendingEdit = null },
-        onEditConfirm = { id, name, stat, bonus, competenceIds, protectionPoints ->
+        onEditConfirm = { id, name, stat, bonus, competenceIds, protectionPoints, description ->
             pendingEdit = null
-            viewModel.update(id, name, stat, bonus, competenceIds, protectionPoints)
+            viewModel.update(id, name, stat, bonus, competenceIds, protectionPoints, description)
         },
     )
 
@@ -144,9 +144,9 @@ private fun ReferenceFormDialogs(
     pendingEdit: ReferenceItem?,
     availableCompetences: List<ReferenceItem>,
     onCreateDismiss: () -> Unit,
-    onCreateConfirm: (String, String?, Int?, List<String>, Int?) -> Unit,
+    onCreateConfirm: (String, String?, Int?, List<String>, Int?, String?) -> Unit,
     onEditDismiss: () -> Unit,
-    onEditConfirm: (String, String, String?, Int?, List<String>, Int?) -> Unit,
+    onEditConfirm: (String, String, String?, Int?, List<String>, Int?, String?) -> Unit,
 ) {
     if (showCreate) {
         ReferenceFormDialog(
@@ -168,8 +168,8 @@ private fun ReferenceFormDialogs(
             confirmLabel = "Enregistrer",
             initial = item,
             onDismiss = onEditDismiss,
-            onConfirm = { name, stat, bonus, competenceIds, protectionPoints ->
-                onEditConfirm(item.id, name, stat, bonus, competenceIds, protectionPoints)
+            onConfirm = { name, stat, bonus, competenceIds, protectionPoints, description ->
+                onEditConfirm(item.id, name, stat, bonus, competenceIds, protectionPoints, description)
             },
             availableCompetences = availableCompetences,
         )
