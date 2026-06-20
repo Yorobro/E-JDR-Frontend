@@ -3,6 +3,7 @@ package eu.ejdr.infrastructure.http.features.update
 import eu.ejdr.BuildConfig
 import eu.ejdr.application.features.update.abstraction.repository.UpdateRepository
 import eu.ejdr.application.features.update.dto.UpdateInfoDto
+import eu.ejdr.application.shared.runCatchingCancellable
 import eu.ejdr.infrastructure.http.features.update.dto.GitHubReleaseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -24,7 +25,7 @@ private val ALLOWED_DOWNLOAD_HOSTS = setOf("github.com", "objects.githubusercont
 
 class UpdateHttpRepository(private val client: HttpClient) : UpdateRepository {
 
-    override suspend fun fetchLatestRelease(): UpdateInfoDto? = runCatching {
+    override suspend fun fetchLatestRelease(): UpdateInfoDto? = runCatchingCancellable {
         val response = client.get(GITHUB_API)
         if (!response.status.isSuccess()) return null
         val dto = response.body<GitHubReleaseDto>()
