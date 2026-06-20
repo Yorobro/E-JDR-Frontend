@@ -69,13 +69,23 @@ fun AppButton(
     when (variant) {
         ButtonVariant.Primary -> Button(
             onClick = onClick, enabled = isEnabled, shape = shape, modifier = modifier,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary, contentColor = colors.onPrimary),
-        ) { content(colors.onPrimary) }
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colors.primary,
+                contentColor = colors.onPrimary,
+                disabledContainerColor = colors.border,
+                disabledContentColor = colors.muted,
+            ),
+        ) { content(if (isEnabled) colors.onPrimary else colors.muted) }
 
         ButtonVariant.Danger -> Button(
             onClick = onClick, enabled = isEnabled, shape = shape, modifier = modifier,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.danger, contentColor = colors.onDanger),
-        ) { content(colors.onDanger) }
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colors.danger,
+                contentColor = colors.onDanger,
+                disabledContainerColor = colors.border,
+                disabledContentColor = colors.muted,
+            ),
+        ) { content(if (isEnabled) colors.onDanger else colors.muted) }
 
         ButtonVariant.Secondary -> OutlinedButton(
             onClick = onClick, enabled = isEnabled, shape = shape, modifier = modifier,
@@ -88,12 +98,20 @@ fun AppButton(
 
         ButtonVariant.Text -> TextButton(
             onClick = onClick, enabled = isEnabled, shape = shape, modifier = modifier,
-            colors = ButtonDefaults.textButtonColors(contentColor = colors.primary),
-        ) { content(colors.primary) }
+            colors = ButtonDefaults.textButtonColors(
+                contentColor = colors.primary,
+                disabledContentColor = colors.muted,
+            ),
+        ) { content(if (isEnabled) colors.primary else colors.muted) }
 
         ButtonVariant.Ghost -> Button(
             onClick = onClick, enabled = isEnabled, shape = shape, modifier = modifier,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.beige, contentColor = colors.text),
-        ) { content(colors.text) }
+            colors = ButtonDefaults.buttonColors(
+                containerColor = colors.beige,
+                contentColor = colors.text,
+                disabledContainerColor = colors.border,
+                disabledContentColor = colors.muted,
+            ),
+        ) { content(if (isEnabled) colors.text else colors.muted) }
     }
 }
