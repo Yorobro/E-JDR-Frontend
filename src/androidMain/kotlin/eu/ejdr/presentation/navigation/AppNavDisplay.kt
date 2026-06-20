@@ -21,6 +21,7 @@ import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.SessionStatus
 import eu.ejdr.presentation.features.auth.authEntries
+import eu.ejdr.presentation.features.friendgroup.friendGroupEntries
 import eu.ejdr.presentation.features.user.userEntries
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -70,6 +71,7 @@ fun AppNavDisplay(
                     entry<Route.Splash> { SplashScreen() }
                     authEntries(actions)
                     userEntries(actions)
+                    friendGroupEntries(actions)
                 },
             )
         }
