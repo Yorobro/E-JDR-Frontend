@@ -1,3 +1,10 @@
+## [1.18.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.18.0...v1.18.1) (2026-06-20)
+
+
+### Bug Fixes
+
+* **ui:** boutons désactivés explicites pour tous les variants ([22c0ca5](https://github.com/Yorobro/E-JDR-Frontend/commit/22c0ca5c007aa226b4de98fbea81161c010b4219))
+
 ## [1.18.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.17.0...v1.18.0) (2026-06-20)
 
 
