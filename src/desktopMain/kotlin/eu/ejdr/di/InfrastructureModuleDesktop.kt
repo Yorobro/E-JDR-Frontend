@@ -6,7 +6,7 @@ import eu.ejdr.application.features.friendgroup.abstraction.repository.ActiveGro
 import eu.ejdr.application.features.settings.abstraction.repository.ThemeRepository
 import eu.ejdr.application.features.update.abstraction.service.SystemLauncherService
 import eu.ejdr.infrastructure.config.AppConfig
-import eu.ejdr.infrastructure.config.load
+import eu.ejdr.infrastructure.config.loadAppConfig
 import eu.ejdr.infrastructure.config.provideDataDir
 import eu.ejdr.infrastructure.file.DesktopFileSaver
 import eu.ejdr.infrastructure.http.KtorClientFactory
@@ -37,7 +37,7 @@ import java.io.File
  * [ActiveGroupState]. Le pendant Android fournira ces mêmes bindings via ses propres impls.
  */
 val infrastructureModule = module {
-    single { AppConfig.load() }
+    single { loadAppConfig() }
     single { provideDataDir() }
     single<SecretProtector> {
         if (System.getProperty("os.name").orEmpty().startsWith("Windows")) DpapiSecretProtector()
@@ -65,8 +65,8 @@ val infrastructureModule = module {
     single<FileSaver> { DesktopFileSaver() }
 
     // Bindings platform-specific des features (bifurqués depuis leurs modules communs)
-    single<ThemeRepository> { ThemeFileRepository(File(get<AppConfig>().dataDir)) }
+    single<ThemeRepository> { ThemeFileRepository(get<File>()) }
     single<SystemLauncherService> { WindowsSystemLauncher() }
-    single<ActiveGroupRepository> { ActiveGroupFileRepository(File(get<AppConfig>().dataDir)) }
+    single<ActiveGroupRepository> { ActiveGroupFileRepository(get<File>()) }
     single { ActiveGroupState(get(), get(), get()) }
 }

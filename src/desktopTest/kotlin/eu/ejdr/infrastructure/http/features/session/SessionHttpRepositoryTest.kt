@@ -31,7 +31,6 @@ class SessionHttpRepositoryTest {
     private val tmpDir = Files.createTempDirectory("ejdr-session-test").toFile()
     private val config = AppConfig(
         baseUrl = "http://localhost:3000",
-        dataDir = tmpDir.absolutePath,
         enableHttpLogging = false,
     )
 
