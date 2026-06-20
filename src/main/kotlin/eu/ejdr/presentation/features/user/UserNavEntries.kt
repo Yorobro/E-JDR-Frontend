@@ -30,7 +30,7 @@ fun EntryProviderScope<Any>.userEntries(actions: NavActions) {
                 )
             },
         ) {
-            UserPage(onSessionExpired = { actions.resetTo(Route.Login) })
+            UserPage(onSessionExpired = { actions.resetTo(Route.Login) }, onLogout = actions.onLogout)
         }
     }
 }
