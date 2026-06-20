@@ -20,6 +20,7 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.SessionStatus
+import eu.ejdr.presentation.features.auth.authEntries
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
@@ -47,6 +48,7 @@ fun AppNavDisplay(
 ) {
     val status by sessionStatus.collectAsStateWithLifecycle()
     val groupId by activeGroupId.collectAsStateWithLifecycle()
+    val actions = NavActions(backStack, onLogout, onThemeChange, resetTo)
 
     val visibleItems = appNavItems.filter { it.isVisible(status, groupId) }
     val currentRoute = backStack.lastOrNull()
@@ -56,15 +58,16 @@ fun AppNavDisplay(
             // Décorateurs : on garde le défaut de NavDisplay
             // (rememberSaveableStateHolderNavEntryDecorator). La rétention des ViewModels
             // par destination (trio Saveable + SavedState + ViewModelStore) sera finalisée
-            // avec les pages Android (Tasks 14-16) ; sans page consommant koinViewModel pour
-            // l'instant, le défaut suffit et évite le crash "Lifecycle beyond INITIALIZED".
+            // plus tard ; sans elle, koinViewModel résout contre le ViewModelStore de
+            // l'Activity (partagé) — suffisant pour un écran auth à la fois.
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
                 // fallback : toute destination encore sans rendu Android affiche ComingSoon
-                // (les pages Android par feature seront ajoutées ici en Tasks 14-15).
-                entryProvider = entryProvider(fallback = { key -> NavEntry(key) { ComingSoon(key) } }) {
+                // (les autres pages Android par feature seront ajoutées ici progressivement).
+                entryProvider = entryProvider<Any>(fallback = { key -> NavEntry(key) { ComingSoon(key) } }) {
                     entry<Route.Splash> { SplashScreen() }
+                    authEntries(actions)
                 },
             )
         }
