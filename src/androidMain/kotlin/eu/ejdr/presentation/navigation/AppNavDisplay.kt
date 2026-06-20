@@ -22,6 +22,7 @@ import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.SessionStatus
 import eu.ejdr.presentation.features.auth.authEntries
 import eu.ejdr.presentation.features.friendgroup.friendGroupEntries
+import eu.ejdr.presentation.features.settings.settingsEntries
 import eu.ejdr.presentation.features.user.userEntries
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -72,6 +73,7 @@ fun AppNavDisplay(
                     authEntries(actions)
                     userEntries(actions)
                     friendGroupEntries(actions)
+                    settingsEntries(actions)
                 },
             )
         }
@@ -87,7 +89,8 @@ fun AppNavDisplay(
                             }
                         },
                         icon = { AppIcon(item.icon, contentDescription = item.label) },
-                        label = { AppText(item.label, style = AppTextStyle.Caption) },
+                        // Pas de label : barre plus compacte avec 6 onglets ; le libellé reste
+                        // exposé via contentDescription (accessibilité).
                     )
                 }
             }
