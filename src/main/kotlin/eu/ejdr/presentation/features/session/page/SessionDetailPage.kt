@@ -23,10 +23,12 @@ import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import org.koin.compose.koinInject
 
 /** Motif strict d'une date `YYYY-MM-DD` (validation côté UI ; le serveur revalide). */
 private val DatePattern = Regex("""\d{4}-\d{2}-\d{2}""")
@@ -58,6 +60,8 @@ fun SessionDetailPage(
             deleteSession = get<DeleteSessionUseCase>(),
         )
     }
+    val activeGroupState = koinInject<ActiveGroupState>()
+    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
     val session by viewModel.session.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
@@ -94,6 +98,7 @@ fun SessionDetailPage(
             value = titleField,
             onValueChange = { titleField = it },
             label = "Titre de la session",
+            enabled = canEdit,
             modifier = Modifier.fillMaxWidth(),
         )
         AppTextField(
@@ -101,24 +106,20 @@ fun SessionDetailPage(
             onValueChange = { dateField = it },
             label = "Date (AAAA-MM-JJ)",
             placeholder = "2026-06-20",
+            enabled = canEdit,
             errorMessage = if (dateField.isNotBlank() && !dateValid) "Format attendu : AAAA-MM-JJ" else null,
             modifier = Modifier.fillMaxWidth(),
         )
 
         FormError(message = error)
 
-        Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md)) {
-            AppButton(
-                label = "Enregistrer",
-                onClick = { viewModel.save(titleField.trim(), dateField.trim()) },
-                enabled = canSave,
-                loading = isLoading,
-            )
-            AppButton(
-                label = "Supprimer",
-                onClick = { showDelete = true },
-                variant = ButtonVariant.Danger,
-                enabled = !isLoading,
+        // Édition réservée aux éditeurs du groupe (ADMIN/MJ) ; un MEMBER consulte en lecture seule.
+        if (canEdit) {
+            SessionEditActions(
+                canSave = canSave,
+                isLoading = isLoading,
+                onSave = { viewModel.save(titleField.trim(), dateField.trim()) },
+                onDeleteRequest = { showDelete = true },
             )
         }
     }
@@ -131,6 +132,30 @@ fun SessionDetailPage(
                 viewModel.delete()
             },
             onDismiss = { showDelete = false },
+        )
+    }
+}
+
+/** Actions d'édition d'une session (enregistrer / supprimer), réservées aux éditeurs du groupe. */
+@Composable
+private fun SessionEditActions(
+    canSave: Boolean,
+    isLoading: Boolean,
+    onSave: () -> Unit,
+    onDeleteRequest: () -> Unit,
+) {
+    Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md)) {
+        AppButton(
+            label = "Enregistrer",
+            onClick = onSave,
+            enabled = canSave,
+            loading = isLoading,
+        )
+        AppButton(
+            label = "Supprimer",
+            onClick = onDeleteRequest,
+            variant = ButtonVariant.Danger,
+            enabled = !isLoading,
         )
     }
 }

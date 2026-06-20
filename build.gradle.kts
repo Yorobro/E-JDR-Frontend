@@ -173,6 +173,7 @@ kover {
                     "eu.ejdr.presentation.features.settings.page",
                     "eu.ejdr.presentation.features.settings.component",
                     "eu.ejdr.presentation.features.user.page",
+                    "eu.ejdr.presentation.features.user.component",
                     "eu.ejdr.presentation.features.campaign.page",
                     "eu.ejdr.presentation.features.campaign.component",
                     "eu.ejdr.presentation.features.session.page",
