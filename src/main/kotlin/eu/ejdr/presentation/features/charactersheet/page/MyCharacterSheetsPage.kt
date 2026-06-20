@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
@@ -62,12 +63,15 @@ fun MyCharacterSheetsPage(
             get<ListCharacterSheetsUseCase>(),
             get<CreateCharacterSheetUseCase>(),
             get<DeleteCharacterSheetUseCase>(),
+            get<GetCurrentUserUseCase>(),
         )
     }
     val sheets by viewModel.sheets.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val needsGroup by viewModel.needsGroup.collectAsStateWithLifecycle()
+    val currentUserId by viewModel.currentUserId.collectAsStateWithLifecycle()
+    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
 
     var showCreate by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<CharacterSheet?>(null) }
@@ -91,6 +95,8 @@ fun MyCharacterSheetsPage(
                 CharacterSheetGrid(
                     sheets = sheets,
                     isLoading = isLoading,
+                    canEdit = canEdit,
+                    currentUserId = currentUserId,
                     onOpenSheet = onOpenSheet,
                     onDeleteRequest = { pendingDelete = it },
                 )
@@ -143,6 +149,8 @@ fun MyCharacterSheetsPage(
 private fun CharacterSheetGrid(
     sheets: List<CharacterSheet>,
     isLoading: Boolean,
+    canEdit: Boolean,
+    currentUserId: String?,
     onOpenSheet: (id: String, name: String) -> Unit,
     onDeleteRequest: (CharacterSheet) -> Unit,
 ) {
@@ -173,10 +181,11 @@ private fun CharacterSheetGrid(
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
                 items(sheets, key = { it.id }) { sheet ->
+                    val canDelete = canEdit || sheet.ownerId == currentUserId
                     CharacterSheetCard(
                         sheet = sheet,
                         onClick = { onOpenSheet(sheet.id, sheet.name) },
-                        onDelete = { onDeleteRequest(sheet) },
+                        onDelete = if (canDelete) ({ onDeleteRequest(sheet) }) else null,
                     )
                 }
             }
