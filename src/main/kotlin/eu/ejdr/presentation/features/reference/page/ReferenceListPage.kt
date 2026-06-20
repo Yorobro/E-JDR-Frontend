@@ -57,6 +57,7 @@ fun ReferenceListPage(
     modifier: Modifier = Modifier,
 ) {
     val activeGroupState = koinInject<ActiveGroupState>()
+    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
     val viewModel = koinViewModel {
         ReferenceListViewModel(
             type,
@@ -97,16 +98,19 @@ fun ReferenceListPage(
                     items = items,
                     isLoading = isLoading,
                     competenceNames = competenceNames,
+                    canEdit = canEdit,
                     onEditRequest = { pendingEdit = it },
                     onDeleteRequest = { pendingDelete = it },
                 )
             }
 
-            AppFab(
-                onClick = { showCreate = true },
-                contentDescription = "Ajouter une ${type.singularLabel}",
-                modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
-            )
+            if (canEdit) {
+                AppFab(
+                    onClick = { showCreate = true },
+                    contentDescription = "Ajouter une ${type.singularLabel}",
+                    modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
+                )
+            }
         }
     }
 
@@ -183,6 +187,7 @@ private fun ReferenceGrid(
     items: List<ReferenceItem>,
     isLoading: Boolean,
     competenceNames: Map<String, String>,
+    canEdit: Boolean,
     onEditRequest: (ReferenceItem) -> Unit,
     onDeleteRequest: (ReferenceItem) -> Unit,
 ) {
@@ -214,8 +219,8 @@ private fun ReferenceGrid(
                         item = item,
                         type = type,
                         competenceNames = competenceNames,
-                        onEdit = { onEditRequest(item) },
-                        onDelete = { onDeleteRequest(item) },
+                        onEdit = if (canEdit) ({ onEditRequest(item) }) else null,
+                        onDelete = if (canEdit) ({ onDeleteRequest(item) }) else null,
                     )
                 }
             }

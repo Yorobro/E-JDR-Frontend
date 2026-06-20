@@ -92,8 +92,8 @@ private fun initialStatLabel(initial: ReferenceItem?): String =
 fun ReferenceCard(
     item: ReferenceItem,
     type: ReferenceType,
-    onEdit: () -> Unit,
-    onDelete: () -> Unit,
+    onEdit: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     competenceNames: Map<String, String> = emptyMap(),
 ) {
@@ -121,19 +121,23 @@ fun ReferenceCard(
             )
             ReferenceCardDetails(item = item, type = type, competenceNames = competenceNames)
         }
-        IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
-            AppIcon(
-                imageVector = Icons.Filled.Edit,
-                contentDescription = "Modifier",
-                tint = AppTheme.colors.primary,
-            )
+        if (onEdit != null) {
+            IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
+                AppIcon(
+                    imageVector = Icons.Filled.Edit,
+                    contentDescription = "Modifier",
+                    tint = AppTheme.colors.primary,
+                )
+            }
         }
-        IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
-            AppIcon(
-                imageVector = Icons.Filled.Delete,
-                contentDescription = "Supprimer",
-                tint = AppTheme.colors.danger,
-            )
+        if (onDelete != null) {
+            IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
+                AppIcon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Supprimer",
+                    tint = AppTheme.colors.danger,
+                )
+            }
         }
     }
 }
