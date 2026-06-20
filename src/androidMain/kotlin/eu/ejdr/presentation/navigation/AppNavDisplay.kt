@@ -21,6 +21,7 @@ import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.SessionStatus
 import eu.ejdr.presentation.features.auth.authEntries
+import eu.ejdr.presentation.features.user.userEntries
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
@@ -68,6 +69,7 @@ fun AppNavDisplay(
                 entryProvider = entryProvider<Any>(fallback = { key -> NavEntry(key) { ComingSoon(key) } }) {
                     entry<Route.Splash> { SplashScreen() }
                     authEntries(actions)
+                    userEntries(actions)
                 },
             )
         }
