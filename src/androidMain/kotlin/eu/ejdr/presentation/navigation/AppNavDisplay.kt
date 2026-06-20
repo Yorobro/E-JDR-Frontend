@@ -53,10 +53,14 @@ fun AppNavDisplay(
 
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.weight(1f)) {
+            // Décorateurs : on garde le défaut de NavDisplay
+            // (rememberSaveableStateHolderNavEntryDecorator). La rétention des ViewModels
+            // par destination (trio Saveable + SavedState + ViewModelStore) sera finalisée
+            // avec les pages Android (Tasks 14-16) ; sans page consommant koinViewModel pour
+            // l'instant, le défaut suffit et évite le crash "Lifecycle beyond INITIALIZED".
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
-                entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
                 // fallback : toute destination encore sans rendu Android affiche ComingSoon
                 // (les pages Android par feature seront ajoutées ici en Tasks 14-15).
                 entryProvider = entryProvider(fallback = { key -> NavEntry(key) { ComingSoon(key) } }) {
