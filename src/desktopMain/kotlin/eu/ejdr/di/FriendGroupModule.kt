@@ -31,10 +31,11 @@ import eu.ejdr.infrastructure.http.features.friendgroup.FriendGroupHttpRepositor
 import eu.ejdr.infrastructure.settings.ActiveGroupFileRepository
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import org.koin.dsl.module
+import java.io.File
 
 val friendGroupModule = module {
     single<FriendGroupRepository> { FriendGroupHttpRepository(get(), get()) }
-    single<ActiveGroupRepository> { ActiveGroupFileRepository(get<AppConfig>().dataDir) }
+    single<ActiveGroupRepository> { ActiveGroupFileRepository(File(get<AppConfig>().dataDir)) }
 
     single<ListMyGroupsUseCase> { ListMyGroupsUseCaseImpl(get()) }
     single<GetGroupUseCase> { GetGroupUseCaseImpl(get()) }

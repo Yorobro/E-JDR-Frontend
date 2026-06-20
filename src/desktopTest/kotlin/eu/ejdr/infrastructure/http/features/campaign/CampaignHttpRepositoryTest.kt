@@ -32,7 +32,7 @@ class CampaignHttpRepositoryTest {
     private val tmpDir = Files.createTempDirectory("ejdr-campaign-test").toFile()
     private val config = AppConfig(
         baseUrl = "http://localhost:3000",
-        dataDir = tmpDir,
+        dataDir = tmpDir.absolutePath,
         enableHttpLogging = false,
     )
 

@@ -25,7 +25,7 @@ import kotlinx.serialization.json.Json
 class FriendGroupHttpRepositoryTest {
 
     private val tmpDir = Files.createTempDirectory("ejdr-friendgroup-test").toFile()
-    private val config = AppConfig(baseUrl = "http://localhost:3000", dataDir = tmpDir, enableHttpLogging = false)
+    private val config = AppConfig(baseUrl = "http://localhost:3000", dataDir = tmpDir.absolutePath, enableHttpLogging = false)
 
     @AfterTest fun cleanup() { tmpDir.deleteRecursively() }
 

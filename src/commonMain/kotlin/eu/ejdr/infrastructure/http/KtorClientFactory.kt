@@ -1,11 +1,12 @@
 package eu.ejdr.infrastructure.http
 
+import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
 import eu.ejdr.infrastructure.config.AppConfig
-import eu.ejdr.infrastructure.security.SecureCookiesStorage
 import io.ktor.client.HttpClient
-import io.ktor.client.engine.cio.CIO
+import io.ktor.client.engine.HttpClientEngineFactory
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.cookies.CookiesStorage
 import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
@@ -21,28 +22,14 @@ import kotlinx.serialization.json.Json
 
 private val RefreshRetryKey = AttributeKey<Unit>("RefreshRetry")
 
-/**
- * Fabrique le [HttpClient] Ktor partagé par la couche infrastructure.
- *
- * Centralise la configuration transverse du client :
- * - [HttpCookies] branché sur le [SecureCookiesStorage] fourni ;
- * - [ContentNegotiation] en JSON tolérant (clés inconnues ignorées, mode lenient) ;
- * - [Logging] HTTP optionnel, activé selon [AppConfig.enableHttpLogging] ;
- * - Intercepteur 401 : sur toute route hors `/auth/`, tente un rafraîchissement silencieux
- *   de session puis rejoue la requête originale. Si le refresh renvoie 401/403, la session
- *   persistée est effacée (token réellement expiré) ; tout autre **code HTTP** d'échec (5xx)
- *   conserve la session (panne transitoire). Une erreur **réseau** (timeout, DNS) lève une
- *   exception qui sort de l'intercepteur et est gérée par l'appelant — la session n'est pas
- *   effacée là non plus.
- *
- * `expectSuccess = false` laisse l'appelant inspecter lui-même les statuts d'échec.
- */
 class KtorClientFactory(
     private val config: AppConfig,
-    private val cookiesStorage: SecureCookiesStorage,
+    private val cookiesStorage: CookiesStorage,
+    private val sessionPersistence: SessionPersistence,
+    private val engineFactory: HttpClientEngineFactory<*>,
 ) {
     fun create(): HttpClient {
-        val client = HttpClient(CIO) {
+        val client = HttpClient(engineFactory) {
             expectSuccess = false
             install(HttpCookies) { storage = cookiesStorage }
             install(ContentNegotiation) {
@@ -63,7 +50,6 @@ class KtorClientFactory(
                 return@intercept call
             }
 
-            // Tentative de rafraîchissement silencieux : un seul essai, pas de récursion.
             val refreshCall = execute(
                 HttpRequestBuilder().apply {
                     method = HttpMethod.Post
@@ -73,22 +59,15 @@ class KtorClientFactory(
             )
 
             if (!refreshCall.response.status.isSuccess()) {
-                // On distingue une vraie expiration de session d'une panne serveur (codes HTTP) :
-                // - 401/403 => refresh_token invalide : on efface la session.
-                // - autre code (5xx, etc.) => panne transitoire : on conserve la session.
-                // N.B. une erreur réseau (timeout, DNS) lève une exception AVANT d'atteindre ce
-                // bloc ; la session n'est pas effacée non plus, mais c'est l'appelant qui gère
-                // cette exception (cf. runCatchingCancellable dans AuthHttpRepository).
                 val refreshStatus = refreshCall.response.status
                 if (refreshStatus == HttpStatusCode.Unauthorized ||
                     refreshStatus == HttpStatusCode.Forbidden
                 ) {
-                    cookiesStorage.clearPersisted()
+                    sessionPersistence.clearPersisted()
                 }
                 return@intercept call
             }
 
-            // Nouveaux cookies posés par HttpCookies — rejoue la requête originale.
             request.attributes.put(RefreshRetryKey, Unit)
             execute(request)
         }

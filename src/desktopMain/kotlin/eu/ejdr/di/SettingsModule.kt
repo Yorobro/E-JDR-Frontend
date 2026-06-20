@@ -8,10 +8,11 @@ import eu.ejdr.application.features.settings.usecase.SetThemeUseCaseImpl
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.settings.ThemeFileRepository
 import org.koin.dsl.module
+import java.io.File
 
 /** Module Koin de la feature paramètres (thème). */
 val settingsModule = module {
-    single<ThemeRepository> { ThemeFileRepository(get<AppConfig>().dataDir) }
+    single<ThemeRepository> { ThemeFileRepository(File(get<AppConfig>().dataDir)) }
     single<GetThemeUseCase> { GetThemeUseCaseImpl(get()) }
     single<SetThemeUseCase> { SetThemeUseCaseImpl(get()) }
 }

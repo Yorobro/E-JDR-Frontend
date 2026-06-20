@@ -38,7 +38,7 @@ class AuthHttpRepositoryTest {
     private val config =
         AppConfig(
             baseUrl = "http://localhost:3000",
-            dataDir = tmpDir,
+            dataDir = tmpDir.absolutePath,
             enableHttpLogging = false,
         )
     private val cookiesStorage =

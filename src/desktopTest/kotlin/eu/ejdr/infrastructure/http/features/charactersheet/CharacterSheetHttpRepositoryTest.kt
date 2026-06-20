@@ -30,7 +30,7 @@ class CharacterSheetHttpRepositoryTest {
     private val tmpDir = Files.createTempDirectory("ejdr-sheet-test").toFile()
     private val config = AppConfig(
         baseUrl = "http://localhost:3000",
-        dataDir = tmpDir,
+        dataDir = tmpDir.absolutePath,
         enableHttpLogging = false,
     )
 
