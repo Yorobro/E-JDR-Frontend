@@ -285,4 +285,80 @@ class AuthHttpRepositoryTest {
             assertIs<Result.Failure<*>>(result)
             assertEquals(AuthError.Network, result.error)
         }
+
+    @Test
+    fun `changeEmail success returns Unit`() =
+        runTest {
+            val repo = repository(clientReturning(HttpStatusCode.OK, "{}"))
+
+            val result = repo.changeEmail("new@test.com")
+
+            assertIs<Result.Success<Unit>>(result)
+        }
+
+    @Test
+    fun `changeEmail 409 EMAIL_ALREADY_USED maps to EmailAlreadyUsed`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(HttpStatusCode.Conflict, """{"code":"EMAIL_ALREADY_USED"}"""),
+                )
+
+            val result = repo.changeEmail("taken@test.com")
+
+            assertIs<Result.Failure<AuthError>>(result)
+            assertEquals(AuthError.EmailAlreadyUsed, result.error)
+        }
+
+    @Test
+    fun `changeEmail 400 INVALID_EMAIL maps to InvalidEmail`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(HttpStatusCode.BadRequest, """{"code":"INVALID_EMAIL"}"""),
+                )
+
+            val result = repo.changeEmail("not-an-email")
+
+            assertIs<Result.Failure<AuthError>>(result)
+            assertEquals(AuthError.InvalidEmail, result.error)
+        }
+
+    @Test
+    fun `changePassword success returns Unit`() =
+        runTest {
+            val repo = repository(clientReturning(HttpStatusCode.OK, "{}"))
+
+            val result = repo.changePassword("oldPass1!", "newPass2@")
+
+            assertIs<Result.Success<Unit>>(result)
+        }
+
+    @Test
+    fun `changePassword 401 INVALID_CREDENTIALS maps to InvalidCredentials`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(HttpStatusCode.Unauthorized, """{"code":"INVALID_CREDENTIALS"}"""),
+                )
+
+            val result = repo.changePassword("wrongOld", "newPass2@")
+
+            assertIs<Result.Failure<AuthError>>(result)
+            assertEquals(AuthError.InvalidCredentials, result.error)
+        }
+
+    @Test
+    fun `changePassword 400 WEAK_PASSWORD maps to WeakPassword`() =
+        runTest {
+            val repo =
+                repository(
+                    clientReturning(HttpStatusCode.BadRequest, """{"code":"WEAK_PASSWORD"}"""),
+                )
+
+            val result = repo.changePassword("oldPass1!", "weak")
+
+            assertIs<Result.Failure<AuthError>>(result)
+            assertEquals(AuthError.WeakPassword, result.error)
+        }
 }

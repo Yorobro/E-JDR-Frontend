@@ -58,6 +58,25 @@ interface AuthRepository {
     suspend fun me(): Result<User, AuthError>
 
     /**
+     * Modifie l'adresse e-mail de l'utilisateur connecté (`PATCH /me/email`).
+     *
+     * @param newEmail Nouvelle adresse e-mail souhaitée.
+     * @return [eu.ejdr.application.shared.Result.Success] avec [Unit] si la modification est acceptée,
+     * sinon une [AuthError] ([AuthError.EmailAlreadyUsed], [AuthError.InvalidEmail], etc.).
+     */
+    suspend fun changeEmail(newEmail: String): Result<Unit, AuthError>
+
+    /**
+     * Modifie le mot de passe de l'utilisateur connecté (`PATCH /me/password`).
+     *
+     * @param currentPassword Mot de passe actuel pour vérification.
+     * @param newPassword Nouveau mot de passe souhaité.
+     * @return [eu.ejdr.application.shared.Result.Success] avec [Unit] si la modification est acceptée,
+     * sinon une [AuthError] ([AuthError.InvalidCredentials], [AuthError.WeakPassword], etc.).
+     */
+    suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit, AuthError>
+
+    /**
      * Indique si une session est persistée localement (sans la valider auprès du serveur).
      *
      * @return `true` si des informations de session existent localement, `false` sinon
