@@ -1,9 +1,11 @@
 package eu.ejdr.presentation.features.charactersheet
 
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
 import eu.ejdr.application.shared.Result
+import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import kotlinx.coroutines.Dispatchers
@@ -33,17 +35,29 @@ class MyCharacterSheetsViewModelTest {
     private fun sheet(id: String, name: String = "Sheet $id") =
         CharacterSheet(id = id, ownerId = "u-1", name = name, createdAt = "2026-06-13T10:00:00.000Z")
 
+    private fun buildVm(
+        activeGroupId: String? = "g-1",
+        listSheets: ListCharacterSheetsUseCase = ListCharacterSheetsUseCase { Result.Success(emptyList()) },
+        createSheet: CreateCharacterSheetUseCase = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
+        deleteSheet: DeleteCharacterSheetUseCase = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+        getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com")) },
+    ) = MyCharacterSheetsViewModel(
+        activeGroupId = MutableStateFlow(activeGroupId),
+        listSheets = listSheets,
+        createSheet = createSheet,
+        deleteSheet = deleteSheet,
+        getCurrentUser = getCurrentUser,
+    )
+
     @Test
     fun `loads sheets of the active group at init`() = runTest {
         var requestedGroup: String? = null
-        val vm = MyCharacterSheetsViewModel(
-            activeGroupId = MutableStateFlow("g-1"),
+        val vm = buildVm(
+            activeGroupId = "g-1",
             listSheets = ListCharacterSheetsUseCase { groupId ->
                 requestedGroup = groupId
                 Result.Success(listOf(sheet("s-1")))
             },
-            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
-            deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
         )
         advanceUntilIdle()
 
@@ -57,11 +71,9 @@ class MyCharacterSheetsViewModelTest {
     @Test
     fun `no active group flags onboarding and does not call the use case`() = runTest {
         var called = false
-        val vm = MyCharacterSheetsViewModel(
-            activeGroupId = MutableStateFlow(null),
+        val vm = buildVm(
+            activeGroupId = null,
             listSheets = ListCharacterSheetsUseCase { called = true; Result.Success(emptyList()) },
-            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
-            deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
         )
         advanceUntilIdle()
 
@@ -78,6 +90,7 @@ class MyCharacterSheetsViewModelTest {
             listSheets = ListCharacterSheetsUseCase { groupId -> Result.Success(listOf(sheet(groupId))) },
             createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com")) },
         )
         advanceUntilIdle()
         assertEquals("g-1", vm.sheets.value.first().id)
@@ -90,11 +103,8 @@ class MyCharacterSheetsViewModelTest {
 
     @Test
     fun `exposes error when listing fails`() = runTest {
-        val vm = MyCharacterSheetsViewModel(
-            activeGroupId = MutableStateFlow("g-1"),
+        val vm = buildVm(
             listSheets = ListCharacterSheetsUseCase { Result.Failure(CharacterSheetError.Network) },
-            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
-            deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
         )
         advanceUntilIdle()
 
@@ -105,15 +115,13 @@ class MyCharacterSheetsViewModelTest {
     fun `create uses the active group and reloads the list`() = runTest {
         var createdGroup: String? = null
         var listing = listOf(sheet("s-1"))
-        val vm = MyCharacterSheetsViewModel(
-            activeGroupId = MutableStateFlow("g-1"),
+        val vm = buildVm(
             listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
             createSheet = CreateCharacterSheetUseCase { name, groupId ->
                 createdGroup = groupId
                 listing = listing + sheet("s-2", name)
                 Result.Success(sheet("s-2", name))
             },
-            deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
         )
         advanceUntilIdle()
 
@@ -128,10 +136,8 @@ class MyCharacterSheetsViewModelTest {
     @Test
     fun `delete success reloads the list`() = runTest {
         var listing = listOf(sheet("s-1"), sheet("s-2"))
-        val vm = MyCharacterSheetsViewModel(
-            activeGroupId = MutableStateFlow("g-1"),
+        val vm = buildVm(
             listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
-            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { id ->
                 listing = listing.filterNot { it.id == id }
                 Result.Success(Unit)
@@ -144,5 +150,15 @@ class MyCharacterSheetsViewModelTest {
 
         assertEquals(1, vm.sheets.value.size)
         assertEquals("s-2", vm.sheets.value.first().id)
+    }
+
+    @Test
+    fun `currentUserId expose l'id de l'utilisateur courant après chargement`() = runTest {
+        val vm = buildVm(
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-42", "u42@test.com")) },
+        )
+        advanceUntilIdle()
+
+        assertEquals("u-42", vm.currentUserId.value)
     }
 }

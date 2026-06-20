@@ -14,6 +14,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
@@ -78,6 +79,7 @@ fun CharacterSheetDetailPage(
             listSheetReferences = get<ListSheetReferencesUseCase>(),
             linkSheetReference = get<LinkSheetReferenceUseCase>(),
             unlinkSheetReference = get<UnlinkSheetReferenceUseCase>(),
+            getCurrentUser = get<GetCurrentUserUseCase>(),
         )
     }
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
@@ -86,6 +88,8 @@ fun CharacterSheetDetailPage(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
+    val isOwner by viewModel.isOwner.collectAsStateWithLifecycle()
+    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
     val formations by viewModel.formations.collectAsStateWithLifecycle()
     val peoples by viewModel.peoples.collectAsStateWithLifecycle()
     val linked by viewModel.linked.collectAsStateWithLifecycle()
@@ -115,6 +119,7 @@ fun CharacterSheetDetailPage(
                 isEditing = isEditing,
                 isSaving = isLoading,
                 isExporting = isExporting,
+                canModify = canEdit || isOwner,
                 onStartEdit = viewModel::startEdit,
                 onCancelEdit = viewModel::cancelEdit,
                 onSave = viewModel::save,
@@ -138,6 +143,7 @@ private fun CharacterSheetDetailContent(
     isEditing: Boolean,
     isSaving: Boolean,
     isExporting: Boolean,
+    canModify: Boolean,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSave: (CharacterSheet) -> Unit,
@@ -155,6 +161,7 @@ private fun CharacterSheetDetailContent(
             isSaving = isSaving,
             isExporting = isExporting,
             canSave = form.isNameValid,
+            canModify = canModify,
             onStartEdit = onStartEdit,
             onCancelEdit = onCancelEdit,
             onSave = { onSave(form.toCharacterSheet()) },
@@ -184,13 +191,14 @@ private fun DetailActionBar(
     isSaving: Boolean,
     isExporting: Boolean,
     canSave: Boolean,
+    canModify: Boolean,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSave: () -> Unit,
     onExport: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
-        if (isEditing) {
+        if (canModify && isEditing) {
             AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary)
             AppButton(
                 label = "Enregistrer",
@@ -199,8 +207,12 @@ private fun DetailActionBar(
                 loading = isSaving,
                 modifier = Modifier.fillMaxWidth(),
             )
-        } else {
-            AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
+        }
+        // Hors édition : « Modifier » (si autorisé) et « Exporter » (toujours, c'est une lecture).
+        if (!isEditing) {
+            if (canModify) {
+                AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
+            }
             AppButton(
                 label = "Exporter",
                 onClick = onExport,

@@ -46,3 +46,11 @@ data class AuthResponseDto(val userId: String, val email: String)
  */
 @Serializable
 data class ApiErrorDto(val code: String? = null, val message: String? = null)
+
+/** Corps de requête envoyé au serveur pour changer l'adresse e-mail (`PATCH /me/email`). */
+@Serializable
+data class ChangeEmailRequestDto(val email: String)
+
+/** Corps de requête envoyé au serveur pour changer le mot de passe (`PATCH /me/password`). */
+@Serializable
+data class ChangePasswordRequestDto(val currentPassword: String, val newPassword: String)

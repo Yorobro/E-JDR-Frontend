@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -21,6 +22,7 @@ import eu.ejdr.domain.features.friendgroup.entities.FriendGroup
 import eu.ejdr.domain.features.friendgroup.entities.GroupInvitation
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
 import eu.ejdr.presentation.shared.component.atomic.AppButton
+import eu.ejdr.presentation.shared.component.atomic.AppDropdown
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
@@ -128,14 +130,14 @@ fun InviteMemberDialog(
  *
  * Composant bête : affiche l'identité du membre et son rôle, et expose les actions de gestion
  * uniquement quand l'utilisateur courant est administrateur ([canManageRole]) :
- * promouvoir un membre en admin ou rétrograder un admin en membre. Le retrait reste régi par
+ * sélecteur 3 rôles (ADMIN / MJ / MEMBER). Le retrait reste régi par
  * [canRemove] (calculé par l'appelant, ex. ne pas pouvoir retirer le dernier membre).
  *
- * @param member Membre affiché (rôle `"ADMIN"` ou `"MEMBER"`).
+ * @param member Membre affiché (rôle `"ADMIN"`, `"MJ"` ou `"MEMBER"`).
  * @param canRemove Affiche le bouton « Retirer » si vrai.
- * @param canManageRole Affiche le bouton de changement de rôle si vrai (admin uniquement).
+ * @param canManageRole Affiche le sélecteur de rôle si vrai (admin uniquement).
  * @param onRemove Callback de retrait du membre.
- * @param onChangeRole Callback de changement de rôle ; reçoit le nouveau rôle (`"ADMIN"`/`"MEMBER"`).
+ * @param onChangeRole Callback de changement de rôle ; reçoit le nouveau rôle (`"ADMIN"`/`"MJ"`/`"MEMBER"`).
  */
 @Composable
 fun MemberCard(
@@ -146,7 +148,6 @@ fun MemberCard(
     onChangeRole: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val isAdmin = member.role == "ADMIN"
     Card(
         modifier = modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(containerColor = AppTheme.colors.beige),
@@ -164,17 +165,22 @@ fun MemberCard(
                     style = AppTextStyle.Body,
                 )
                 AppText(
-                    text = if (isAdmin) "Admin" else "Membre",
+                    text = roleLabel(member.role),
                     style = AppTextStyle.Body,
                     color = AppTheme.colors.textSecondary,
                 )
             }
             Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs)) {
                 if (canManageRole) {
-                    AppButton(
-                        label = if (isAdmin) "Rétrograder" else "Promouvoir admin",
-                        onClick = { onChangeRole(if (isAdmin) "MEMBER" else "ADMIN") },
-                        variant = ButtonVariant.Ghost,
+                    AppDropdown(
+                        value = roleLabel(member.role),
+                        options = listOf("Admin", "MJ", "Membre"),
+                        onSelect = { label ->
+                            val newRole = roleValue(label)
+                            if (newRole != member.role) onChangeRole(newRole)
+                        },
+                        label = "Rôle",
+                        modifier = Modifier.width(140.dp),
                     )
                 }
                 if (canRemove) {
@@ -183,6 +189,20 @@ fun MemberCard(
             }
         }
     }
+}
+
+private fun roleLabel(role: String): String = when (role) {
+    "ADMIN" -> "Admin"
+    "MJ" -> "MJ"
+    "MEMBER" -> "Membre"
+    else -> role
+}
+
+private fun roleValue(label: String): String = when (label) {
+    "Admin" -> "ADMIN"
+    "MJ" -> "MJ"
+    "Membre" -> "MEMBER"
+    else -> label
 }
 
 @Composable

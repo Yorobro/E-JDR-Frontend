@@ -56,6 +56,7 @@ fun CampaignListPage(
     modifier: Modifier = Modifier,
 ) {
     val activeGroupState = koinInject<ActiveGroupState>()
+    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
     val viewModel = koinViewModel {
         CampaignListViewModel(
             activeGroupState.activeGroupId,
@@ -91,18 +92,21 @@ fun CampaignListPage(
                 CampaignGrid(
                     campaigns = campaigns,
                     isLoading = isLoading,
+                    canEdit = canEdit,
                     onOpenCampaign = onOpenCampaign,
                     onDeleteRequest = { pendingDelete = it },
                 )
             }
 
-            AppFab(
-                onClick = { showCreate = true },
-                contentDescription = "Ajouter une campagne",
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(AppTheme.dimens.xl),
-            )
+            if (canEdit) {
+                AppFab(
+                    onClick = { showCreate = true },
+                    contentDescription = "Ajouter une campagne",
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(AppTheme.dimens.xl),
+                )
+            }
         }
     }
 
@@ -143,6 +147,7 @@ fun CampaignListPage(
 private fun CampaignGrid(
     campaigns: List<Campaign>,
     isLoading: Boolean,
+    canEdit: Boolean,
     onOpenCampaign: (id: String, name: String) -> Unit,
     onDeleteRequest: (Campaign) -> Unit,
 ) {
@@ -176,7 +181,7 @@ private fun CampaignGrid(
                     CampaignCard(
                         campaign = campaign,
                         onClick = { onOpenCampaign(campaign.id, campaign.name) },
-                        onDelete = { onDeleteRequest(campaign) },
+                        onDelete = if (canEdit) ({ onDeleteRequest(campaign) }) else null,
                     )
                 }
             }

@@ -2,9 +2,11 @@ package eu.ejdr.presentation.features.charactersheet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,6 +32,7 @@ class MyCharacterSheetsViewModel(
     private val listSheets: ListCharacterSheetsUseCase,
     private val createSheet: CreateCharacterSheetUseCase,
     private val deleteSheet: DeleteCharacterSheetUseCase,
+    private val getCurrentUser: GetCurrentUserUseCase,
 ) : ViewModel() {
 
     private val _sheets = MutableStateFlow<List<CharacterSheet>>(emptyList())
@@ -45,9 +48,18 @@ class MyCharacterSheetsViewModel(
     private val _needsGroup = MutableStateFlow(false)
     val needsGroup: StateFlow<Boolean> = _needsGroup.asStateFlow()
 
+    private val _currentUserId = MutableStateFlow<String?>(null)
+    val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
+
     init {
         viewModelScope.launch {
             activeGroupId.collect { groupId -> reload(groupId) }
+        }
+        viewModelScope.launch {
+            when (val r = getCurrentUser()) {
+                is Result.Success -> _currentUserId.value = r.value.id
+                is Result.Failure -> Unit
+            }
         }
     }
 

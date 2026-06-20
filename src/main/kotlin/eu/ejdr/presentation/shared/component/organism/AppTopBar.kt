@@ -20,21 +20,18 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
-import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
  * Organisme barre de navigation supérieure (top bar) de la zone connectée.
  *
  * Composant bête : affiche le titre à gauche (précédé d'un bouton retour si [onBack] est fourni)
- * et les actions à droite (icône paramètres si [onSettings] est fourni, puis déconnexion).
+ * et les actions à droite (icônes de navigation).
  *
  * @param title Titre affiché à gauche.
- * @param onLogout Callback déclenché au clic sur le bouton de déconnexion.
  * @param modifier Modifier Compose appliqué à la barre.
  * @param onCampaigns Callback pour ouvrir les campagnes ; si `null`, l'icône est masquée.
  * @param onCharacterSheets Callback pour ouvrir les fiches ; si `null`, l'icône est masquée.
@@ -47,7 +44,6 @@ import eu.ejdr.presentation.shared.theme.AppTheme
 @Composable
 fun AppTopBar(
     title: String,
-    onLogout: () -> Unit,
     modifier: Modifier = Modifier,
     onCampaigns: (() -> Unit)? = null,
     onCharacterSheets: (() -> Unit)? = null,
@@ -88,11 +84,6 @@ fun AppTopBar(
             TopBarAction(onGroups, Icons.Default.Group, "Mes groupes")
             TopBarAction(onInvitations, Icons.Default.MailOutline, "Invitations")
             TopBarAction(onSettings, Icons.Default.Settings, "Paramètres")
-            AppButton(
-                label = "Déconnexion",
-                onClick = onLogout,
-                variant = ButtonVariant.Text,
-            )
         }
     }
 }

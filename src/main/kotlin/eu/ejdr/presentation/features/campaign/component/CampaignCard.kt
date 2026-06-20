@@ -42,7 +42,7 @@ private val CardHeight = 140.dp
 fun CampaignCard(
     campaign: Campaign,
     onClick: () -> Unit,
-    onDelete: () -> Unit,
+    onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
@@ -64,15 +64,17 @@ fun CampaignCard(
                 .align(Alignment.Center)
                 .padding(horizontal = AppTheme.dimens.md),
         )
-        IconButton(
-            onClick = onDelete,
-            modifier = Modifier.align(Alignment.TopEnd),
-        ) {
-            AppIcon(
-                imageVector = Icons.Filled.Delete,
-                contentDescription = "Supprimer la campagne",
-                tint = AppTheme.colors.danger,
-            )
+        if (onDelete != null) {
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.align(Alignment.TopEnd),
+            ) {
+                AppIcon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Supprimer la campagne",
+                    tint = AppTheme.colors.danger,
+                )
+            }
         }
     }
 }

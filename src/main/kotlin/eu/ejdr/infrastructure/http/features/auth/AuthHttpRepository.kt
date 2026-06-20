@@ -11,10 +11,13 @@ import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.features.auth.dto.ApiErrorDto
 import eu.ejdr.infrastructure.http.features.auth.dto.AuthRequestDto
 import eu.ejdr.infrastructure.http.features.auth.dto.AuthResponseDto
+import eu.ejdr.infrastructure.http.features.auth.dto.ChangeEmailRequestDto
+import eu.ejdr.infrastructure.http.features.auth.dto.ChangePasswordRequestDto
 import eu.ejdr.infrastructure.http.features.auth.dto.RegisterRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.HttpStatusCode
@@ -167,6 +170,47 @@ class AuthHttpRepository(
                     val err = runCatchingCancellable { response.body<ApiErrorDto>() }.getOrNull()
                     Result.Failure(mapper.toAuthError(response.status, err?.code, err?.message))
                 }
+            }
+        }.getOrElse { Result.Failure(AuthError.Network) }
+
+    /**
+     * Modifie l'adresse e-mail de l'utilisateur connecté via `PATCH /me/email`.
+     *
+     * @param newEmail Nouvelle adresse e-mail souhaitée.
+     * @return [Result.Success] avec [Unit] si acceptée, sinon une [AuthError].
+     */
+    override suspend fun changeEmail(newEmail: String): Result<Unit, AuthError> =
+        runCatchingCancellable {
+            val response: HttpResponse = client.patch("${config.baseUrl}/me/email") {
+                contentType(ContentType.Application.Json)
+                setBody(ChangeEmailRequestDto(newEmail))
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(Unit)
+            } else {
+                val err = runCatchingCancellable { response.body<ApiErrorDto>() }.getOrNull()
+                Result.Failure(mapper.toAuthError(response.status, err?.code, err?.message))
+            }
+        }.getOrElse { Result.Failure(AuthError.Network) }
+
+    /**
+     * Modifie le mot de passe de l'utilisateur connecté via `PATCH /me/password`.
+     *
+     * @param currentPassword Mot de passe actuel pour vérification.
+     * @param newPassword Nouveau mot de passe souhaité.
+     * @return [Result.Success] avec [Unit] si accepté, sinon une [AuthError].
+     */
+    override suspend fun changePassword(currentPassword: String, newPassword: String): Result<Unit, AuthError> =
+        runCatchingCancellable {
+            val response: HttpResponse = client.patch("${config.baseUrl}/me/password") {
+                contentType(ContentType.Application.Json)
+                setBody(ChangePasswordRequestDto(currentPassword, newPassword))
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(Unit)
+            } else {
+                val err = runCatchingCancellable { response.body<ApiErrorDto>() }.getOrNull()
+                Result.Failure(mapper.toAuthError(response.status, err?.code, err?.message))
             }
         }.getOrElse { Result.Failure(AuthError.Network) }
 

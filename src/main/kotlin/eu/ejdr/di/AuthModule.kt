@@ -3,12 +3,16 @@ package eu.ejdr.di
 import eu.ejdr.application.features.auth.abstraction.repository.AuthRepository
 import eu.ejdr.application.features.auth.abstraction.service.SessionPersistence
 import eu.ejdr.application.features.auth.abstraction.service.SessionService
+import eu.ejdr.application.features.auth.abstraction.usecase.ChangeEmailUseCase
+import eu.ejdr.application.features.auth.abstraction.usecase.ChangePasswordUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.LoginUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RegisterUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
 import eu.ejdr.application.features.auth.service.SessionServiceImpl
+import eu.ejdr.application.features.auth.usecase.ChangeEmailUseCaseImpl
+import eu.ejdr.application.features.auth.usecase.ChangePasswordUseCaseImpl
 import eu.ejdr.application.features.auth.usecase.GetCurrentUserUseCaseImpl
 import eu.ejdr.application.features.auth.usecase.LoginUseCaseImpl
 import eu.ejdr.application.features.auth.usecase.LogoutUseCaseImpl
@@ -32,4 +36,6 @@ val authModule = module {
     single<RestoreSessionUseCase> { RestoreSessionUseCaseImpl(get()) }
     single<LogoutUseCase> { LogoutUseCaseImpl(get()) }
     single<GetCurrentUserUseCase> { GetCurrentUserUseCaseImpl(get()) }
+    single<ChangeEmailUseCase> { ChangeEmailUseCaseImpl(get()) }
+    single<ChangePasswordUseCase> { ChangePasswordUseCaseImpl(get()) }
 }

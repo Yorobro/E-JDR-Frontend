@@ -50,5 +50,5 @@ val friendGroupModule = module {
     single<GetActiveGroupIdUseCase> { GetActiveGroupIdUseCaseImpl(get()) }
     single<SetActiveGroupIdUseCase> { SetActiveGroupIdUseCaseImpl(get()) }
 
-    single { ActiveGroupState(get(), get()) }
+    single { ActiveGroupState(get(), get(), get()) }
 }

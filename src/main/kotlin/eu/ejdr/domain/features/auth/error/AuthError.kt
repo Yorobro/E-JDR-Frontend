@@ -28,6 +28,12 @@ sealed class AuthError(override val message: String) : DomainError {
     /** Échec de communication avec le serveur (connectivité, timeout). */
     data object Network : AuthError("Erreur réseau, vérifiez votre connexion.")
 
+    /** Le nouvel email fourni est syntaxiquement invalide. */
+    data object InvalidEmail : AuthError("L'adresse e-mail fournie est invalide.")
+
+    /** Le nouveau mot de passe ne respecte pas la politique de robustesse. */
+    data object WeakPassword : AuthError("Le mot de passe est trop faible.")
+
     /**
      * Erreur non catégorisée.
      *

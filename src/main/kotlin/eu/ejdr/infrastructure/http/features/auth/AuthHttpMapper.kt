@@ -42,6 +42,8 @@ object AuthHttpMapper {
             "EMAIL_ALREADY_USED" -> AuthError.EmailAlreadyUsed
             "INVALID_REFRESH_TOKEN" -> AuthError.SessionExpired
             "ACCOUNT_LOCKED" -> AuthError.AccountLocked
+            "INVALID_EMAIL" -> AuthError.InvalidEmail
+            "WEAK_PASSWORD" -> AuthError.WeakPassword
             else -> when (status) {
                 HttpStatusCode.Unauthorized -> AuthError.InvalidCredentials
                 HttpStatusCode.Conflict -> AuthError.EmailAlreadyUsed

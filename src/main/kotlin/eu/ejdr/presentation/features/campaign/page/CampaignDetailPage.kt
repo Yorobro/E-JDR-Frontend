@@ -26,6 +26,7 @@ import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUse
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.presentation.features.campaign.CampaignDetailViewModel
 import eu.ejdr.presentation.features.campaign.component.LinkCharacterDialog
+import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCard
 import eu.ejdr.presentation.features.session.component.CreateSessionDialog
 import eu.ejdr.presentation.features.session.component.SessionCard
@@ -35,6 +36,7 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import org.koin.compose.koinInject
 
 /**
  * Page détail d'une campagne (composant INTELLIGENT).
@@ -55,6 +57,8 @@ fun CampaignDetailPage(
     onOpenSession: (id: String, title: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val activeGroupState = koinInject<ActiveGroupState>()
+    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
     val viewModel = koinViewModel {
         CampaignDetailViewModel(
             campaignId = id,
@@ -86,13 +90,13 @@ fun CampaignDetailPage(
 
         CharactersSection(
             characters = characters,
-            onLinkRequest = { showLink = true },
+            onLinkRequest = if (canEdit) ({ showLink = true }) else null,
             onUnlink = viewModel::unlink,
         )
 
         SessionsSection(
             sessions = sessions,
-            onAddRequest = { showCreateSession = true },
+            onAddRequest = if (canEdit) ({ showCreateSession = true }) else null,
             onOpenSession = onOpenSession,
         )
     }
@@ -124,7 +128,7 @@ fun CampaignDetailPage(
 @Composable
 private fun CharactersSection(
     characters: List<CharacterSheet>,
-    onLinkRequest: () -> Unit,
+    onLinkRequest: (() -> Unit)?,
     onUnlink: (String) -> Unit,
 ) {
     AppText(
@@ -132,11 +136,13 @@ private fun CharactersSection(
         style = AppTextStyle.Subtitle,
         color = AppTheme.colors.textSecondary,
     )
-    AppButton(
-        label = "Rattacher une fiche",
-        onClick = onLinkRequest,
-        leadingIcon = Icons.Filled.Add,
-    )
+    if (onLinkRequest != null) {
+        AppButton(
+            label = "Rattacher une fiche",
+            onClick = onLinkRequest,
+            leadingIcon = Icons.Filled.Add,
+        )
+    }
     if (characters.isEmpty()) {
         AppText(
             text = "Aucune fiche rattachée.",
@@ -163,7 +169,7 @@ private fun CharactersSection(
 @Composable
 private fun SessionsSection(
     sessions: List<Session>,
-    onAddRequest: () -> Unit,
+    onAddRequest: (() -> Unit)?,
     onOpenSession: (id: String, title: String) -> Unit,
 ) {
     AppText(
@@ -172,11 +178,13 @@ private fun SessionsSection(
         color = AppTheme.colors.textSecondary,
         modifier = Modifier.padding(top = AppTheme.dimens.md),
     )
-    AppButton(
-        label = "Ajouter une session",
-        onClick = onAddRequest,
-        leadingIcon = Icons.Filled.Add,
-    )
+    if (onAddRequest != null) {
+        AppButton(
+            label = "Ajouter une session",
+            onClick = onAddRequest,
+            leadingIcon = Icons.Filled.Add,
+        )
+    }
     if (sessions.isEmpty()) {
         AppText(
             text = "Aucune session pour le moment.",

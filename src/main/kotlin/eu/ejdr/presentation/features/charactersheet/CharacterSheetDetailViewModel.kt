@@ -2,6 +2,7 @@ package eu.ejdr.presentation.features.charactersheet
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
@@ -11,6 +12,7 @@ import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetRefer
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
+import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.fold
 import eu.ejdr.application.shared.getOrElse
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
@@ -18,9 +20,12 @@ import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -53,10 +58,17 @@ class CharacterSheetDetailViewModel(
     private val listSheetReferences: ListSheetReferencesUseCase,
     private val linkSheetReference: LinkSheetReferenceUseCase,
     private val unlinkSheetReference: UnlinkSheetReferenceUseCase,
+    private val getCurrentUser: GetCurrentUserUseCase,
 ) : ViewModel() {
 
     private val _sheet = MutableStateFlow<CharacterSheet?>(null)
     val sheet: StateFlow<CharacterSheet?> = _sheet.asStateFlow()
+
+    private val _currentUserId = MutableStateFlow<String?>(null)
+
+    val isOwner: StateFlow<Boolean> =
+        combine(_sheet, _currentUserId) { sheet, uid -> sheet != null && uid != null && sheet.ownerId == uid }
+            .stateIn(viewModelScope, SharingStarted.Eagerly, false)
 
     private val _campaigns = MutableStateFlow<List<SheetCampaign>>(emptyList())
     val campaigns: StateFlow<List<SheetCampaign>> = _campaigns.asStateFlow()
@@ -95,6 +107,12 @@ class CharacterSheetDetailViewModel(
         // suivre le nouveau groupe. On ignore la valeur initiale (drop(1)) déjà couverte par load().
         viewModelScope.launch {
             activeGroupId.drop(1).collect { loadReferences() }
+        }
+        viewModelScope.launch {
+            when (val r = getCurrentUser()) {
+                is Result.Success -> _currentUserId.value = r.value.id
+                is Result.Failure -> Unit
+            }
         }
     }
 

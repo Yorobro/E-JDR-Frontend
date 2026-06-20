@@ -1,5 +1,6 @@
 package eu.ejdr.presentation.features.charactersheet
 
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
@@ -10,6 +11,7 @@ import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceI
 import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.application.shared.Result
+import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedReference
@@ -42,10 +44,10 @@ class CharacterSheetDetailViewModelTest {
 
     @AfterTest fun tearDown() = Dispatchers.resetMain()
 
-    private fun sheet(id: String = "s-1", name: String = "Aragorn", vigueur: Int? = null) =
+    private fun sheet(id: String = "s-1", name: String = "Aragorn", vigueur: Int? = null, ownerId: String = "u-owner") =
         CharacterSheet(
             id = id,
-            ownerId = "u-1",
+            ownerId = ownerId,
             name = name,
             createdAt = "2026-06-13T10:00:00.000Z",
             vigueur = vigueur,
@@ -67,6 +69,7 @@ class CharacterSheetDetailViewModelTest {
         listSheetReferences: ListSheetReferencesUseCase = ListSheetReferencesUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
         linkSheetReference: LinkSheetReferenceUseCase = LinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
         unlinkSheetReference: UnlinkSheetReferenceUseCase = UnlinkSheetReferenceUseCase { _, _, _ -> Result.Success(Unit) },
+        getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-owner", "owner@test.com")) },
     ) = CharacterSheetDetailViewModel(
         sheetId = "s-1",
         activeGroupId = MutableStateFlow(activeGroupId),
@@ -79,6 +82,7 @@ class CharacterSheetDetailViewModelTest {
         listSheetReferences = listSheetReferences,
         linkSheetReference = linkSheetReference,
         unlinkSheetReference = unlinkSheetReference,
+        getCurrentUser = getCurrentUser,
     )
 
     @Test
@@ -289,5 +293,27 @@ class CharacterSheetDetailViewModelTest {
             vm.linked.value[eu.ejdr.domain.features.reference.entities.ReferenceType.ARME],
         )
         assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `isOwner vrai quand l'utilisateur courant possède la fiche`() = runTest {
+        val vm = buildVm(
+            getById = GetCharacterSheetUseCase { Result.Success(sheet(ownerId = "u-owner")) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-owner", "owner@test.com")) },
+        )
+        advanceUntilIdle()
+
+        assertTrue(vm.isOwner.value)
+    }
+
+    @Test
+    fun `isOwner faux quand un autre utilisateur`() = runTest {
+        val vm = buildVm(
+            getById = GetCharacterSheetUseCase { Result.Success(sheet(ownerId = "u-owner")) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("autre", "autre@test.com")) },
+        )
+        advanceUntilIdle()
+
+        assertFalse(vm.isOwner.value)
     }
 }
