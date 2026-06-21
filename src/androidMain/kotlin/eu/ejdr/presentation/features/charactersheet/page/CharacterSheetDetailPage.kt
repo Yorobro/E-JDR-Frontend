@@ -42,6 +42,7 @@ import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.molecule.RemoteChangeBanner
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
@@ -86,6 +87,7 @@ fun CharacterSheetDetailPage(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val isOwner by viewModel.isOwner.collectAsStateWithLifecycle()
+    val sheetChangedRemotely by viewModel.sheetChangedRemotely.collectAsStateWithLifecycle()
     val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
     val formations by viewModel.formations.collectAsStateWithLifecycle()
     val peoples by viewModel.peoples.collectAsStateWithLifecycle()
@@ -107,6 +109,12 @@ fun CharacterSheetDetailPage(
     ) {
         AppText(text = name, style = AppTextStyle.Title)
         FormError(message = error)
+        if (sheetChangedRemotely) {
+            RemoteChangeBanner(
+                onReload = viewModel::reloadFromRemote,
+                onDismiss = viewModel::dismissRemoteChange,
+            )
+        }
 
         sheet?.let { loaded ->
             CharacterSheetDetailContent(
