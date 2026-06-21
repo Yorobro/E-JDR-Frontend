@@ -80,7 +80,6 @@ fun CharacterSheetDetailPage(
     val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()
     val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val isOwner by viewModel.isOwner.collectAsStateWithLifecycle()
     val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
@@ -112,12 +111,10 @@ fun CharacterSheetDetailPage(
                 refs = refs,
                 isEditing = isEditing,
                 isSaving = isLoading,
-                isExporting = isExporting,
                 canModify = canEdit || isOwner,
                 onStartEdit = viewModel::startEdit,
                 onCancelEdit = viewModel::cancelEdit,
                 onSave = viewModel::save,
-                onExport = viewModel::export,
             )
         }
     }
@@ -130,12 +127,10 @@ private fun CharacterSheetDetailContent(
     refs: SheetReferences,
     isEditing: Boolean,
     isSaving: Boolean,
-    isExporting: Boolean,
     canModify: Boolean,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSave: (CharacterSheet) -> Unit,
-    onExport: () -> Unit,
 ) {
     val form = remember(sheet) { CharacterSheetFormState(sheet) }
     var selectedTab by remember { mutableStateOf(0) }
@@ -147,13 +142,11 @@ private fun CharacterSheetDetailContent(
         DetailActionBar(
             isEditing = isEditing,
             isSaving = isSaving,
-            isExporting = isExporting,
             canSave = form.isNameValid,
             canModify = canModify,
             onStartEdit = onStartEdit,
             onCancelEdit = onCancelEdit,
             onSave = { onSave(form.toCharacterSheet()) },
-            onExport = onExport,
         )
         AppTabs(tabs = TabTitles, selectedIndex = selectedTab, onSelect = { selectedTab = it })
 
@@ -176,13 +169,11 @@ private fun CharacterSheetDetailContent(
 private fun DetailActionBar(
     isEditing: Boolean,
     isSaving: Boolean,
-    isExporting: Boolean,
     canSave: Boolean,
     canModify: Boolean,
     onStartEdit: () -> Unit,
     onCancelEdit: () -> Unit,
     onSave: () -> Unit,
-    onExport: () -> Unit,
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
         if (canModify && isEditing) {
@@ -195,16 +186,9 @@ private fun DetailActionBar(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-        if (!isEditing) {
-            if (canModify) {
-                AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
-            }
-            AppButton(
-                label = "Exporter",
-                onClick = onExport,
-                variant = ButtonVariant.Secondary,
-                loading = isExporting,
-            )
+        // Pas d'export PDF sur mobile : réservé au desktop (« Enregistrer sous »).
+        if (!isEditing && canModify) {
+            AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
         }
     }
 }
