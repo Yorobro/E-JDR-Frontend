@@ -14,10 +14,11 @@ import androidx.compose.ui.unit.Dp
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
- * Retour d'interaction partagé des cartes : scale au press, élévation au hover/press.
+ * Retour d'interaction partagé des cartes : **scale au press** (l'élévation hover/press est
+ * fournie séparément par [interactiveCardElevation]).
  *
  * Source unique de l'animation des cartes (pas de copie dans chaque carte). Lit les tokens
- * [AppTheme.motion]/[AppTheme.dimens]. Le press n'est animé que si [enabled] (carte cliquable)
+ * [AppTheme.motion]. Le press n'est animé que si [enabled] (carte cliquable)
  * — préserve l'accessibilité des tuiles non cliquables.
  */
 @Composable

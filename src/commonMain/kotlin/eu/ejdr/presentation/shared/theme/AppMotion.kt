@@ -17,6 +17,7 @@ import androidx.compose.animation.core.Easing
 data class AppMotion(
     val durationFast: Int = 120,
     val durationMedium: Int = 200,
+    /** Réservé à l'apparition des listes (Lot 2 UX) ; pas encore consommé. */
     val durationSlow: Int = 300,
     val easeStandard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f),
     val easeEmphasized: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f),
