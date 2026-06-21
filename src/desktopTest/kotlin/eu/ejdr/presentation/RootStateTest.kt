@@ -37,6 +37,7 @@ class RootStateTest {
         override val incoming = emptyFlow<RealtimeMessage>()
         override suspend fun connect() = Unit
         override suspend fun send(message: RealtimeMessage) = Unit
+        override suspend fun sendRaw(text: String) = Unit
         override suspend fun disconnect() = Unit
     }
 

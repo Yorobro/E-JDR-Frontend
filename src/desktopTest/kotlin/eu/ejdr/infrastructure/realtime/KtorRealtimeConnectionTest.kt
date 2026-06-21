@@ -38,6 +38,7 @@ class KtorRealtimeConnectionTest {
             return flow { scripts[index](this) }
         }
         override suspend fun send(message: RealtimeMessage) = Unit
+        override suspend fun sendRaw(text: String) = Unit
     }
 
     private fun TestScope.connection(

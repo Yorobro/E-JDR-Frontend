@@ -60,6 +60,11 @@ class KtorWebSocketTransport(
         ws.send(json.encodeToString(RealtimeEnvelopeDto.serializer(), message.toDto()))
     }
 
+    override suspend fun sendRaw(text: String) {
+        val ws = session ?: return // pas de session ⇒ no-op toléré
+        ws.send(text)
+    }
+
     private fun decode(text: String): RealtimeMessage {
         // Le backend envoie un JSON à plat {type, channel, resource, scopeId} (sans `payload`).
         // On conserve le `type` discriminant et on place le frame brut entier dans `payload`,
