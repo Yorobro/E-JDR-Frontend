@@ -4,6 +4,7 @@ import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetActiveGro
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.SetActiveGroupIdUseCase
 import eu.ejdr.application.shared.fold
+import eu.ejdr.domain.features.friendgroup.error.FriendGroupError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -13,7 +14,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+
+/** Nombre de réessais et délai (ms) du chargement initial du rôle, le temps que la session se restaure. */
+private const val RoleRetries = 3
+private const val RoleRetryDelayMs = 700L
 
 /**
  * État global du groupe actif (sélecteur workspace, D9).
@@ -44,10 +50,23 @@ class ActiveGroupState(
         scope.launch {
             val id = getActiveGroupId()
             _activeGroupId.value = id
-            val role = loadRole(id)
-            if (id != null && role == null) {
-                _activeGroupId.value = null
-                setActiveGroupId(null)
+            if (id != null) {
+                // Au démarrage, l'auto-login (/auth/refresh) peut ne pas être terminé : le premier
+                // chargement du rôle peut alors échouer en 401 (transitoire). On réessaie quelques
+                // fois avant de conclure, pour laisser la session se restaurer.
+                var outcome = loadRole(id)
+                var attempts = 0
+                while (outcome == RoleOutcome.Transient && attempts < RoleRetries) {
+                    attempts++
+                    delay(RoleRetryDelayMs)
+                    outcome = loadRole(id)
+                }
+                // N'effacer le groupe persisté QUE s'il est réellement invalide (supprimé, ou on
+                // n'en est plus membre). Un échec transitoire ne doit PAS détruire le groupe actif.
+                if (outcome == RoleOutcome.Invalid) {
+                    _activeGroupId.value = null
+                    setActiveGroupId(null)
+                }
             }
         }
     }
@@ -60,9 +79,27 @@ class ActiveGroupState(
         }
     }
 
-    private suspend fun loadRole(id: String?): String? {
-        val role = if (id == null) null else getGroup(id).fold(onSuccess = { it.myRole }, onFailure = { null })
-        _activeGroupRole.value = role
-        return role
+    /** Issue du chargement du rôle, pour décider si le groupe persisté doit être conservé. */
+    private enum class RoleOutcome { Ok, Invalid, Transient }
+
+    private suspend fun loadRole(id: String?): RoleOutcome {
+        if (id == null) {
+            _activeGroupRole.value = null
+            return RoleOutcome.Ok
+        }
+        return getGroup(id).fold(
+            onSuccess = { detail ->
+                _activeGroupRole.value = detail.myRole
+                RoleOutcome.Ok
+            },
+            onFailure = { error ->
+                _activeGroupRole.value = null
+                // Groupe réellement invalide (supprimé / plus membre) vs panne transitoire.
+                when (error) {
+                    is FriendGroupError.NotFound, is FriendGroupError.NotMember -> RoleOutcome.Invalid
+                    else -> RoleOutcome.Transient
+                }
+            },
+        )
     }
 }
