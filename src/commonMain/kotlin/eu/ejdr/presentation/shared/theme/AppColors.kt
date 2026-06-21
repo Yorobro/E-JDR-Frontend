@@ -85,11 +85,3 @@ fun grimoireColors(): AppColors = AppColors(
     onDanger = GrimoirePalette.onDanger,
     isDark = true,
 )
-
-// Deprecated stubs retained for App.kt/AppTheme.kt until Task 3+4 refactor them.
-// TODO: Remove after Task 3 refactors App.kt and Task 4 refactors AppTheme.kt.
-@Deprecated("Use parchmentColors(), taupeColors(), or grimoireColors() instead. Task 3+4 will remove.")
-fun lightColors(): AppColors = taupeColors()
-
-@Deprecated("Use grimoireColors() instead. Task 3+4 will remove.")
-fun darkColors(): AppColors = grimoireColors()
