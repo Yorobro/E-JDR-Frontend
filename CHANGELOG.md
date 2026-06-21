@@ -1,3 +1,18 @@
+## [1.21.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.20.0...v1.21.0) (2026-06-21)
+
+
+### Features
+
+* **realtime:** bandeau de modification distante sur le détail de fiche ([e1c8888](https://github.com/Yorobro/E-JDR-Frontend/commit/e1c8888f60f8dfe0c9daed2dd5ced3bc216024ec))
+* **realtime:** envoi de frames de contrôle bruts (sendRaw) pour subscribe ([b10cf34](https://github.com/Yorobro/E-JDR-Frontend/commit/b10cf344fe98878aef64396ac9477be4ef61e01f))
+* **realtime:** rendre le detail de fiche reactif aux invalidations sheet ([20c74d7](https://github.com/Yorobro/E-JDR-Frontend/commit/20c74d7657efaf4e53127f6127d780af6be464f1))
+* **realtime:** service d'abonnement central avec re-souscription à la reconnexion ([e878fb2](https://github.com/Yorobro/E-JDR-Frontend/commit/e878fb2077a81928ed3a2480c79430091f24629f))
+
+
+### Bug Fixes
+
+* **realtime:** le bandeau de modification distante ne survit plus à la sortie d'édition ([dfe8ec0](https://github.com/Yorobro/E-JDR-Frontend/commit/dfe8ec090a75b8058335f743fd06d791c67a523a))
+
 ## [1.20.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.19.0...v1.20.0) (2026-06-21)
 
 
