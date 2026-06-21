@@ -4,10 +4,12 @@ import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCa
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -41,12 +43,14 @@ class MyCharacterSheetsViewModelTest {
         createSheet: CreateCharacterSheetUseCase = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
         deleteSheet: DeleteCharacterSheetUseCase = DeleteCharacterSheetUseCase { Result.Success(Unit) },
         getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com", "current")) },
+        invalidationBus: InvalidationBus = InMemoryInvalidationBus(),
     ) = MyCharacterSheetsViewModel(
         activeGroupId = MutableStateFlow(activeGroupId),
         listSheets = listSheets,
         createSheet = createSheet,
         deleteSheet = deleteSheet,
         getCurrentUser = getCurrentUser,
+        invalidationBus = invalidationBus,
     )
 
     @Test
@@ -91,6 +95,7 @@ class MyCharacterSheetsViewModelTest {
             createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
             getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com", "current")) },
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
         assertEquals("g-1", vm.sheets.value.first().id)

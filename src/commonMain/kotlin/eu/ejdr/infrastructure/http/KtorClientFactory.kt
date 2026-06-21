@@ -11,6 +11,7 @@ import io.ktor.client.plugins.cookies.HttpCookies
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.plugin
+import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.HttpMethod
 import io.ktor.http.HttpStatusCode
@@ -35,6 +36,8 @@ class KtorClientFactory(
             install(ContentNegotiation) {
                 json(Json { ignoreUnknownKeys = true; isLenient = true })
             }
+            // Temps réel : la connexion WebSocket partage ce client (cookies de session inclus).
+            install(WebSockets)
             if (config.enableHttpLogging) {
                 install(Logging) { level = LogLevel.INFO }
             }
