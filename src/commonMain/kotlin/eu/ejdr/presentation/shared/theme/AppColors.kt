@@ -38,34 +38,58 @@ data class AppColors(
     val isDark: Boolean,
 )
 
-/** Palette claire par défaut (gris/beige, accent taupe). */
-fun lightColors(): AppColors = AppColors(
-    background = Color(0xFFFAF8F4),
-    surface = Color(0xFFEFE9E1),
-    beige = Color(0xFFDDD5C8),
-    border = Color(0xFFB8AF9D),
-    muted = Color(0xFF8A8275),
-    textSecondary = Color(0xFF5B554C),
-    text = Color(0xFF33302B),
-    primary = Color(0xFF5B554C),
-    onPrimary = Color(0xFFFFFFFF),
-    danger = Color(0xFFA13D33),
-    onDanger = Color(0xFFFFFFFF),
+/** Thème Parchemin — clair, chaleureux (beige + sceau de cire). */
+fun parchmentColors(): AppColors = AppColors(
+    background = ParchmentPalette.parchment,
+    surface = ParchmentPalette.vellum,
+    beige = ParchmentPalette.sand,
+    border = ParchmentPalette.oak,
+    muted = ParchmentPalette.faded,
+    textSecondary = ParchmentPalette.sepia,
+    text = ParchmentPalette.ink,
+    primary = ParchmentPalette.bole,
+    onPrimary = ParchmentPalette.onAccent,
+    danger = ParchmentPalette.rust,
+    onDanger = ParchmentPalette.onAccent,
     isDark = false,
 )
 
-/** Palette sombre (même vibe gris/beige chaud, luminosité inversée). */
-fun darkColors(): AppColors = AppColors(
-    background = Color(0xFF1C1A16),
-    surface = Color(0xFF252119),
-    beige = Color(0xFF332E27),
-    border = Color(0xFF4A4540),
-    muted = Color(0xFF736D65),
-    textSecondary = Color(0xFFADA79E),
-    text = Color(0xFFEDE8E1),
-    primary = Color(0xFFB8AF9D),
-    onPrimary = Color(0xFF1C1A16),
-    danger = Color(0xFFC04D43),
-    onDanger = Color(0xFFFFFFFF),
+/** Thème Taupe — clair, minimaliste (gris/beige neutre, surfaces blanches). */
+fun taupeColors(): AppColors = AppColors(
+    background = TaupePalette.background,
+    surface = TaupePalette.surface,
+    beige = TaupePalette.beige,
+    border = TaupePalette.border,
+    muted = TaupePalette.faded,
+    textSecondary = TaupePalette.sepia,
+    text = TaupePalette.ink,
+    primary = TaupePalette.taupe,
+    onPrimary = TaupePalette.onAccent,
+    danger = TaupePalette.rust,
+    onDanger = TaupePalette.onAccent,
+    isDark = false,
+)
+
+/** Thème Grimoire — sombre, premium (brun-noir chaud, accent laiton). */
+fun grimoireColors(): AppColors = AppColors(
+    background = GrimoirePalette.background,
+    surface = GrimoirePalette.surface,
+    beige = GrimoirePalette.raised,
+    border = GrimoirePalette.border,
+    muted = GrimoirePalette.faded,
+    textSecondary = GrimoirePalette.sepia,
+    text = GrimoirePalette.cream,
+    primary = GrimoirePalette.brass,
+    onPrimary = GrimoirePalette.onAccent,
+    danger = GrimoirePalette.ember,
+    onDanger = GrimoirePalette.onDanger,
     isDark = true,
 )
+
+// Deprecated stubs retained for App.kt/AppTheme.kt until Task 3+4 refactor them.
+// TODO: Remove after Task 3 refactors App.kt and Task 4 refactors AppTheme.kt.
+@Deprecated("Use parchmentColors(), taupeColors(), or grimoireColors() instead. Task 3+4 will remove.")
+fun lightColors(): AppColors = taupeColors()
+
+@Deprecated("Use grimoireColors() instead. Task 3+4 will remove.")
+fun darkColors(): AppColors = grimoireColors()
