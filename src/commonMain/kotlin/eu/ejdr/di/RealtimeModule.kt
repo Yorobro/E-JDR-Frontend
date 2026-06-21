@@ -4,8 +4,10 @@ import eu.ejdr.application.features.auth.abstraction.repository.AuthRepository
 import eu.ejdr.application.features.realtime.RealtimeCoordinator
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeConnection
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.shared.Result
 import eu.ejdr.infrastructure.config.AppConfig
+import eu.ejdr.infrastructure.realtime.DefaultRealtimeSubscriptions
 import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import eu.ejdr.infrastructure.realtime.KtorRealtimeConnection
 import eu.ejdr.infrastructure.realtime.KtorWebSocketTransport
@@ -42,11 +44,21 @@ val realtimeModule = module {
     }
 
     single<RealtimeConnection> {
-        KtorRealtimeConnection(scope = get(), transport = get())
+        val subsLazy = lazy { get<RealtimeSubscriptions>() }
+        KtorRealtimeConnection(
+            scope = get(),
+            transport = get(),
+            onReconnected = { subsLazy.value.resubscribeAll() },
+        )
     }
 
     // Bus d'invalidation : la couche realtime y publie, les ViewModels l'observent.
     single<InvalidationBus> { InMemoryInvalidationBus() }
+
+    // Registre central des abonnements : envoie subscribe/unsubscribe et réémet après reconnexion.
+    single<RealtimeSubscriptions> {
+        DefaultRealtimeSubscriptions(connection = get(), scope = get())
+    }
 
     // Coordinateur : connecte le WS et traduit les messages entrants en invalidations.
     // Démarré après authentification (cf. RootState), arrêté à la déconnexion.
