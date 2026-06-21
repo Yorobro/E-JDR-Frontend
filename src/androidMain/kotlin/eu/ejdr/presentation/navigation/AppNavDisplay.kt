@@ -24,6 +24,7 @@ import eu.ejdr.presentation.features.auth.authEntries
 import eu.ejdr.presentation.features.campaign.campaignEntries
 import eu.ejdr.presentation.features.charactersheet.characterSheetEntries
 import eu.ejdr.presentation.features.friendgroup.friendGroupEntries
+import eu.ejdr.presentation.features.reference.referenceEntries
 import eu.ejdr.presentation.features.session.sessionEntries
 import eu.ejdr.presentation.features.settings.settingsEntries
 import eu.ejdr.presentation.features.user.userEntries
@@ -81,6 +82,7 @@ fun AppNavDisplay(
                     characterSheetEntries(actions)
                     campaignEntries(actions)
                     sessionEntries(actions)
+                    referenceEntries(actions)
                 },
             )
         }
