@@ -31,6 +31,9 @@ import eu.ejdr.presentation.shared.theme.AppTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+/** Fenêtre d'anti double-clic : un 2e clic dans cet intervalle après un clic accepté est ignoré. */
+private const val CLICK_GUARD_WINDOW_MS = 400L
+
 /** Variantes visuelles de [AppButton]. */
 enum class ButtonVariant { Primary, Secondary, Text, Danger, Ghost }
 
@@ -86,7 +89,7 @@ fun AppButton(
             clickable = false
             onClick()
             scope.launch {
-                delay(400L)
+                delay(CLICK_GUARD_WINDOW_MS)
                 clickable = true
             }
         }
