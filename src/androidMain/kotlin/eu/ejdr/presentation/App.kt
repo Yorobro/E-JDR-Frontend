@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
+import eu.ejdr.application.features.realtime.RealtimeCoordinator
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
@@ -42,7 +43,8 @@ fun App() {
     val scope = rememberCoroutineScope()
     val getTheme = koinInject<GetThemeUseCase>()
     val restoreSession = koinInject<RestoreSessionUseCase>()
-    val rootState = remember { RootState(scope, getTheme, restoreSession) }
+    val realtimeCoordinator = koinInject<RealtimeCoordinator>()
+    val rootState = remember { RootState(scope, getTheme, restoreSession, realtimeCoordinator) }
     val themeVariant by rootState.theme.collectAsStateWithLifecycle()
 
     AppTheme(

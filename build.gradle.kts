@@ -104,6 +104,8 @@ kotlin {
                 implementation("io.ktor:ktor-client-content-negotiation:$ktorVersion")
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
                 implementation("io.ktor:ktor-client-logging:$ktorVersion")
+                // WebSockets (temps réel) — artefact multiplateforme, moteur fourni par chaque sourceset
+                implementation("io.ktor:ktor-client-websockets:$ktorVersion")
 
                 // Navigation 3
                 implementation("org.jetbrains.androidx.navigation3:navigation3-ui:$nav3Version")

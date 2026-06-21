@@ -6,6 +6,7 @@ import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCa
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
@@ -26,6 +27,8 @@ import kotlinx.coroutines.launch
  * @property listSheets Use case de listing (par groupe).
  * @property createSheet Use case de création (dans un groupe).
  * @property deleteSheet Use case de suppression.
+ * @property getCurrentUser Use case exposant l'utilisateur courant (pour distinguer ses fiches).
+ * @property invalidationBus Bus temps réel : recharge la liste à chaque invalidation « character-sheets ».
  */
 class MyCharacterSheetsViewModel(
     private val activeGroupId: StateFlow<String?>,
@@ -33,6 +36,7 @@ class MyCharacterSheetsViewModel(
     private val createSheet: CreateCharacterSheetUseCase,
     private val deleteSheet: DeleteCharacterSheetUseCase,
     private val getCurrentUser: GetCurrentUserUseCase,
+    private val invalidationBus: InvalidationBus,
 ) : ViewModel() {
 
     private val _sheets = MutableStateFlow<List<CharacterSheet>>(emptyList())
@@ -59,6 +63,15 @@ class MyCharacterSheetsViewModel(
             when (val r = getCurrentUser()) {
                 is Result.Success -> _currentUserId.value = r.value.id
                 is Result.Failure -> Unit
+            }
+        }
+        // Temps réel : recharge la liste dès qu'une invalidation « character-sheets » arrive
+        // (ex. une fiche créée/supprimée depuis un autre appareil du même utilisateur).
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                if (invalidation.resource == "character-sheets") {
+                    reload(activeGroupId.value)
+                }
             }
         }
     }

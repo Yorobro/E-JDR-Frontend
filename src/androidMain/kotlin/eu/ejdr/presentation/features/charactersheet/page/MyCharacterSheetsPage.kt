@@ -23,6 +23,7 @@ import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCa
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.features.charactersheet.MyCharacterSheetsViewModel
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCard
@@ -57,6 +58,7 @@ fun MyCharacterSheetsPage(
             get<CreateCharacterSheetUseCase>(),
             get<DeleteCharacterSheetUseCase>(),
             get<GetCurrentUserUseCase>(),
+            get<InvalidationBus>(),
         )
     }
     val sheets by viewModel.sheets.collectAsStateWithLifecycle()

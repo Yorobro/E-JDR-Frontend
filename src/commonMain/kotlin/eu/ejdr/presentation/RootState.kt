@@ -1,6 +1,7 @@
 package eu.ejdr.presentation
 
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
+import eu.ejdr.application.features.realtime.RealtimeCoordinator
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
@@ -28,11 +29,13 @@ enum class SessionStatus { Unknown, Authenticated, Unauthenticated }
  * @property scope Portée de coroutine qui pilote les chargements asynchrones.
  * @property getTheme Lecture du thème persisté (au démarrage).
  * @property restoreSession Tentative d'auto-login depuis la session persistée.
+ * @property realtimeCoordinator Connexion temps réel, démarrée/arrêtée selon la session.
  */
 class RootState(
     private val scope: CoroutineScope,
     getTheme: GetThemeUseCase,
     private val restoreSession: RestoreSessionUseCase,
+    private val realtimeCoordinator: RealtimeCoordinator,
 ) {
 
     private val _theme = MutableStateFlow(ThemeVariant.LIGHT)
@@ -43,6 +46,18 @@ class RootState(
 
     init {
         scope.launch { _theme.value = getTheme() }
+        // Pilote la connexion temps réel selon l'état de session : on (re)connecte une fois
+        // authentifié (auto-login OU connexion manuelle via onLoggedIn), on coupe sinon. Le
+        // coordinator est idempotent (start/stop répétables).
+        scope.launch {
+            _sessionStatus.collect { status ->
+                when (status) {
+                    SessionStatus.Authenticated -> realtimeCoordinator.start()
+                    SessionStatus.Unauthenticated -> realtimeCoordinator.stop()
+                    SessionStatus.Unknown -> Unit
+                }
+            }
+        }
     }
 
     /** Applique un nouveau thème (déjà persisté par la feature settings). */
