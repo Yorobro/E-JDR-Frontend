@@ -14,6 +14,7 @@ private val LocalAppColors = staticCompositionLocalOf<AppColors> {
 }
 private val LocalAppTypography = staticCompositionLocalOf { AppTypography() }
 private val LocalAppDimens = staticCompositionLocalOf { AppDimens() }
+private val LocalAppMotion = staticCompositionLocalOf { AppMotion() }
 
 /**
  * Point d'accès unique au design system depuis les composables.
@@ -29,6 +30,8 @@ object AppTheme {
         @Composable @ReadOnlyComposable get() = LocalAppTypography.current
     val dimens: AppDimens
         @Composable @ReadOnlyComposable get() = LocalAppDimens.current
+    val motion: AppMotion
+        @Composable @ReadOnlyComposable get() = LocalAppMotion.current
 }
 
 /**
@@ -47,12 +50,14 @@ fun AppTheme(
     colors: AppColors = colorsFor(eu.ejdr.domain.features.settings.entities.ThemeVariant.DEFAULT),
     typography: AppTypography = appTypography(),
     dimens: AppDimens = AppDimens(),
+    motion: AppMotion = AppMotion(),
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
         LocalAppColors provides colors,
         LocalAppTypography provides typography,
         LocalAppDimens provides dimens,
+        LocalAppMotion provides motion,
         // Couleur de contenu par défaut de l'app : les atomes qui s'appuient sur
         // LocalContentColor (ex. AppIcon sans tint explicite) héritent de `text`. Les
         // conteneurs Material (FAB, bouton…) la surchargent localement par leur contentColor.
