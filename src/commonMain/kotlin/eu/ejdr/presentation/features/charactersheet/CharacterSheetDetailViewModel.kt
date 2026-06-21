@@ -8,6 +8,8 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetReferenceUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
@@ -59,6 +61,8 @@ class CharacterSheetDetailViewModel(
     private val linkSheetReference: LinkSheetReferenceUseCase,
     private val unlinkSheetReference: UnlinkSheetReferenceUseCase,
     private val getCurrentUser: GetCurrentUserUseCase,
+    private val invalidationBus: InvalidationBus,
+    private val subscriptions: RealtimeSubscriptions,
 ) : ViewModel() {
 
     private val _sheet = MutableStateFlow<CharacterSheet?>(null)
@@ -100,6 +104,9 @@ class CharacterSheetDetailViewModel(
     private val _isExporting = MutableStateFlow(false)
     val isExporting: StateFlow<Boolean> = _isExporting.asStateFlow()
 
+    private val _sheetChangedRemotely = MutableStateFlow(false)
+    val sheetChangedRemotely: StateFlow<Boolean> = _sheetChangedRemotely.asStateFlow()
+
     init {
         load()
         // Si le groupe actif change pendant que la page reste ouverte (le VM est retenu par la
@@ -112,6 +119,18 @@ class CharacterSheetDetailViewModel(
             when (val r = getCurrentUser()) {
                 is Result.Success -> _currentUserId.value = r.value.id
                 is Result.Failure -> Unit
+            }
+        }
+        subscriptions.subscribe("sheet:$sheetId")
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                if (invalidation.resource == "character-sheet-detail" && invalidation.scopeId == sheetId) {
+                    if (_isEditing.value) {
+                        _sheetChangedRemotely.value = true
+                    } else {
+                        load()
+                    }
+                }
             }
         }
     }
@@ -204,6 +223,23 @@ class CharacterSheetDetailViewModel(
     fun cancelEdit() {
         _error.value = null
         _isEditing.value = false
+    }
+
+    /** Recharge depuis le serveur (perd les modifs en cours) et sort de l'édition. */
+    fun reloadFromRemote() {
+        _sheetChangedRemotely.value = false
+        _isEditing.value = false
+        load()
+    }
+
+    /** Ignore la modification distante : garde la saisie en cours, baisse le bandeau. */
+    fun dismissRemoteChange() {
+        _sheetChangedRemotely.value = false
+    }
+
+    override fun onCleared() {
+        subscriptions.unsubscribe("sheet:$sheetId")
+        super.onCleared()
     }
 
     /**

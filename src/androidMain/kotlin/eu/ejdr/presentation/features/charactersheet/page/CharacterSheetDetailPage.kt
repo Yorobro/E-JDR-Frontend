@@ -20,6 +20,8 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetReferenceUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
@@ -74,6 +76,8 @@ fun CharacterSheetDetailPage(
             linkSheetReference = get<LinkSheetReferenceUseCase>(),
             unlinkSheetReference = get<UnlinkSheetReferenceUseCase>(),
             getCurrentUser = get<GetCurrentUserUseCase>(),
+            invalidationBus = get<InvalidationBus>(),
+            subscriptions = get<RealtimeSubscriptions>(),
         )
     }
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
