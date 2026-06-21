@@ -103,7 +103,7 @@ fun CharacterSheetCard(
             shape = shape,
             color = AppTheme.colors.surface,
             contentColor = AppTheme.colors.text,
-            shadowElevation = elevation,
+            shadowElevation = AppTheme.dimens.elevationMd,
             border = border,
         ) { content() }
     }
