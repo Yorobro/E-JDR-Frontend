@@ -15,8 +15,8 @@ class GetThemeUseCaseImplTest {
 
     @Test
     fun `delegates to the repository and returns the persisted theme`() = runTest {
-        coEvery { repository.getTheme() } returns ThemeVariant.DARK
+        coEvery { repository.getTheme() } returns ThemeVariant.GRIMOIRE
 
-        assertEquals(ThemeVariant.DARK, useCase())
+        assertEquals(ThemeVariant.GRIMOIRE, useCase())
     }
 }

@@ -18,20 +18,20 @@ class SetThemeUseCaseImplTest {
 
     @Test
     fun `returns Success when the repository persists the theme`() = runTest {
-        coEvery { repository.setTheme(ThemeVariant.DARK) } returns Result.Success(Unit)
+        coEvery { repository.setTheme(ThemeVariant.GRIMOIRE) } returns Result.Success(Unit)
 
-        val result = useCase(ThemeVariant.DARK)
+        val result = useCase(ThemeVariant.GRIMOIRE)
 
         assertIs<Result.Success<Unit>>(result)
-        coVerify { repository.setTheme(ThemeVariant.DARK) }
+        coVerify { repository.setTheme(ThemeVariant.GRIMOIRE) }
     }
 
     @Test
     fun `propagates Failure with ThemePersistenceFailed when the repository fails`() = runTest {
-        coEvery { repository.setTheme(ThemeVariant.LIGHT) } returns
+        coEvery { repository.setTheme(ThemeVariant.PARCHEMIN) } returns
             Result.Failure(SettingsError.ThemePersistenceFailed)
 
-        val result = useCase(ThemeVariant.LIGHT)
+        val result = useCase(ThemeVariant.PARCHEMIN)
 
         assertIs<Result.Failure<SettingsError>>(result)
         assert(result.error == SettingsError.ThemePersistenceFailed)

@@ -38,7 +38,7 @@ class RootState(
     private val realtimeCoordinator: RealtimeCoordinator,
 ) {
 
-    private val _theme = MutableStateFlow(ThemeVariant.LIGHT)
+    private val _theme = MutableStateFlow(ThemeVariant.DEFAULT)
     val theme: StateFlow<ThemeVariant> = _theme.asStateFlow()
 
     private val _sessionStatus = MutableStateFlow(SessionStatus.Unknown)

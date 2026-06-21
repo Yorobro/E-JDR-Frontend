@@ -23,16 +23,18 @@ fun SettingsForm(
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
     ) {
         AppText(text = "Thème", style = AppTextStyle.Subtitle)
+        // TODO(Task 5): remplacer ce sélecteur 2 boutons temporaire par le sélecteur 3 thèmes
+        // (PARCHEMIN / TAUPE / GRIMOIRE). PARCHEMIN remplace provisoirement LIGHT, GRIMOIRE remplace DARK.
         Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md)) {
             AppButton(
                 label = "Clair",
-                onClick = { onThemeChange(ThemeVariant.LIGHT) },
-                variant = if (currentTheme == ThemeVariant.LIGHT) ButtonVariant.Primary else ButtonVariant.Secondary,
+                onClick = { onThemeChange(ThemeVariant.PARCHEMIN) },
+                variant = if (currentTheme == ThemeVariant.PARCHEMIN) ButtonVariant.Primary else ButtonVariant.Secondary,
             )
             AppButton(
                 label = "Sombre",
-                onClick = { onThemeChange(ThemeVariant.DARK) },
-                variant = if (currentTheme == ThemeVariant.DARK) ButtonVariant.Primary else ButtonVariant.Secondary,
+                onClick = { onThemeChange(ThemeVariant.GRIMOIRE) },
+                variant = if (currentTheme == ThemeVariant.GRIMOIRE) ButtonVariant.Primary else ButtonVariant.Secondary,
             )
         }
     }

@@ -17,7 +17,7 @@ class AndroidThemeRepository(context: Context) : ThemeRepository {
     override suspend fun getTheme(): ThemeVariant = withContext(Dispatchers.IO) {
         prefs.getString(themeKey, null)
             ?.let { runCatching { ThemeVariant.valueOf(it) }.getOrNull() }
-            ?: ThemeVariant.LIGHT
+            ?: ThemeVariant.DEFAULT
     }
 
     override suspend fun setTheme(theme: ThemeVariant): Result<Unit, SettingsError> =

@@ -53,7 +53,7 @@ class RootStateTest {
     }
 
     private fun TestScope.rootState(
-        theme: ThemeVariant = ThemeVariant.LIGHT,
+        theme: ThemeVariant = ThemeVariant.PARCHEMIN,
         restore: Result<User, AuthError> = Result.Failure(AuthError.SessionExpired),
     ): RootStateFixture {
         val job = Job()
@@ -69,9 +69,9 @@ class RootStateTest {
 
     @Test
     fun `loads persisted theme on init`() = runTest {
-        val fixture = rootState(theme = ThemeVariant.DARK)
+        val fixture = rootState(theme = ThemeVariant.GRIMOIRE)
         advanceUntilIdle()
-        assertEquals(ThemeVariant.DARK, fixture.state.theme.value)
+        assertEquals(ThemeVariant.GRIMOIRE, fixture.state.theme.value)
         fixture.dispose()
     }
 
@@ -79,8 +79,8 @@ class RootStateTest {
     fun `setTheme updates the exposed theme`() = runTest {
         val fixture = rootState()
         advanceUntilIdle()
-        fixture.state.setTheme(ThemeVariant.DARK)
-        assertEquals(ThemeVariant.DARK, fixture.state.theme.value)
+        fixture.state.setTheme(ThemeVariant.GRIMOIRE)
+        assertEquals(ThemeVariant.GRIMOIRE, fixture.state.theme.value)
         fixture.dispose()
     }
 

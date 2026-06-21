@@ -20,8 +20,7 @@ import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
 import eu.ejdr.presentation.shared.theme.AppTheme
-import eu.ejdr.presentation.shared.theme.darkColors
-import eu.ejdr.presentation.shared.theme.lightColors
+import eu.ejdr.presentation.shared.theme.colorsFor
 import kotlinx.coroutines.launch
 import org.koin.compose.koinInject
 
@@ -47,12 +46,7 @@ fun App() {
     val rootState = remember { RootState(scope, getTheme, restoreSession, realtimeCoordinator) }
     val themeVariant by rootState.theme.collectAsStateWithLifecycle()
 
-    AppTheme(
-        colors = when (themeVariant) {
-            ThemeVariant.LIGHT -> lightColors()
-            ThemeVariant.DARK -> darkColors()
-        },
-    ) {
+    AppTheme(colors = colorsFor(themeVariant)) {
         val logout = koinInject<LogoutUseCase>()
         val activeGroupState = koinInject<ActiveGroupState>()
 

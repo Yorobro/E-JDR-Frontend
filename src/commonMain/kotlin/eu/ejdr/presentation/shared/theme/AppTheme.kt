@@ -37,14 +37,14 @@ object AppTheme {
  * À placer une fois à la racine de l'application. Tout composant descendant peut
  * alors lire [AppTheme.colors], [AppTheme.typography] et [AppTheme.dimens].
  *
- * @param colors Palette à utiliser (par défaut [lightColors]).
+ * @param colors Palette à utiliser (par défaut le thème [colorsFor] de [eu.ejdr.domain.features.settings.entities.ThemeVariant.DEFAULT]).
  * @param typography Typographie à utiliser.
  * @param dimens Dimensions à utiliser.
  * @param content Contenu de l'application.
  */
 @Composable
 fun AppTheme(
-    colors: AppColors = lightColors(),
+    colors: AppColors = colorsFor(eu.ejdr.domain.features.settings.entities.ThemeVariant.DEFAULT),
     typography: AppTypography = AppTypography(),
     dimens: AppDimens = AppDimens(),
     content: @Composable () -> Unit,

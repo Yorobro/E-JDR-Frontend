@@ -14,13 +14,13 @@ class ThemeFileRepository(dataDir: File) : ThemeRepository {
     private val file = File(dataDir, "settings.properties")
 
     override suspend fun getTheme(): ThemeVariant = withContext(Dispatchers.IO) {
-        if (!file.exists()) return@withContext ThemeVariant.LIGHT
+        if (!file.exists()) return@withContext ThemeVariant.DEFAULT
         runCatching {
             Properties().apply { file.inputStream().use { load(it) } }
                 .getProperty("theme")
                 ?.let { runCatching { ThemeVariant.valueOf(it) }.getOrNull() }
-                ?: ThemeVariant.LIGHT
-        }.getOrDefault(ThemeVariant.LIGHT)
+                ?: ThemeVariant.DEFAULT
+        }.getOrDefault(ThemeVariant.DEFAULT)
     }
 
     override suspend fun setTheme(theme: ThemeVariant): Result<Unit, SettingsError> =
