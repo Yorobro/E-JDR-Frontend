@@ -13,7 +13,9 @@ L'API renvoie une **projection nom-seul** pour les fiches en liste : `niveau`, `
 - Fiche : `name`, `createdAt`.
 - Campagne : `name`, `createdAt`.
 - Session : `title`, `date`, `createdAt`.
-- Groupe (liste) : `name`, `myRole`. Groupe (détail) : `members` (donc `members.size`).
+- Groupe (liste) : `name`, `myRole` (valeurs réelles serveur : `"ADMIN"`, `"MJ"`, `"MEMBER"`). Groupe (détail) : `members` (donc `members.size`).
+
+> **Constats code (vérifiés) :** (1) `kotlinx-datetime` est **absent** du build → `formatDate`/`relativeDate` font un **parsing ISO manuel** (`yyyy-MM-dd`). (2) `GroupCard` affiche **déjà** le rôle en texte plat (`FriendGroupComponents.kt:68` : `if (myRole == "ADMIN") "Admin" else "Membre"`) — le Lot 2 le transforme en **badge visuel** (pastille), il ne l'ajoute pas. Il existe déjà un helper de libellé de rôle (`FriendGroupComponents.kt:203,210` : `"ADMIN"→"Admin"`, `"MJ"→"MJ"`, `"MEMBER"/autre→"Membre"`) à réutiliser.
 
 ## Personnalité (héritée du Lot 1)
 
@@ -63,7 +65,7 @@ Sur chaque grille/liste, les items apparaissent en **fondu** quand les données 
 ### 6. Mise en forme des cartes (données dispo uniquement)
 
 - `SessionCard` : `date` mise en valeur via `formatDate` + indice `relativeDate` quand pertinent.
-- `GroupCard` : badge de rôle (dérivé de `myRole` → « MJ »/« Joueur ») ; nombre de membres affiché **là où `members` est disponible** (détail), pas en liste pure.
+- `GroupCard` : transformer le rôle texte-plat existant en **badge visuel** (pastille colorée, libellé via le helper existant : « Admin »/« MJ »/« Membre ») ; nombre de membres affiché **là où `members` est disponible** (détail), pas en liste pure. Préserver le bloc « ● Groupe actif » et les boutons Activer/Supprimer.
 - `CampaignCard` : « créée le {formatDate(createdAt)} ».
 - `CharacterSheetCard` : nom + date soignés, meilleure hiérarchie (nom moins centré-perdu). **PAS** de niveau/formation/peuple (indisponibles en liste).
 - Préserver intégralement : clic conditionnel, `interactiveCard` (Lot 1), icônes delete, `isActive` de GroupCard.
