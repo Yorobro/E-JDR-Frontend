@@ -2,7 +2,7 @@ package eu.ejdr.presentation.features.settings.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
@@ -23,19 +23,21 @@ fun SettingsForm(
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
     ) {
         AppText(text = "Thème", style = AppTextStyle.Subtitle)
-        // TODO(Task 5): remplacer ce sélecteur 2 boutons temporaire par le sélecteur 3 thèmes
-        // (PARCHEMIN / TAUPE / GRIMOIRE). PARCHEMIN remplace provisoirement LIGHT, GRIMOIRE remplace DARK.
-        Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md)) {
-            AppButton(
-                label = "Clair",
-                onClick = { onThemeChange(ThemeVariant.PARCHEMIN) },
-                variant = if (currentTheme == ThemeVariant.PARCHEMIN) ButtonVariant.Primary else ButtonVariant.Secondary,
-            )
-            AppButton(
-                label = "Sombre",
-                onClick = { onThemeChange(ThemeVariant.GRIMOIRE) },
-                variant = if (currentTheme == ThemeVariant.GRIMOIRE) ButtonVariant.Primary else ButtonVariant.Secondary,
-            )
+        Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
+            ThemeVariant.entries.forEach { variant ->
+                AppButton(
+                    label = themeLabel(variant),
+                    onClick = { onThemeChange(variant) },
+                    variant = if (currentTheme == variant) ButtonVariant.Primary else ButtonVariant.Secondary,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
+}
+
+private fun themeLabel(variant: ThemeVariant): String = when (variant) {
+    ThemeVariant.PARCHEMIN -> "Parchemin — clair chaleureux"
+    ThemeVariant.TAUPE -> "Taupe — clair minimaliste"
+    ThemeVariant.GRIMOIRE -> "Grimoire — sombre"
 }
