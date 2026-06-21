@@ -45,7 +45,7 @@ object AppTheme {
 @Composable
 fun AppTheme(
     colors: AppColors = colorsFor(eu.ejdr.domain.features.settings.entities.ThemeVariant.DEFAULT),
-    typography: AppTypography = AppTypography(),
+    typography: AppTypography = appTypography(),
     dimens: AppDimens = AppDimens(),
     content: @Composable () -> Unit,
 ) {
