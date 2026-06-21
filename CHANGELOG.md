@@ -1,3 +1,30 @@
+## [1.19.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.18.1...v1.19.0) (2026-06-21)
+
+
+### Features
+
+* **android:** add AndroidManifest and MainActivity stub ([a002960](https://github.com/Yorobro/E-JDR-Frontend/commit/a0029605a5eef7ede8fc61badf7d8406bed6939e))
+* **android:** add App composable, AppNavDisplay with bottom bar, MainActivity wired ([f14f6cd](https://github.com/Yorobro/E-JDR-Frontend/commit/f14f6cdeea311c3920a8da30099d330cf43b11db))
+* **android:** add Campaigns and Sessions pages ([5c7c3d2](https://github.com/Yorobro/E-JDR-Frontend/commit/5c7c3d29a7068264844d152e92a28fafa1bc7ad0))
+* **android:** add character sheet detail page (4 tabs) ([aa007f4](https://github.com/Yorobro/E-JDR-Frontend/commit/aa007f4ee2148a41b71c04f7c26a064ad4403952))
+* **android:** add character sheets list page ([905cec7](https://github.com/Yorobro/E-JDR-Frontend/commit/905cec7d20d0dc64775cfad1a49ba1ff00e94e96))
+* **android:** add Friend Groups pages (list, detail, invitations) ([98c2064](https://github.com/Yorobro/E-JDR-Frontend/commit/98c2064a7c0b7ca0b3ec665de35bb9e3a079769f))
+* **android:** add Home/Profile page and bottom bar navigation ([a675983](https://github.com/Yorobro/E-JDR-Frontend/commit/a675983941fd0db9403d72fe00281d037e7b4873))
+* **android:** add infrastructure implementations (Keystore, SharedPrefs, OkHttp) ([3ea8ea7](https://github.com/Yorobro/E-JDR-Frontend/commit/3ea8ea79ae3a530e2b74524c8b9cdcee99cc116c))
+* **android:** add Login and Register pages ([a68965b](https://github.com/Yorobro/E-JDR-Frontend/commit/a68965beec9ea3ebcbecc4f625b070dccabdc8da))
+* **android:** add References pages (hub + per-type catalogue) ([490846e](https://github.com/Yorobro/E-JDR-Frontend/commit/490846e72980d623938655584394b20092018d88))
+* **android:** add Settings page, compact bottom bar (icons only) ([22ef941](https://github.com/Yorobro/E-JDR-Frontend/commit/22ef94191cb6b8b4e01c058072e6e3e06bf087a7))
+* **android:** hide PDF export on mobile (desktop-only) ([a795b77](https://github.com/Yorobro/E-JDR-Frontend/commit/a795b77ebcc0c84064c4e21ea36cfb8f757281dc))
+
+
+### Bug Fixes
+
+* **android:** remove ViewModelStore decorator override that crashed at startup ([1b55991](https://github.com/Yorobro/E-JDR-Frontend/commit/1b55991097a8a942253b7d75aeef614bcc66503c))
+* **android:** wrap app content in a Surface with theme background ([3c8ee8c](https://github.com/Yorobro/E-JDR-Frontend/commit/3c8ee8c3f8260b71696fdad7f18cd5ebf82d50b2))
+* **auth:** sync session status on login/logout (fix bottom bar + false network error) ([8437da8](https://github.com/Yorobro/E-JDR-Frontend/commit/8437da8478fc8a0d0f26fe5f8a53c269d2cee2f6))
+* **friendgroup:** don't drop active group on transient failure at startup ([d27c94b](https://github.com/Yorobro/E-JDR-Frontend/commit/d27c94b7a6105c65bc014705310b3766af5c9024))
+* **theme:** derive Material3 ColorScheme from AppColors (fix incomplete dark theme) ([a9f0aa7](https://github.com/Yorobro/E-JDR-Frontend/commit/a9f0aa7167ed85a83f9b1056530b4fe1a856c874))
+
 ## [1.18.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.18.0...v1.18.1) (2026-06-20)
 
 
