@@ -188,6 +188,7 @@ private fun CharacterSheetGrid(
                         sheet = sheet,
                         onClick = { onOpenSheet(sheet.id, sheet.name) },
                         onDelete = if (canDelete) ({ onDeleteRequest(sheet) }) else null,
+                        modifier = Modifier.animateItem(),
                     )
                 }
             }
