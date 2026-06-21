@@ -216,12 +216,16 @@ class CharacterSheetDetailViewModel(
     /** Passe en mode édition. */
     fun startEdit() {
         _error.value = null
+        _sheetChangedRemotely.value = false
         _isEditing.value = true
     }
 
     /** Annule l'édition (sans sauvegarder). */
     fun cancelEdit() {
         _error.value = null
+        // Le bandeau « modifiée ailleurs » n'a de sens qu'en édition : en sortir le fait retomber,
+        // sinon il survivrait à la session d'édition et s'afficherait hors édition (faux positif).
+        _sheetChangedRemotely.value = false
         _isEditing.value = false
     }
 
@@ -256,6 +260,7 @@ class CharacterSheetDetailViewModel(
             update(edited).fold(
                 onSuccess = {
                     _isEditing.value = false
+                    _sheetChangedRemotely.value = false
                     _error.value = null
                     refresh()
                 },

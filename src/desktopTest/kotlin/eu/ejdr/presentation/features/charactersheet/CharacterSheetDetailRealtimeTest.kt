@@ -152,4 +152,48 @@ class CharacterSheetDetailRealtimeTest {
         assertEquals(false, vm.sheetChangedRemotely.value)
         assertEquals(before, loadCount)
     }
+
+    @Test
+    fun `annuler l'édition retombe le bandeau levé pendant l'édition`() = runTest {
+        // Régression : un bandeau levé pendant l'édition ne doit pas survivre à la sortie d'édition.
+        val bus = InMemoryInvalidationBus()
+        val vm = buildVm(sheetId = "s-1", bus = bus)
+        advanceUntilIdle()
+        vm.startEdit()
+        bus.emit(Invalidation(resource = "character-sheet-detail", scopeId = "s-1"))
+        advanceUntilIdle()
+        assertTrue(vm.sheetChangedRemotely.value, "le bandeau doit être levé pendant l'édition")
+
+        vm.cancelEdit()
+        advanceUntilIdle()
+        assertEquals(false, vm.sheetChangedRemotely.value, "le bandeau doit retomber en sortant d'édition")
+    }
+
+    @Test
+    fun `enregistrer retombe le bandeau levé pendant l'édition`() = runTest {
+        // Régression : après save, on n'est plus en édition → pas de bandeau résiduel.
+        val bus = InMemoryInvalidationBus()
+        val vm = buildVm(sheetId = "s-1", bus = bus)
+        advanceUntilIdle()
+        vm.startEdit()
+        bus.emit(Invalidation(resource = "character-sheet-detail", scopeId = "s-1"))
+        advanceUntilIdle()
+        assertTrue(vm.sheetChangedRemotely.value)
+
+        vm.save(sheet("s-1"))
+        advanceUntilIdle()
+        assertEquals(false, vm.isEditing.value)
+        assertEquals(false, vm.sheetChangedRemotely.value, "le bandeau ne doit pas survivre à un save")
+    }
+
+    @Test
+    fun `une invalidation hors édition ne laisse jamais le bandeau levé`() = runTest {
+        // Cœur du bug rapporté : non-éditeur + modif distante → recharge silencieuse, JAMAIS de bandeau.
+        val bus = InMemoryInvalidationBus()
+        val vm = buildVm(sheetId = "s-1", bus = bus)
+        advanceUntilIdle()
+        bus.emit(Invalidation(resource = "character-sheet-detail", scopeId = "s-1"))
+        advanceUntilIdle()
+        assertEquals(false, vm.sheetChangedRemotely.value, "hors édition, aucun bandeau ne doit apparaître")
+    }
 }
