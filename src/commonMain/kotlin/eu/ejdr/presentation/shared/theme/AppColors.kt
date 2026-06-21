@@ -85,3 +85,11 @@ fun grimoireColors(): AppColors = AppColors(
     onDanger = GrimoirePalette.onDanger,
     isDark = true,
 )
+
+/** Projette une [ThemeVariant] persistée vers sa palette de rôles. */
+fun colorsFor(variant: eu.ejdr.domain.features.settings.entities.ThemeVariant): AppColors =
+    when (variant) {
+        eu.ejdr.domain.features.settings.entities.ThemeVariant.PARCHEMIN -> parchmentColors()
+        eu.ejdr.domain.features.settings.entities.ThemeVariant.TAUPE -> taupeColors()
+        eu.ejdr.domain.features.settings.entities.ThemeVariant.GRIMOIRE -> grimoireColors()
+    }
