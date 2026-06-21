@@ -31,4 +31,7 @@ interface RealtimeTransport {
      * @param message Message à transmettre.
      */
     suspend fun send(message: RealtimeMessage)
+
+    /** Envoie un texte brut (déjà sérialisé) sur la session courante. */
+    suspend fun sendRaw(text: String)
 }

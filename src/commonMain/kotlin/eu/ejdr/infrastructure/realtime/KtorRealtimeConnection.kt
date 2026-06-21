@@ -58,6 +58,10 @@ class KtorRealtimeConnection(
         transport.send(message)
     }
 
+    override suspend fun sendRaw(text: String) {
+        transport.sendRaw(text)
+    }
+
     override suspend fun disconnect() {
         loop?.cancel()
         loop = null

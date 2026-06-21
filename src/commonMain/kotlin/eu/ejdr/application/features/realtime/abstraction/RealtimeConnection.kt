@@ -69,6 +69,13 @@ interface RealtimeConnection {
      */
     suspend fun send(message: RealtimeMessage)
 
+    /**
+     * Envoie un message de contrôle **brut** (texte JSON déjà sérialisé) tel quel, sans
+     * enveloppe. Utilisé pour les frames subscribe/unsubscribe dont le format ({type, channel})
+     * diffère de l'enveloppe métier {type, payload}.
+     */
+    suspend fun sendRaw(text: String)
+
     /** Ferme la connexion et arrête toute tentative de reconnexion. */
     suspend fun disconnect()
 }

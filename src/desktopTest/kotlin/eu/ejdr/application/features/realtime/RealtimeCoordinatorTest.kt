@@ -27,6 +27,7 @@ class RealtimeCoordinatorTest {
             connected = true
         }
         override suspend fun send(message: RealtimeMessage) = Unit
+        override suspend fun sendRaw(text: String) = Unit
         override suspend fun disconnect() = Unit
     }
 

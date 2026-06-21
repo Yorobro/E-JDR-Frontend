@@ -6,11 +6,13 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetReferenceUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.application.shared.Result
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
@@ -83,6 +85,12 @@ class CharacterSheetDetailViewModelTest {
         linkSheetReference = linkSheetReference,
         unlinkSheetReference = unlinkSheetReference,
         getCurrentUser = getCurrentUser,
+        invalidationBus = InMemoryInvalidationBus(),
+        subscriptions = object : RealtimeSubscriptions {
+            override fun subscribe(channel: String) = Unit
+            override fun unsubscribe(channel: String) = Unit
+            override suspend fun resubscribeAll() = Unit
+        },
     )
 
     @Test
