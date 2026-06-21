@@ -7,6 +7,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -27,6 +28,7 @@ import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.modifier.interactiveCard
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.util.formatDate
 
 private val CardHeight = 140.dp
 
@@ -62,15 +64,25 @@ fun CampaignCard(
             .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape)
             .clickable(interactionSource = interactionSource, indication = indication, onClick = onClick),
     ) {
-        AppText(
-            text = campaign.name,
-            style = AppTextStyle.Subtitle,
-            maxLines = 2,
-            textAlign = TextAlign.Center,
+        Column(
             modifier = Modifier
                 .align(Alignment.Center)
                 .padding(horizontal = AppTheme.dimens.md),
-        )
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            AppText(
+                text = campaign.name,
+                style = AppTextStyle.Subtitle,
+                maxLines = 2,
+                textAlign = TextAlign.Center,
+            )
+            AppText(
+                text = "Créée le ${formatDate(campaign.createdAt)}",
+                style = AppTextStyle.Caption,
+                color = AppTheme.colors.textSecondary,
+                textAlign = TextAlign.Center,
+            )
+        }
         if (onDelete != null) {
             IconButton(
                 onClick = onDelete,

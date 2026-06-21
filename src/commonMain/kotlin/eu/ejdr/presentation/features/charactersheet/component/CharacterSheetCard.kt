@@ -3,6 +3,7 @@ package eu.ejdr.presentation.features.charactersheet.component
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
@@ -25,6 +25,7 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.modifier.interactiveCard
 import eu.ejdr.presentation.shared.component.modifier.interactiveCardElevation
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.util.formatDate
 
 private val CardHeight = 140.dp
 
@@ -62,15 +63,22 @@ fun CharacterSheetCard(
 
     val content: @Composable () -> Unit = {
         Box(Modifier.fillMaxSize()) {
-            AppText(
-                text = sheet.name,
-                style = AppTextStyle.Subtitle,
-                maxLines = 2,
-                textAlign = TextAlign.Center,
+            Column(
                 modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = AppTheme.dimens.md),
-            )
+                    .align(Alignment.TopStart)
+                    .padding(AppTheme.dimens.md),
+            ) {
+                AppText(
+                    text = sheet.name,
+                    style = AppTextStyle.Subtitle,
+                    maxLines = 2,
+                )
+                AppText(
+                    text = "Créée le ${formatDate(sheet.createdAt)}",
+                    style = AppTextStyle.Caption,
+                    color = AppTheme.colors.textSecondary,
+                )
+            }
             if (onDelete != null) {
                 IconButton(
                     onClick = onDelete,

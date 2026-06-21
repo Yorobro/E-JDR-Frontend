@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.session.entities.Session
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.util.formatDate
 import eu.ejdr.presentation.shared.component.modifier.interactiveCard
 import eu.ejdr.presentation.shared.theme.AppTheme
 
@@ -67,8 +68,8 @@ fun SessionCard(
             textAlign = TextAlign.Center,
         )
         AppText(
-            text = session.date,
-            style = AppTextStyle.Caption,
+            text = formatDate(session.date),
+            style = AppTextStyle.Label,
             color = AppTheme.colors.textSecondary,
         )
     }
