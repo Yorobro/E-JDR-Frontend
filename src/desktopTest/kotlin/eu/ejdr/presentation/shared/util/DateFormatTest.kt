@@ -31,4 +31,15 @@ class DateFormatTest {
         assertNull(relativeDate("2026-08-01", todayIso = "2026-06-22")) // > 7 jours
         assertNull(relativeDate("invalide", todayIso = "2026-06-22"))
     }
+
+    @Test
+    fun `relativeDate franchit correctement un changement d'annee`() {
+        assertEquals("demain", relativeDate("2027-01-01", todayIso = "2026-12-31"))
+        assertEquals("hier", relativeDate("2026-12-31", todayIso = "2027-01-01"))
+    }
+
+    @Test
+    fun `relativeDate renvoie null si todayIso est invalide`() {
+        assertNull(relativeDate("2026-06-22", todayIso = "pas-une-date"))
+    }
 }
