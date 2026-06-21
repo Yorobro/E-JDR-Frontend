@@ -12,6 +12,14 @@ import kotlinx.coroutines.sync.withLock
  * de contrôle via [RealtimeConnection.sendRaw]. Les envois sont lancés sur [scope] (les
  * appels publics sont non-suspendants pour rester simples côté ViewModel).
  *
+ * **Caveat — pas de compteur de références :** L'ensemble [channels] n'est pas à compteur
+ * de références. Si le même canal était abonné par deux appelants simultanément (p.ex. dans
+ * une future UI multi-pane affichant la même fiche deux fois), le premier [unsubscribe]
+ * le retirerait de l'ensemble et arrêterait les mises à jour pour les autres. La feature
+ * actuelle (écran de détail unique) ne fait jamais cela, donc c'est sûr aujourd'hui.
+ * Quand ce sera nécessaire, la correction sera de faire `Map<String, Int>` (ne dépublier
+ * que quand le compteur atteint 0).
+ *
  * @property connection Connexion temps réel (envoi des frames).
  * @property scope Portée portant les envois asynchrones.
  */
