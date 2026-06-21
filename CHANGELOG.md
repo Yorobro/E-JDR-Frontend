@@ -1,3 +1,10 @@
+## [1.20.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.19.0...v1.20.0) (2026-06-21)
+
+
+### Features
+
+* **realtime:** porter le temps réel sur KMP (desktop + android) ([326048d](https://github.com/Yorobro/E-JDR-Frontend/commit/326048d402a49be7a3bf7355df4e0032f9fbdce7))
+
 ## [1.19.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.18.1...v1.19.0) (2026-06-21)
 
 
