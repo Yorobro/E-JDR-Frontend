@@ -1,6 +1,7 @@
 package eu.ejdr.presentation.features.charactersheet.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -20,6 +22,8 @@ import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.modifier.interactiveCard
+import eu.ejdr.presentation.shared.component.modifier.interactiveCardElevation
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 private val CardHeight = 140.dp
@@ -47,7 +51,13 @@ fun CharacterSheetCard(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
-    val surfaceModifier = modifier.fillMaxWidth().height(CardHeight)
+    val enabled = onClick != null
+    val interactionSource = remember { MutableInteractionSource() }
+    val elevation = interactiveCardElevation(interactionSource, enabled, base = AppTheme.dimens.elevationMd)
+    val surfaceModifier = modifier
+        .fillMaxWidth()
+        .height(CardHeight)
+        .interactiveCard(interactionSource, enabled)
     val border = BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border)
 
     val content: @Composable () -> Unit = {
@@ -80,10 +90,11 @@ fun CharacterSheetCard(
         Surface(
             onClick = onClick,
             modifier = surfaceModifier,
+            interactionSource = interactionSource,
             shape = shape,
             color = AppTheme.colors.surface,
             contentColor = AppTheme.colors.text,
-            shadowElevation = AppTheme.dimens.elevationMd,
+            shadowElevation = elevation,
             border = border,
         ) { content() }
     } else {
@@ -92,7 +103,7 @@ fun CharacterSheetCard(
             shape = shape,
             color = AppTheme.colors.surface,
             contentColor = AppTheme.colors.text,
-            shadowElevation = AppTheme.dimens.elevationMd,
+            shadowElevation = elevation,
             border = border,
         ) { content() }
     }

@@ -1,9 +1,11 @@
 package eu.ejdr.presentation.features.session.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -19,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.session.entities.Session
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.modifier.interactiveCard
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 private val CardHeight = 96.dp
@@ -41,14 +45,17 @@ fun SessionCard(
     modifier: Modifier = Modifier,
 ) {
     val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
+    val interactionSource = remember { MutableInteractionSource() }
+    val indication = LocalIndication.current
     Column(
         modifier = modifier
             .fillMaxWidth()
             .height(CardHeight)
+            .interactiveCard(interactionSource, enabled = true)
             .clip(shape)
             .background(AppTheme.colors.surface)
             .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape)
-            .clickable(onClick = onClick)
+            .clickable(interactionSource = interactionSource, indication = indication, onClick = onClick)
             .padding(AppTheme.dimens.md),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,

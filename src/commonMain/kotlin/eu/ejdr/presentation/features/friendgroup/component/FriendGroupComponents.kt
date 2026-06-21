@@ -1,6 +1,7 @@
 package eu.ejdr.presentation.features.friendgroup.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -27,6 +28,8 @@ import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
+import eu.ejdr.presentation.shared.component.modifier.interactiveCard
+import eu.ejdr.presentation.shared.component.modifier.interactiveCardElevation
 import eu.ejdr.presentation.shared.component.organism.AppDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 
@@ -41,11 +44,15 @@ fun GroupCard(
 ) {
     val borderColor = if (isActive) AppTheme.colors.primary else AppTheme.colors.border
     val borderWidth = if (isActive) 2.dp else 1.dp
+    val interactionSource = remember { MutableInteractionSource() }
+    val elevation = interactiveCardElevation(interactionSource, enabled = true, base = AppTheme.dimens.elevationSm)
 
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().interactiveCard(interactionSource, enabled = true),
+        interactionSource = interactionSource,
         colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         border = BorderStroke(borderWidth, borderColor),
         shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
     ) {
