@@ -17,10 +17,18 @@ object AuthHttpMapper {
     /**
      * Convertit la réponse d'authentification reçue en entité domaine.
      *
+     * Le `pseudo` peut être absent de la réponse `/auth/login` (présent sur `/me`) : on retombe
+     * alors sur la partie locale de l'e-mail comme nom d'affichage temporaire, jusqu'au prochain
+     * chargement du profil complet.
+     *
      * @param dto Réponse JSON désérialisée renvoyée par le serveur.
      * @return L'[User] correspondant.
      */
-    fun toUser(dto: AuthResponseDto): User = User(id = dto.userId, email = dto.email, pseudo = dto.pseudo)
+    fun toUser(dto: AuthResponseDto): User = User(
+        id = dto.userId,
+        email = dto.email,
+        pseudo = dto.pseudo?.takeIf { it.isNotBlank() } ?: dto.email.substringBefore('@'),
+    )
 
     /**
      * Traduit un échec HTTP en erreur métier d'authentification.

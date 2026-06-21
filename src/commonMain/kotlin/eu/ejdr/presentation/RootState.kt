@@ -48,6 +48,25 @@ class RootState(
     /** Applique un nouveau thème (déjà persisté par la feature settings). */
     fun setTheme(theme: ThemeVariant) { _theme.value = theme }
 
+    /**
+     * Marque la session comme active (connexion/inscription manuelle réussie).
+     *
+     * À appeler après un login/register via le formulaire : la restauration de session
+     * ([restoreSession]) ne couvre que l'auto-login au démarrage. Sans ça, [sessionStatus]
+     * resterait [SessionStatus.Unauthenticated] après une connexion manuelle et les éléments
+     * d'UI conditionnés à l'authentification (ex. barre de navigation mobile) ne s'afficheraient pas.
+     */
+    fun onLoggedIn() { _sessionStatus.value = SessionStatus.Authenticated }
+
+    /**
+     * Marque la session comme terminée (déconnexion volontaire).
+     *
+     * À appeler après le use case de logout : sans ça, [sessionStatus] resterait
+     * [SessionStatus.Authenticated] et les éléments d'UI conditionnés à l'authentification
+     * (ex. barre de navigation mobile) resteraient visibles sur l'écran de connexion.
+     */
+    fun onLoggedOut() { _sessionStatus.value = SessionStatus.Unauthenticated }
+
     /** Lance la restauration de session et publie le résultat dans [sessionStatus]. */
     fun restoreSession() {
         scope.launch {

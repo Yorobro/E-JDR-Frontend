@@ -93,7 +93,8 @@ fun App() {
 
         AppNavDisplay(
             backStack = backStack,
-            onLogout = { scope.launch { logout(); resetTo(Route.Login) } },
+            onLoggedIn = rootState::onLoggedIn,
+            onLogout = { scope.launch { logout(); rootState.onLoggedOut(); resetTo(Route.Login) } },
             onThemeChange = rootState::setTheme,
             resetTo = ::resetTo,
         )

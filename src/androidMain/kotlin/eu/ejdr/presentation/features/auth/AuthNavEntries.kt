@@ -10,13 +10,13 @@ import eu.ejdr.presentation.navigation.Route
 fun EntryProviderScope<Any>.authEntries(actions: NavActions) {
     entry<Route.Login> {
         LoginPage(
-            onAuthenticated = { actions.resetTo(Route.Home) },
+            onAuthenticated = { actions.onLoggedIn() },
             onGoToRegister = { actions.backStack.add(Route.Register) },
         )
     }
     entry<Route.Register> {
         RegisterPage(
-            onAuthenticated = { actions.resetTo(Route.Home) },
+            onAuthenticated = { actions.onLoggedIn() },
             onGoToLogin = { actions.backStack.removeLastOrNull() },
         )
     }

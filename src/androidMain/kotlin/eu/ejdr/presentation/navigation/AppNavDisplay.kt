@@ -46,13 +46,14 @@ fun AppNavDisplay(
     backStack: NavBackStack<NavKey>,
     sessionStatus: StateFlow<SessionStatus>,
     activeGroupId: StateFlow<String?>,
+    onLoggedIn: () -> Unit,
     onLogout: () -> Unit,
     onThemeChange: (ThemeVariant) -> Unit,
     resetTo: (Route) -> Unit,
 ) {
     val status by sessionStatus.collectAsStateWithLifecycle()
     val groupId by activeGroupId.collectAsStateWithLifecycle()
-    val actions = NavActions(backStack, onLogout, onThemeChange, resetTo)
+    val actions = NavActions(backStack, onLoggedIn, onLogout, onThemeChange, resetTo)
 
     val visibleItems = appNavItems.filter { it.isVisible(status, groupId) }
     val currentRoute = backStack.lastOrNull()

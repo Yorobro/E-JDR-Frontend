@@ -29,10 +29,12 @@ data class RegisterRequestDto(val email: String, val password: String, val pseud
  *
  * @property userId Identifiant unique de l'utilisateur authentifié.
  * @property email Adresse e-mail de l'utilisateur authentifié.
- * @property pseudo Nom d'affichage de l'utilisateur authentifié.
+ * @property pseudo Nom d'affichage. **Optionnel** : `/auth/login` ne le renvoie pas toujours
+ * (contrairement à `/me`) ; à défaut, le mapper retombe sur la partie locale de l'e-mail. Le rendre
+ * requis ferait échouer la désérialisation du login (« erreur réseau » trompeuse).
  */
 @Serializable
-data class AuthResponseDto(val userId: String, val email: String, val pseudo: String)
+data class AuthResponseDto(val userId: String, val email: String, val pseudo: String? = null)
 
 /**
  * Corps d'erreur renvoyé par l'API lorsqu'une requête échoue.

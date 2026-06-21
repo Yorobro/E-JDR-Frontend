@@ -45,11 +45,12 @@ import eu.ejdr.presentation.shared.theme.AppTheme
 @Composable
 fun AppNavDisplay(
     backStack: NavBackStack<NavKey>,
+    onLoggedIn: () -> Unit,
     onLogout: () -> Unit,
     onThemeChange: (ThemeVariant) -> Unit,
     resetTo: (Route) -> Unit,
 ) {
-    val actions = NavActions(backStack, onLogout, onThemeChange, resetTo)
+    val actions = NavActions(backStack, onLoggedIn, onLogout, onThemeChange, resetTo)
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
