@@ -32,8 +32,8 @@ private val CardHeight = 140.dp
 /**
  * Tuile d'une fiche de personnage dans la grille (composant bête).
  *
- * Tuile à hauteur fixe (fond `surface`, bordure, coins arrondis, ombre douce) : nom centré,
- * icône de suppression optionnelle en coin haut-droite. Quand [onClick] est `null`, la tuile
+ * Tuile à hauteur fixe (fond `surface`, bordure, coins arrondis, ombre douce) : nom et date de
+ * création alignés en haut, icône de suppression optionnelle en coin haut-droite. Quand [onClick] est `null`, la tuile
  * n'est pas cliquable (ex. liste en lecture seule du détail de campagne) ; sinon toute la tuile
  * est cliquable et ouvre le détail de la fiche. Quand [onDelete] est `null`, l'icône de
  * suppression n'est pas affichée (le clic sur l'icône remonte [onDelete] sans déclencher
