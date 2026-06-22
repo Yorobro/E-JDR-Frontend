@@ -22,5 +22,6 @@ fun initKoinAndroid(app: Application) = startKoin {
         referenceModule,
         friendGroupModule,
         realtimeModule,
+        feedbackModule,
     )
 }
