@@ -1,10 +1,8 @@
 package eu.ejdr.presentation.navigation
 
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.togetherWith
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -73,21 +71,12 @@ fun AppNavDisplay(
             // par destination (trio Saveable + SavedState + ViewModelStore) sera finalisée
             // plus tard ; sans elle, koinViewModel résout contre le ViewModelStore de
             // l'Activity (partagé) — suffisant pour un écran auth à la fois.
-            val motion = AppTheme.motion
-            val durationMs = motion.effectiveDuration(motion.durationMedium)
+            // Changement de page instantané : aucune transition (pas de fondu ni de glissement).
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
-                transitionSpec = {
-                    (fadeIn(tween(durationMs, easing = motion.easeEmphasized)) +
-                        slideInHorizontally(tween(durationMs, easing = motion.easeEmphasized)) { it / 8 }) togetherWith
-                        fadeOut(tween(durationMs, easing = motion.easeEmphasized))
-                },
-                popTransitionSpec = {
-                    (fadeIn(tween(durationMs, easing = motion.easeEmphasized)) +
-                        slideInHorizontally(tween(durationMs, easing = motion.easeEmphasized)) { -it / 8 }) togetherWith
-                        fadeOut(tween(durationMs, easing = motion.easeEmphasized))
-                },
+                transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+                popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
                 // fallback : toute destination encore sans rendu Android affiche ComingSoon
                 // (les autres pages Android par feature seront ajoutées ici progressivement).
                 entryProvider = entryProvider<Any>(fallback = { key -> NavEntry(key) { ComingSoon(key) } }) {
