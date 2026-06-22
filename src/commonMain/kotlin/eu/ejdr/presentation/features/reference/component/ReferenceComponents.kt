@@ -244,6 +244,7 @@ fun ReferenceFormDialog(
     errorMessage: String? = null,
 ) {
     var name by remember { mutableStateOf(initial?.name ?: "") }
+    var nameTouched by remember { mutableStateOf(false) }
     var statLabel by remember { mutableStateOf(initialStatLabel(initial)) }
     var bonus by remember { mutableStateOf(initial?.bonus?.toString() ?: DEFAULT_BONUS) }
     var protection by remember {
@@ -278,8 +279,9 @@ fun ReferenceFormDialog(
         ) {
             AppTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = { name = it; nameTouched = true },
                 label = label,
+                errorMessage = if (nameTouched && name.isBlank()) "Le nom ne peut pas être vide" else null,
                 modifier = Modifier.fillMaxWidth(),
             )
             if (hasStatChoice) {

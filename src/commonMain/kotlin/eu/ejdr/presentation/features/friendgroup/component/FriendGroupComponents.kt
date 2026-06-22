@@ -103,6 +103,8 @@ fun CreateGroupDialog(
     onConfirm: (String) -> Unit,
 ) {
     var name by remember { mutableStateOf("") }
+    var touched by remember { mutableStateOf(false) }
+    val fieldError = if (touched && name.isBlank()) "Le nom ne peut pas être vide" else null
 
     AppDialog(
         title = "Nouveau groupe",
@@ -113,8 +115,9 @@ fun CreateGroupDialog(
     ) {
         AppTextField(
             value = name,
-            onValueChange = { name = it },
+            onValueChange = { name = it; touched = true },
             label = "Nom du groupe",
+            errorMessage = fieldError,
             modifier = Modifier.fillMaxWidth(),
         )
     }
