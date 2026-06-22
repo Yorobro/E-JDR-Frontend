@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,13 +32,16 @@ import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.shared.component.atomic.AppFab
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
 private val MinTileWidth = 160.dp
 private val GridBottomPadding = 96.dp
+private val CampaignCardHeight = 120.dp
 
 /** Liste des campagnes du groupe actif (Android) : grille adaptative, création (MJ), suppression. */
 @Composable
@@ -84,6 +88,7 @@ fun CampaignListPage(
                     canEdit = canEdit,
                     onOpenCampaign = onOpenCampaign,
                     onDeleteRequest = { pendingDelete = it },
+                    onCreateRequest = { showCreate = true },
                 )
             }
 
@@ -126,20 +131,20 @@ private fun CampaignGrid(
     canEdit: Boolean,
     onOpenCampaign: (id: String, name: String) -> Unit,
     onDeleteRequest: (Campaign) -> Unit,
+    onCreateRequest: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             isLoading && campaigns.isEmpty() ->
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = AppTheme.colors.primary,
-                )
+                SkeletonGrid(itemHeight = CampaignCardHeight)
 
             campaigns.isEmpty() ->
-                AppText(
-                    text = "Aucune campagne pour le moment.",
-                    style = AppTextStyle.Body,
-                    color = AppTheme.colors.muted,
+                EmptyState(
+                    icon = Icons.AutoMirrored.Filled.List,
+                    title = "Aucune campagne",
+                    message = "Lance ta première campagne.",
+                    actionLabel = if (canEdit) "Créer une campagne" else null,
+                    onAction = if (canEdit) onCreateRequest else null,
                     modifier = Modifier.align(Alignment.Center),
                 )
 
@@ -155,6 +160,7 @@ private fun CampaignGrid(
                         campaign = campaign,
                         onClick = { onOpenCampaign(campaign.id, campaign.name) },
                         onDelete = if (canEdit) ({ onDeleteRequest(campaign) }) else null,
+                        modifier = Modifier.animateItem(),
                     )
                 }
             }

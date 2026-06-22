@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,13 +34,16 @@ import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.shared.component.atomic.AppFab
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
 private val MinTileWidth = 180.dp
 private val GridBottomPadding = 96.dp
+private val CardHeight = 140.dp
 
 /**
  * Page « Mes fiches » (composant INTELLIGENT).
@@ -101,6 +105,7 @@ fun MyCharacterSheetsPage(
                     currentUserId = currentUserId,
                     onOpenSheet = onOpenSheet,
                     onDeleteRequest = { pendingDelete = it },
+                    onCreateRequest = { showCreate = true },
                 )
             }
 
@@ -139,13 +144,14 @@ fun MyCharacterSheetsPage(
 /**
  * Zone de contenu de la liste des fiches (composant bête).
  *
- * Affiche, selon l'état : un indicateur de chargement initial, un message si vide, ou la grille
+ * Affiche, selon l'état : un skeleton de chargement initial, un état vide accueillant, ou la grille
  * de tuiles adaptative. Extrait de [MyCharacterSheetsPage] pour garder cette dernière concise.
  *
  * @param sheets Fiches à afficher.
  * @param isLoading Indique si un chargement est en cours.
  * @param onOpenSheet Callback d'ouverture du détail d'une fiche (id + nom).
  * @param onDeleteRequest Callback de demande de suppression d'une fiche.
+ * @param onCreateRequest Callback d'ouverture du dialog de création.
  */
 @Composable
 private fun CharacterSheetGrid(
@@ -155,20 +161,20 @@ private fun CharacterSheetGrid(
     currentUserId: String?,
     onOpenSheet: (id: String, name: String) -> Unit,
     onDeleteRequest: (CharacterSheet) -> Unit,
+    onCreateRequest: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             isLoading && sheets.isEmpty() ->
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = AppTheme.colors.primary,
-                )
+                SkeletonGrid(itemHeight = CardHeight)
 
             sheets.isEmpty() ->
-                AppText(
-                    text = "Aucune fiche pour le moment.",
-                    style = AppTextStyle.Body,
-                    color = AppTheme.colors.muted,
+                EmptyState(
+                    icon = Icons.Default.Person,
+                    title = "Aucune fiche pour l'instant",
+                    message = "Crée ton premier personnage pour ce groupe.",
+                    actionLabel = "Créer une fiche",
+                    onAction = onCreateRequest,
                     modifier = Modifier.align(Alignment.Center),
                 )
 

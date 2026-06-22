@@ -9,7 +9,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,13 +34,16 @@ import eu.ejdr.presentation.features.reference.component.ReferenceFormDialog
 import eu.ejdr.presentation.shared.component.atomic.AppFab
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
 private val MinTileWidth = 180.dp
 private val GridBottomPadding = 96.dp
+private val ReferenceCardHeight = 120.dp
 
 /**
  * Page **générique** de gestion d'un catalogue d'éléments de référence (composant INTELLIGENT).
@@ -101,6 +105,7 @@ fun ReferenceListPage(
                     canEdit = canEdit,
                     onEditRequest = { pendingEdit = it },
                     onDeleteRequest = { pendingDelete = it },
+                    onCreateRequest = { showCreate = true },
                 )
             }
 
@@ -180,7 +185,7 @@ private fun ReferenceFormDialogs(
     }
 }
 
-/** Zone de contenu : chargement initial, message si vide, ou grille de tuiles. */
+/** Zone de contenu : skeleton de chargement initial, état vide accueillant, ou grille de tuiles. */
 @Composable
 private fun ReferenceGrid(
     type: ReferenceType,
@@ -190,20 +195,20 @@ private fun ReferenceGrid(
     canEdit: Boolean,
     onEditRequest: (ReferenceItem) -> Unit,
     onDeleteRequest: (ReferenceItem) -> Unit,
+    onCreateRequest: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             isLoading && items.isEmpty() ->
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = AppTheme.colors.primary,
-                )
+                SkeletonGrid(itemHeight = ReferenceCardHeight)
 
             items.isEmpty() ->
-                AppText(
-                    text = "Aucun élément pour le moment.",
-                    style = AppTextStyle.Body,
-                    color = AppTheme.colors.muted,
+                EmptyState(
+                    icon = Icons.Default.Category,
+                    title = "Aucun élément",
+                    message = "Ajoute ton premier élément de référence.",
+                    actionLabel = if (canEdit) "Ajouter" else null,
+                    onAction = if (canEdit) onCreateRequest else null,
                     modifier = Modifier.align(Alignment.Center),
                 )
 
@@ -221,6 +226,7 @@ private fun ReferenceGrid(
                         competenceNames = competenceNames,
                         onEdit = if (canEdit) ({ onEditRequest(item) }) else null,
                         onDelete = if (canEdit) ({ onDeleteRequest(item) }) else null,
+                        modifier = Modifier.animateItem(),
                     )
                 }
             }
