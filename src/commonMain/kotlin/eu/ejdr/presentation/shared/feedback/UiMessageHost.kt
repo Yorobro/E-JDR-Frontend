@@ -17,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import eu.ejdr.application.shared.feedback.UiMessage
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.presentation.shared.component.organism.AppSnackbar
 import eu.ejdr.presentation.shared.theme.AppTheme

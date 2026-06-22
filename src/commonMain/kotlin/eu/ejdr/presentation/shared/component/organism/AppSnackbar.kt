@@ -9,8 +9,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
-import eu.ejdr.presentation.shared.feedback.UiMessage
-import eu.ejdr.presentation.shared.feedback.UiMessageTone
+import eu.ejdr.application.shared.feedback.UiMessage
+import eu.ejdr.application.shared.feedback.UiMessageTone
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /** Bandeau transitoire de feedback (succès/erreur), couleurs dérivées du ton. */

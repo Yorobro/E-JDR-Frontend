@@ -1,6 +1,5 @@
 package eu.ejdr.application.shared.feedback
 
-import eu.ejdr.presentation.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.Flow
 
 /**

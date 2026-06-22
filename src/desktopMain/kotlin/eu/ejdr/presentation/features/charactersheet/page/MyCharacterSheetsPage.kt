@@ -52,7 +52,7 @@ private val CardHeight = 140.dp
  * Page « Mes fiches » (composant INTELLIGENT).
  *
  * Crée un [MyCharacterSheetsViewModel] retenu par la destination et observe son état. Affiche les
- * fiches en grille de tuiles adaptative, un FAB de création en bas à droite et gère localement
+ * fiches en grille de tuiles adaptative, une action de création dans l'en-tête et gère localement
  * l'état d'ouverture des deux modals (création, confirmation de suppression). Le rendu est délégué
  * à des composants bêtes. Le clic sur une tuile ouvre le détail de la fiche.
  *

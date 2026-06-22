@@ -1,4 +1,4 @@
-package eu.ejdr.presentation.shared.feedback
+package eu.ejdr.application.shared.feedback
 
 import kotlin.test.Test
 import kotlin.test.assertEquals

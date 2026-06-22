@@ -1,7 +1,7 @@
 package eu.ejdr.infrastructure.feedback
 
 import eu.ejdr.application.shared.feedback.UiMessageBus
-import eu.ejdr.presentation.shared.feedback.UiMessage
+import eu.ejdr.application.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

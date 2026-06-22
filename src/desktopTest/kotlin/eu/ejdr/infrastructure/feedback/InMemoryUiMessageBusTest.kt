@@ -1,6 +1,6 @@
 package eu.ejdr.infrastructure.feedback
 
-import eu.ejdr.presentation.shared.feedback.UiMessage
+import eu.ejdr.application.shared.feedback.UiMessage
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest

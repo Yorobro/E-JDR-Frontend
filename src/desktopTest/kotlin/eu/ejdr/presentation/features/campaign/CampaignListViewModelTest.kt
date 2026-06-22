@@ -4,7 +4,7 @@ import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignU
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
-import eu.ejdr.presentation.shared.feedback.UiMessageTone
+import eu.ejdr.application.shared.feedback.UiMessageTone
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.domain.features.campaign.error.CampaignError

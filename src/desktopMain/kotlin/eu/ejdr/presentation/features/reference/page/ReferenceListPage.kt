@@ -52,7 +52,7 @@ private val ReferenceCardHeight = 120.dp
  * Page **générique** de gestion d'un catalogue d'éléments de référence (composant INTELLIGENT).
  *
  * Paramétrée par [type] : crée un [ReferenceListViewModel] retenu par la destination, affiche les
- * éléments en grille, un FAB de création et gère localement les modals. Une seule page pour les six
+ * éléments en grille, une action de création dans l'en-tête et gère localement les modals. Une seule page pour les six
  * catégories (clone de `CampaignListPage`).
  *
  * @param type Catégorie gérée.

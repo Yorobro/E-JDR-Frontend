@@ -50,7 +50,7 @@ private val CampaignCardHeight = 120.dp
  * Page liste des campagnes (composant INTELLIGENT).
  *
  * Crée un [CampaignListViewModel] retenu par la destination et observe son état. Affiche les
- * campagnes en grille de tuiles adaptative, un FAB de création en bas à droite et gère localement
+ * campagnes en grille de tuiles adaptative, une action de création dans l'en-tête et gère localement
  * l'état d'ouverture des deux modals (création, confirmation de suppression). Le rendu est délégué
  * à des composants bêtes.
  *

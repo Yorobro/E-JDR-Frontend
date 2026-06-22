@@ -11,7 +11,7 @@ import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
-import eu.ejdr.presentation.shared.feedback.UiMessage
+import eu.ejdr.application.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
