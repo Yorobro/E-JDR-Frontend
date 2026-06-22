@@ -1,3 +1,43 @@
+## [1.22.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.21.0...v1.22.0) (2026-06-22)
+
+
+### Features
+
+* ajouter la couche de teintes brutes appPalette (source unique des couleurs) ([104b400](https://github.com/Yorobro/E-JDR-Frontend/commit/104b4008ff69c5003600d67401f85b1953e8cab6))
+* apparition animee des dialogs (fade + scale) ([26f7e70](https://github.com/Yorobro/E-JDR-Frontend/commit/26f7e70c872a55740c1232eddb22d3833a00f5a1))
+* apparition animee des items de la grille des fiches (pilote) ([440456c](https://github.com/Yorobro/E-JDR-Frontend/commit/440456c2ad7627d1af7e90a1abc70c48e20d28f8))
+* appliquer le retour d'interaction aux cartes (hover/press) ([3fb3678](https://github.com/Yorobro/E-JDR-Frontend/commit/3fb3678cf5d0e711e91e907a2af33d414f545d91))
+* appsnackbar et hote global de feedback anime ([d370f89](https://github.com/Yorobro/E-JDR-Frontend/commit/d370f8963c9ab84ef6814417fac284a0ea0624c8))
+* atome skeletonbox pulsant pour le chargement ([01fd3c7](https://github.com/Yorobro/E-JDR-Frontend/commit/01fd3c725a8638f362e87d33b9078fc5bb5605cf))
+* bouton avec retour press anime et anti double-clic ([ae7719e](https://github.com/Yorobro/E-JDR-Frontend/commit/ae7719e0453ed8f89e9c41614b8a5a058765d3e8))
+* brancher les 3 themes dans les shells, repos et tests ([9ffbf17](https://github.com/Yorobro/E-JDR-Frontend/commit/9ffbf1793f5cbf552f963bbdef3743b1bb25243c))
+* bus de messages ui injecte (uimessagebus + module koin) ([053b94a](https://github.com/Yorobro/E-JDR-Frontend/commit/053b94a9af7ddfdb8a462174efbeac9942ab303f))
+* definir les 3 palettes de roles (parchemin, taupe, grimoire) ([5058416](https://github.com/Yorobro/E-JDR-Frontend/commit/50584163b571592c723411cde4c19dcb07f594f9))
+* donner de la profondeur aux cartes (surface elevee + ombre douce) ([a74add7](https://github.com/Yorobro/E-JDR-Frontend/commit/a74add70c0b5bd1f76d8b2ea4c636df7043bedf5))
+* embarquer les polices fraunces, inter et jetbrains mono ([95154e4](https://github.com/Yorobro/E-JDR-Frontend/commit/95154e41688660ab41ff9b6c70671656f245708e))
+* emettre un message de feedback sur creation et suppression ([2d92fbe](https://github.com/Yorobro/E-JDR-Frontend/commit/2d92fbec18111f355219b5b35b21e6059b6d4e5f))
+* en-tete de page avec action principale (remplace le fab) ([7ac3e73](https://github.com/Yorobro/E-JDR-Frontend/commit/7ac3e73dba86748d645ea7bae28c6bb0663f8e47))
+* etendre themevariant aux 3 themes avec mapping colorsfor ([6c97cb5](https://github.com/Yorobro/E-JDR-Frontend/commit/6c97cb5687479128775172da27573f4c8a719a90))
+* garde anti double-clic pure et testable (clickguard) ([2fd714b](https://github.com/Yorobro/E-JDR-Frontend/commit/2fd714b65de451e68364328228d34038b46c13e5))
+* mise en forme des cartes (dates formatees, badge de role) ([7e095ec](https://github.com/Yorobro/E-JDR-Frontend/commit/7e095ec45e90d210e1cb9a1f887b8f5eeedaa347))
+* modifier interactivecard partage (scale press + elevation hover) ([c7d377a](https://github.com/Yorobro/E-JDR-Frontend/commit/c7d377aafb9d2f2d7877db6d79586072517a64f1))
+* molecule emptystate (icone + message + action) ([72d0fcc](https://github.com/Yorobro/E-JDR-Frontend/commit/72d0fcc295a0cf8d7a4da29fb71b2d119ff5ea40))
+* monter l'hote de feedback a la racine de l'app ([6020f1f](https://github.com/Yorobro/E-JDR-Frontend/commit/6020f1fa24cab49b58752c1bf996ea04bcd7bcb0))
+* selecteur des 3 themes dans les parametres ([fb73212](https://github.com/Yorobro/E-JDR-Frontend/commit/fb73212f9a6e04efc1fb295fef2bf84e70412cb3))
+* skeletongrid et skeletonlist pour le chargement des listes ([a74c87e](https://github.com/Yorobro/E-JDR-Frontend/commit/a74c87eb1847cc4ca8b1b65ffea6b2558e8a27ee))
+* skeletons et etats vides accueillants sur les listes principales ([06d38b4](https://github.com/Yorobro/E-JDR-Frontend/commit/06d38b4504024e8aae3b17a38a29464ef2782535))
+* tokens de mouvement appmotion (source unique des durees et courbes) ([2e8cb96](https://github.com/Yorobro/E-JDR-Frontend/commit/2e8cb967a91fb9d230ee4e935f010a2e086152cd))
+* transitions d'ecran fluides (fade + glissement) ([505ccf6](https://github.com/Yorobro/E-JDR-Frontend/commit/505ccf60f750b24371fc6c6d76c1d14b99b236e9))
+* type uimessage pour le feedback transitoire ([2cf1119](https://github.com/Yorobro/E-JDR-Frontend/commit/2cf1119f19c5f35626aa030a10c9bd7f18b8dda3))
+* typographie a hierarchie renforcee avec polices custom ([889c038](https://github.com/Yorobro/E-JDR-Frontend/commit/889c038c3a979a8a73e5be8f9736f7cf6ab0d668))
+* utilitaire de formatage de date (formatdate + relativedate purs) ([c8e8ed2](https://github.com/Yorobro/E-JDR-Frontend/commit/c8e8ed22b6f8e19432645a777734af911558baac))
+* validation progressive des formulaires de creation ([1487790](https://github.com/Yorobro/E-JDR-Frontend/commit/1487790db703ecb981f95920bd7a6c8456bb065b))
+
+
+### Bug Fixes
+
+* supprimer la transition de navigation (flash vers le clair au changement de page) ([9830a8c](https://github.com/Yorobro/E-JDR-Frontend/commit/9830a8cdec1d88fb7dcea912a3b642e8dc948906))
+
 ## [1.21.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.20.0...v1.21.0) (2026-06-21)
 
 
