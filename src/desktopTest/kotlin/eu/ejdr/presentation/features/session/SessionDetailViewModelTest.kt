@@ -39,6 +39,7 @@ class SessionDetailViewModelTest {
             getById = GetSessionUseCase { Result.Success(session()) },
             update = UpdateSessionUseCase { _, _, _ -> Result.Success(session()) },
             deleteSession = DeleteSessionUseCase { Result.Success(Unit) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -53,6 +54,7 @@ class SessionDetailViewModelTest {
             getById = GetSessionUseCase { Result.Success(session()) },
             update = UpdateSessionUseCase { _, title, date -> Result.Success(session(title = title, date = date)) },
             deleteSession = DeleteSessionUseCase { Result.Success(Unit) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -71,6 +73,7 @@ class SessionDetailViewModelTest {
             getById = GetSessionUseCase { Result.Success(session()) },
             update = UpdateSessionUseCase { _, _, _ -> Result.Failure(SessionError.InvalidTitle) },
             deleteSession = DeleteSessionUseCase { Result.Success(Unit) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -87,6 +90,7 @@ class SessionDetailViewModelTest {
             getById = GetSessionUseCase { Result.Success(session()) },
             update = UpdateSessionUseCase { _, _, _ -> Result.Success(session()) },
             deleteSession = DeleteSessionUseCase { Result.Success(Unit) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -104,6 +108,7 @@ class SessionDetailViewModelTest {
             getById = GetSessionUseCase { Result.Success(session()) },
             update = UpdateSessionUseCase { _, _, _ -> Result.Success(session()) },
             deleteSession = DeleteSessionUseCase { Result.Failure(SessionError.AccessDenied) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 

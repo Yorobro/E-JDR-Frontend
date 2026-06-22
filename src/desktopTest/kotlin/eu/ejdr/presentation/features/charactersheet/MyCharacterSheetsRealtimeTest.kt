@@ -51,6 +51,7 @@ class MyCharacterSheetsRealtimeTest {
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
             getCurrentUser = GetCurrentUserUseCase { Result.Success(User(id = "u1", email = "a@b.c", pseudo = "A")) },
             invalidationBus = bus,
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
         assertEquals(1, vm.sheets.value.size)
@@ -74,6 +75,7 @@ class MyCharacterSheetsRealtimeTest {
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
             getCurrentUser = GetCurrentUserUseCase { Result.Success(User(id = "u1", email = "a@b.c", pseudo = "A")) },
             invalidationBus = bus,
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 

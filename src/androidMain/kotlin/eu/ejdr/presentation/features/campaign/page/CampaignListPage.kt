@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
 import eu.ejdr.domain.features.campaign.entities.Campaign
@@ -57,6 +58,7 @@ fun CampaignListPage(
             get<ListCampaignsUseCase>(),
             get<CreateCampaignUseCase>(),
             get<DeleteCampaignUseCase>(),
+            get<UiMessageBus>(),
         )
     }
     val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()

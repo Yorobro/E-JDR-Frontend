@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
@@ -70,6 +71,7 @@ fun MyCharacterSheetsPage(
             get<DeleteCharacterSheetUseCase>(),
             get<GetCurrentUserUseCase>(),
             get<InvalidationBus>(),
+            get<UiMessageBus>(),
         )
     }
     val sheets by viewModel.sheets.collectAsStateWithLifecycle()

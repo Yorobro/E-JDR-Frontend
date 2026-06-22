@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.session.abstraction.usecase.DeleteSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.presentation.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +31,7 @@ class SessionDetailViewModel(
     private val getById: GetSessionUseCase,
     private val update: UpdateSessionUseCase,
     private val deleteSession: DeleteSessionUseCase,
+    private val uiMessageBus: UiMessageBus,
 ) : ViewModel() {
 
     private val _session = MutableStateFlow<Session?>(null)
@@ -64,8 +67,15 @@ class SessionDetailViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             update(sessionId, title, date).fold(
-                onSuccess = { _session.value = it; _error.value = null },
-                onFailure = { _error.value = it.message },
+                onSuccess = {
+                    _session.value = it
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Session enregistrée"))
+                },
+                onFailure = {
+                    _error.value = it.message
+                    uiMessageBus.emit(UiMessage.error(it.message))
+                },
             )
             _isLoading.value = false
         }
@@ -76,8 +86,15 @@ class SessionDetailViewModel(
         viewModelScope.launch {
             _isLoading.value = true
             deleteSession(sessionId).fold(
-                onSuccess = { _error.value = null; _deleted.value = true },
-                onFailure = { _error.value = it.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Session supprimée"))
+                    _deleted.value = true
+                },
+                onFailure = {
+                    _error.value = it.message
+                    uiMessageBus.emit(UiMessage.error(it.message))
+                },
             )
             _isLoading.value = false
         }

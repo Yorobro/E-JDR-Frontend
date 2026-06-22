@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.campaign.entities.Campaign
+import eu.ejdr.presentation.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,6 +32,7 @@ class CampaignListViewModel(
     private val listCampaigns: ListCampaignsUseCase,
     private val createCampaign: CreateCampaignUseCase,
     private val deleteCampaign: DeleteCampaignUseCase,
+    private val uiMessageBus: UiMessageBus,
 ) : ViewModel() {
 
     private val _campaigns = MutableStateFlow<List<Campaign>>(emptyList())
@@ -85,9 +88,13 @@ class CampaignListViewModel(
             createCampaign(name, groupId).fold(
                 onSuccess = {
                     _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Campagne créée"))
                     reload(groupId)
                 },
-                onFailure = { campaignError -> _error.value = campaignError.message },
+                onFailure = { campaignError ->
+                    _error.value = campaignError.message
+                    uiMessageBus.emit(UiMessage.error(campaignError.message))
+                },
             )
         }
     }
@@ -102,9 +109,13 @@ class CampaignListViewModel(
             deleteCampaign(id).fold(
                 onSuccess = {
                     _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Campagne supprimée"))
                     reload(activeGroupId.value)
                 },
-                onFailure = { campaignError -> _error.value = campaignError.message },
+                onFailure = { campaignError ->
+                    _error.value = campaignError.message
+                    uiMessageBus.emit(UiMessage.error(campaignError.message))
+                },
             )
         }
     }

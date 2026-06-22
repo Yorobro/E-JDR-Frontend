@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.CreateGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeleteGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyGroupsUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroup
+import eu.ejdr.presentation.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +18,7 @@ class GroupListViewModel(
     private val listMyGroups: ListMyGroupsUseCase,
     private val createGroup: CreateGroupUseCase,
     private val deleteGroup: DeleteGroupUseCase,
+    private val uiMessageBus: UiMessageBus,
 ) : ViewModel() {
 
     private val _groups = MutableStateFlow<List<FriendGroup>>(emptyList())
@@ -45,8 +48,15 @@ class GroupListViewModel(
     fun create(name: String) {
         viewModelScope.launch {
             createGroup(name).fold(
-                onSuccess = { _error.value = null; load() },
-                onFailure = { err -> _error.value = err.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Groupe créé"))
+                    load()
+                },
+                onFailure = { err ->
+                    _error.value = err.message
+                    uiMessageBus.emit(UiMessage.error(err.message))
+                },
             )
         }
     }
@@ -54,8 +64,15 @@ class GroupListViewModel(
     fun delete(groupId: String) {
         viewModelScope.launch {
             deleteGroup(groupId).fold(
-                onSuccess = { _error.value = null; load() },
-                onFailure = { err -> _error.value = err.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Groupe supprimé"))
+                    load()
+                },
+                onFailure = { err ->
+                    _error.value = err.message
+                    uiMessageBus.emit(UiMessage.error(err.message))
+                },
             )
         }
     }

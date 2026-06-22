@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
@@ -70,6 +71,7 @@ fun ReferenceListPage(
             get<CreateReferenceItemUseCase>(),
             get<UpdateReferenceItemUseCase>(),
             get<DeleteReferenceItemUseCase>(),
+            get<UiMessageBus>(),
         )
     }
     val items by viewModel.items.collectAsStateWithLifecycle()

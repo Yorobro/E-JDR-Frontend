@@ -51,6 +51,7 @@ class MyCharacterSheetsViewModelTest {
         deleteSheet = deleteSheet,
         getCurrentUser = getCurrentUser,
         invalidationBus = invalidationBus,
+            uiMessageBus = io.mockk.mockk(relaxed = true),
     )
 
     @Test
@@ -96,6 +97,7 @@ class MyCharacterSheetsViewModelTest {
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
             getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com", "current")) },
             invalidationBus = InMemoryInvalidationBus(),
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
         assertEquals("g-1", vm.sheets.value.first().id)

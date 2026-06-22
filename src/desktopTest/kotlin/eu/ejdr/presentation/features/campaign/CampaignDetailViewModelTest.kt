@@ -55,6 +55,7 @@ class CampaignDetailViewModelTest {
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
             listCampaignSessions = emptySessions,
             createSession = createSessionOk,
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -77,6 +78,7 @@ class CampaignDetailViewModelTest {
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
             listCampaignSessions = emptySessions,
             createSession = createSessionOk,
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -99,6 +101,7 @@ class CampaignDetailViewModelTest {
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
             listCampaignSessions = emptySessions,
             createSession = createSessionOk,
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -118,6 +121,7 @@ class CampaignDetailViewModelTest {
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
             listCampaignSessions = ListCampaignSessionsUseCase { Result.Success(listOf(session("a"), session("b"))) },
             createSession = createSessionOk,
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -139,6 +143,7 @@ class CampaignDetailViewModelTest {
                 stored = listOf(session("new"))
                 Result.Success(session("new"))
             },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -159,6 +164,7 @@ class CampaignDetailViewModelTest {
             unlinkCharacter = UnlinkCharacterFromCampaignUseCase { _, _ -> Result.Success(Unit) },
             listCampaignSessions = emptySessions,
             createSession = CreateSessionUseCase { _, _, _ -> Result.Failure(SessionError.InvalidDate) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 

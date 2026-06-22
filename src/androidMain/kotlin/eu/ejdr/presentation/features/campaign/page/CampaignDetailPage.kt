@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
@@ -57,6 +58,7 @@ fun CampaignDetailPage(
             unlinkCharacter = get<UnlinkCharacterFromCampaignUseCase>(),
             listCampaignSessions = get<ListCampaignSessionsUseCase>(),
             createSession = get<CreateSessionUseCase>(),
+            uiMessageBus = get<UiMessageBus>(),
         )
     }
     val characters by viewModel.characters.collectAsStateWithLifecycle()

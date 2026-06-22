@@ -8,9 +8,11 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinka
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.presentation.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,6 +41,7 @@ class CampaignDetailViewModel(
     private val unlinkCharacter: UnlinkCharacterFromCampaignUseCase,
     private val listCampaignSessions: ListCampaignSessionsUseCase,
     private val createSession: CreateSessionUseCase,
+    private val uiMessageBus: UiMessageBus,
 ) : ViewModel() {
 
     private val _characters = MutableStateFlow<List<CharacterSheet>>(emptyList())
@@ -86,8 +89,15 @@ class CampaignDetailViewModel(
     fun createSession(title: String, date: String) {
         viewModelScope.launch {
             createSession(campaignId, title, date).fold(
-                onSuccess = { _error.value = null; loadSessions() },
-                onFailure = { _error.value = it.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Session créée"))
+                    loadSessions()
+                },
+                onFailure = {
+                    _error.value = it.message
+                    uiMessageBus.emit(UiMessage.error(it.message))
+                },
             )
         }
     }
@@ -96,8 +106,15 @@ class CampaignDetailViewModel(
     fun link(characterSheetId: String) {
         viewModelScope.launch {
             linkCharacter(campaignId, characterSheetId).fold(
-                onSuccess = { _error.value = null; load() },
-                onFailure = { _error.value = it.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Fiche rattachée"))
+                    load()
+                },
+                onFailure = {
+                    _error.value = it.message
+                    uiMessageBus.emit(UiMessage.error(it.message))
+                },
             )
         }
     }
@@ -106,8 +123,15 @@ class CampaignDetailViewModel(
     fun unlink(characterSheetId: String) {
         viewModelScope.launch {
             unlinkCharacter(campaignId, characterSheetId).fold(
-                onSuccess = { _error.value = null; load() },
-                onFailure = { _error.value = it.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Fiche retirée"))
+                    load()
+                },
+                onFailure = {
+                    _error.value = it.message
+                    uiMessageBus.emit(UiMessage.error(it.message))
+                },
             )
         }
     }
