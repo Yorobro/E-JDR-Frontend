@@ -8,8 +8,10 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.Result
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.application.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,6 +39,7 @@ class MyCharacterSheetsViewModel(
     private val deleteSheet: DeleteCharacterSheetUseCase,
     private val getCurrentUser: GetCurrentUserUseCase,
     private val invalidationBus: InvalidationBus,
+    private val uiMessageBus: UiMessageBus,
 ) : ViewModel() {
 
     private val _sheets = MutableStateFlow<List<CharacterSheet>>(emptyList())
@@ -106,9 +109,13 @@ class MyCharacterSheetsViewModel(
             createSheet(name, groupId).fold(
                 onSuccess = {
                     _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Fiche créée"))
                     reload(groupId)
                 },
-                onFailure = { error -> _error.value = error.message },
+                onFailure = { error ->
+                    _error.value = error.message
+                    uiMessageBus.emit(UiMessage.error(error.message))
+                },
             )
         }
     }
@@ -119,9 +126,13 @@ class MyCharacterSheetsViewModel(
             deleteSheet(id).fold(
                 onSuccess = {
                     _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Fiche supprimée"))
                     reload(activeGroupId.value)
                 },
-                onFailure = { error -> _error.value = error.message },
+                onFailure = { error ->
+                    _error.value = error.message
+                    uiMessageBus.emit(UiMessage.error(error.message))
+                },
             )
         }
     }

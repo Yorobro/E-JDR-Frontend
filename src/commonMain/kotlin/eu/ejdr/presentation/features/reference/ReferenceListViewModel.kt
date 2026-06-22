@@ -6,9 +6,11 @@ import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenc
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
+import eu.ejdr.application.shared.feedback.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -37,6 +39,7 @@ class ReferenceListViewModel(
     private val createItem: CreateReferenceItemUseCase,
     private val updateItem: UpdateReferenceItemUseCase,
     private val deleteItem: DeleteReferenceItemUseCase,
+    private val uiMessageBus: UiMessageBus,
 ) : ViewModel() {
 
     private val _items = MutableStateFlow<List<ReferenceItem>>(emptyList())
@@ -128,8 +131,15 @@ class ReferenceListViewModel(
         viewModelScope.launch {
             createItem(type, name, groupId, stat, bonus, competenceIds, protectionPoints, description)
                 .fold(
-                    onSuccess = { _error.value = null; reload(groupId) },
-                    onFailure = { error -> _error.value = error.message },
+                    onSuccess = {
+                        _error.value = null
+                        uiMessageBus.emit(UiMessage.success("Élément créé"))
+                        reload(groupId)
+                    },
+                    onFailure = { error ->
+                        _error.value = error.message
+                        uiMessageBus.emit(UiMessage.error(error.message))
+                    },
                 )
         }
     }
@@ -160,8 +170,15 @@ class ReferenceListViewModel(
                 protectionPoints,
                 description,
             ).fold(
-                onSuccess = { _error.value = null; reload(groupId) },
-                onFailure = { error -> _error.value = error.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Élément modifié"))
+                    reload(groupId)
+                },
+                onFailure = { error ->
+                    _error.value = error.message
+                    uiMessageBus.emit(UiMessage.error(error.message))
+                },
             )
         }
     }
@@ -170,8 +187,15 @@ class ReferenceListViewModel(
     fun delete(itemId: String) {
         viewModelScope.launch {
             deleteItem(type, itemId).fold(
-                onSuccess = { _error.value = null; reload(activeGroupId.value) },
-                onFailure = { error -> _error.value = error.message },
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Élément supprimé"))
+                    reload(activeGroupId.value)
+                },
+                onFailure = { error ->
+                    _error.value = error.message
+                    uiMessageBus.emit(UiMessage.error(error.message))
+                },
             )
         }
     }

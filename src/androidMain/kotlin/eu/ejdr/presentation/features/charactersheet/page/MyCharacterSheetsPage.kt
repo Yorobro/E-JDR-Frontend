@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
@@ -30,16 +33,20 @@ import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCard
 import eu.ejdr.presentation.features.charactersheet.component.ConfirmDeleteSheetDialog
 import eu.ejdr.presentation.features.charactersheet.component.CreateCharacterSheetDialog
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
-import eu.ejdr.presentation.shared.component.atomic.AppFab
+import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
+import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
 private val MinTileWidth = 160.dp
 private val GridBottomPadding = 96.dp
+private val CardHeight = 140.dp
 
 /**
  * Page « Mes fiches » Android : grille adaptative de tuiles (1-2 colonnes mobile), FAB de
@@ -59,6 +66,7 @@ fun MyCharacterSheetsPage(
             get<DeleteCharacterSheetUseCase>(),
             get<GetCurrentUserUseCase>(),
             get<InvalidationBus>(),
+            get<UiMessageBus>(),
         )
     }
     val sheets by viewModel.sheets.collectAsStateWithLifecycle()
@@ -84,7 +92,17 @@ fun MyCharacterSheetsPage(
                 modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.md),
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
-                AppText(text = "Mes fiches", style = AppTextStyle.Title)
+                PageHeader(
+                    title = "Mes fiches",
+                    subtitle = "${sheets.size} ${if (sheets.size > 1) "fiches" else "fiche"}",
+                    action = {
+                        AppButton(
+                            label = "Nouvelle fiche",
+                            onClick = { showCreate = true },
+                            leadingIcon = Icons.Default.Add,
+                        )
+                    },
+                )
                 FormError(message = error)
                 CharacterSheetGrid(
                     sheets = sheets,
@@ -93,14 +111,9 @@ fun MyCharacterSheetsPage(
                     currentUserId = currentUserId,
                     onOpenSheet = onOpenSheet,
                     onDeleteRequest = { pendingDelete = it },
+                    onCreateRequest = { showCreate = true },
                 )
             }
-
-            AppFab(
-                onClick = { showCreate = true },
-                contentDescription = "Ajouter une fiche",
-                modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
-            )
         }
     }
 
@@ -134,20 +147,20 @@ private fun CharacterSheetGrid(
     currentUserId: String?,
     onOpenSheet: (id: String, name: String) -> Unit,
     onDeleteRequest: (CharacterSheet) -> Unit,
+    onCreateRequest: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             isLoading && sheets.isEmpty() ->
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = AppTheme.colors.primary,
-                )
+                SkeletonGrid(itemHeight = CardHeight)
 
             sheets.isEmpty() ->
-                AppText(
-                    text = "Aucune fiche pour le moment.",
-                    style = AppTextStyle.Body,
-                    color = AppTheme.colors.muted,
+                EmptyState(
+                    icon = Icons.Default.Person,
+                    title = "Aucune fiche pour l'instant",
+                    message = "Crée ton premier personnage pour ce groupe.",
+                    actionLabel = "Créer une fiche",
+                    onAction = onCreateRequest,
                     modifier = Modifier.align(Alignment.Center),
                 )
 
@@ -164,6 +177,7 @@ private fun CharacterSheetGrid(
                         sheet = sheet,
                         onClick = { onOpenSheet(sheet.id, sheet.name) },
                         onDelete = if (canDelete) ({ onDeleteRequest(sheet) }) else null,
+                        modifier = Modifier.animateItem(),
                     )
                 }
             }

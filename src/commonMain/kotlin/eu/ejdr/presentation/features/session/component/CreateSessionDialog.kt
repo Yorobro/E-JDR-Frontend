@@ -38,8 +38,10 @@ fun CreateSessionDialog(
     errorMessage: String? = null,
 ) {
     var title by remember { mutableStateOf("") }
+    var titleTouched by remember { mutableStateOf(false) }
     var date by remember { mutableStateOf("") }
     val dateValid = DatePattern.matches(date)
+    val titleError = if (titleTouched && title.isBlank()) "Le titre ne peut pas être vide" else null
 
     AppDialog(
         title = "Nouvelle session",
@@ -55,8 +57,9 @@ fun CreateSessionDialog(
         ) {
             AppTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { title = it; titleTouched = true },
                 label = "Titre de la session",
+                errorMessage = titleError,
                 modifier = Modifier.fillMaxWidth(),
             )
             AppTextField(

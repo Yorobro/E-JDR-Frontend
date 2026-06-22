@@ -36,6 +36,7 @@ class GroupListViewModelTest {
             listMyGroups = ListMyGroupsUseCase { Result.Success(listOf(group("g1"))) },
             createGroup = CreateGroupUseCase { Result.Success(group("g2")) },
             deleteGroup = DeleteGroupUseCase { Result.Success(Unit) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -53,6 +54,7 @@ class GroupListViewModelTest {
                 Result.Success(group("g1", name))
             },
             deleteGroup = DeleteGroupUseCase { Result.Success(Unit) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -70,6 +72,7 @@ class GroupListViewModelTest {
             listMyGroups = ListMyGroupsUseCase { Result.Success(emptyList()) },
             createGroup = CreateGroupUseCase { Result.Failure(FriendGroupError.InvalidGroupName) },
             deleteGroup = DeleteGroupUseCase { Result.Success(Unit) },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 
@@ -89,6 +92,7 @@ class GroupListViewModelTest {
                 stored = emptyList()
                 Result.Success(Unit)
             },
+            uiMessageBus = io.mockk.mockk(relaxed = true),
         )
         advanceUntilIdle()
 

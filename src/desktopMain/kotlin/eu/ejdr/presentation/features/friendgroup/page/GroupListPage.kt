@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Group
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -19,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.CreateGroupUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeleteGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyGroupsUseCase
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroup
@@ -26,15 +29,17 @@ import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.friendgroup.GroupListViewModel
 import eu.ejdr.presentation.features.friendgroup.component.CreateGroupDialog
 import eu.ejdr.presentation.features.friendgroup.component.GroupCard
-import eu.ejdr.presentation.shared.component.atomic.AppFab
-import eu.ejdr.presentation.shared.component.atomic.AppText
-import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.atomic.AppButton
+import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.molecule.SkeletonList
+import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
 private val ListBottomPadding = 96.dp
+private val GroupCardHeight = 110.dp
 
 @Composable
 fun GroupListPage(
@@ -46,6 +51,7 @@ fun GroupListPage(
             get<ListMyGroupsUseCase>(),
             get<CreateGroupUseCase>(),
             get<DeleteGroupUseCase>(),
+            get<UiMessageBus>(),
         )
     }
     val activeGroupState = koinInject<ActiveGroupState>()
@@ -62,23 +68,31 @@ fun GroupListPage(
             modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.xl),
             verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
         ) {
+            PageHeader(
+                title = "Groupes",
+                subtitle = "${groups.size} ${if (groups.size > 1) "groupes" else "groupe"}",
+                action = {
+                    AppButton(
+                        label = "Nouveau groupe",
+                        onClick = { showCreate = true },
+                        leadingIcon = Icons.Default.Add,
+                    )
+                },
+            )
             FormError(message = error)
 
             when {
                 isLoading && groups.isEmpty() ->
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = AppTheme.colors.primary,
-                        )
-                    }
+                    SkeletonList(itemHeight = GroupCardHeight)
 
                 groups.isEmpty() ->
                     Box(modifier = Modifier.fillMaxSize()) {
-                        AppText(
-                            text = "Aucun groupe pour le moment. Créez votre premier groupe !",
-                            style = AppTextStyle.Body,
-                            color = AppTheme.colors.muted,
+                        EmptyState(
+                            icon = Icons.Default.Group,
+                            title = "Aucun groupe",
+                            message = "Crée un groupe pour jouer avec tes amis.",
+                            actionLabel = "Créer un groupe",
+                            onAction = { showCreate = true },
                             modifier = Modifier.align(Alignment.Center),
                         )
                     }
@@ -98,17 +112,12 @@ fun GroupListPage(
                                 onDelete = if (group.myRole == "ADMIN") {
                                     { viewModel.delete(group.id) }
                                 } else null,
+                                modifier = Modifier.animateItem(),
                             )
                         }
                     }
             }
         }
-
-        AppFab(
-            onClick = { showCreate = true },
-            contentDescription = "Créer un groupe",
-            modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
-        )
     }
 
     if (showCreate) {

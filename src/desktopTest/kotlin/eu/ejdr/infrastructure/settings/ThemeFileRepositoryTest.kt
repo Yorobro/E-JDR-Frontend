@@ -22,27 +22,27 @@ class ThemeFileRepositoryTest {
 
     @Test
     fun `defaults to LIGHT when nothing is persisted`() = runTest {
-        assertEquals(ThemeVariant.LIGHT, repository.getTheme())
+        assertEquals(ThemeVariant.DEFAULT, repository.getTheme())
     }
 
     @Test
     fun `persists and reads back the theme`() = runTest {
-        assertIs<Result.Success<Unit>>(repository.setTheme(ThemeVariant.DARK))
-        assertEquals(ThemeVariant.DARK, repository.getTheme())
+        assertIs<Result.Success<Unit>>(repository.setTheme(ThemeVariant.GRIMOIRE))
+        assertEquals(ThemeVariant.GRIMOIRE, repository.getTheme())
     }
 
     @Test
     fun `a fresh repository reads the previously persisted value`() = runTest {
-        repository.setTheme(ThemeVariant.DARK)
+        repository.setTheme(ThemeVariant.GRIMOIRE)
 
-        assertEquals(ThemeVariant.DARK, ThemeFileRepository(tmpDir).getTheme())
+        assertEquals(ThemeVariant.GRIMOIRE, ThemeFileRepository(tmpDir).getTheme())
     }
 
     @Test
     fun `falls back to LIGHT on a corrupted theme value`() = runTest {
         File(tmpDir, "settings.properties").writeText("theme=NOT_A_THEME")
 
-        assertEquals(ThemeVariant.LIGHT, repository.getTheme())
+        assertEquals(ThemeVariant.DEFAULT, repository.getTheme())
     }
 
     @Test
@@ -51,7 +51,7 @@ class ThemeFileRepositoryTest {
         try {
             // dataDir pointe sur un fichier : impossible d'y créer "settings.properties".
             val brokenRepository = ThemeFileRepository(filePath)
-            assertIs<Result.Failure<*>>(brokenRepository.setTheme(ThemeVariant.DARK))
+            assertIs<Result.Failure<*>>(brokenRepository.setTheme(ThemeVariant.GRIMOIRE))
         } finally {
             filePath.delete()
         }

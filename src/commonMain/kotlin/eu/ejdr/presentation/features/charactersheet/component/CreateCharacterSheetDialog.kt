@@ -28,6 +28,8 @@ fun CreateCharacterSheetDialog(
     errorMessage: String? = null,
 ) {
     var name by remember { mutableStateOf("") }
+    var touched by remember { mutableStateOf(false) }
+    val fieldError = if (touched && name.isBlank()) "Le nom ne peut pas être vide" else null
 
     AppDialog(
         title = "Nouvelle fiche",
@@ -40,8 +42,9 @@ fun CreateCharacterSheetDialog(
         Column(modifier = Modifier.fillMaxWidth()) {
             AppTextField(
                 value = name,
-                onValueChange = { name = it },
+                onValueChange = { name = it; touched = true },
                 label = "Nom de la fiche",
+                errorMessage = fieldError,
                 modifier = Modifier.fillMaxWidth(),
             )
             FormError(message = errorMessage)

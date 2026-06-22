@@ -3,9 +3,13 @@ package eu.ejdr.presentation.features.campaign
 import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
+import eu.ejdr.application.shared.feedback.UiMessageTone
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.domain.features.campaign.error.CampaignError
+import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +30,8 @@ class CampaignListViewModelTest {
 
     private val dispatcher = StandardTestDispatcher()
 
+    private val uiMessageBus = mockk<UiMessageBus>(relaxed = true)
+
     @BeforeTest fun setUp() = Dispatchers.setMain(dispatcher)
 
     @AfterTest fun tearDown() = Dispatchers.resetMain()
@@ -44,6 +50,7 @@ class CampaignListViewModelTest {
             },
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
 
@@ -63,6 +70,7 @@ class CampaignListViewModelTest {
             listCampaigns = ListCampaignsUseCase { called = true; Result.Success(emptyList()) },
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
 
@@ -81,6 +89,7 @@ class CampaignListViewModelTest {
             },
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
         assertEquals("c-g-1", vm.campaigns.value.first().id)
@@ -98,6 +107,7 @@ class CampaignListViewModelTest {
             listCampaigns = ListCampaignsUseCase { Result.Failure(CampaignError.Network) },
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
 
@@ -118,6 +128,7 @@ class CampaignListViewModelTest {
                 Result.Success(campaign("c-2", name))
             },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
 
@@ -136,6 +147,7 @@ class CampaignListViewModelTest {
             listCampaigns = ListCampaignsUseCase { Result.Success(listOf(campaign("c-1"))) },
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Failure(CampaignError.InvalidName) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
 
@@ -157,6 +169,7 @@ class CampaignListViewModelTest {
                 listing = listing.filterNot { it.id == id }
                 Result.Success(Unit)
             },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
 
@@ -175,6 +188,7 @@ class CampaignListViewModelTest {
             listCampaigns = ListCampaignsUseCase { Result.Success(listOf(campaign("c-1"))) },
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Failure(CampaignError.AccessDenied) },
+            uiMessageBus = uiMessageBus,
         )
         advanceUntilIdle()
 
@@ -182,5 +196,38 @@ class CampaignListViewModelTest {
         advanceUntilIdle()
 
         assertEquals(CampaignError.AccessDenied.message, vm.error.value)
+    }
+    @Test
+    fun `create success emits a success ui message`() = runTest {
+        val vm = CampaignListViewModel(
+            activeGroupId = MutableStateFlow("g-1"),
+            listCampaigns = ListCampaignsUseCase { Result.Success(listOf(campaign("c-1"))) },
+            createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("c-2")) },
+            deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
+        )
+        advanceUntilIdle()
+
+        vm.create("Nouvelle")
+        advanceUntilIdle()
+
+        verify { uiMessageBus.emit(match { it.tone == UiMessageTone.SUCCESS }) }
+    }
+
+    @Test
+    fun `create failure emits an error ui message`() = runTest {
+        val vm = CampaignListViewModel(
+            activeGroupId = MutableStateFlow("g-1"),
+            listCampaigns = ListCampaignsUseCase { Result.Success(listOf(campaign("c-1"))) },
+            createCampaign = CreateCampaignUseCase { _, _ -> Result.Failure(CampaignError.InvalidName) },
+            deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
+            uiMessageBus = uiMessageBus,
+        )
+        advanceUntilIdle()
+
+        vm.create("   ")
+        advanceUntilIdle()
+
+        verify { uiMessageBus.emit(match { it.tone == UiMessageTone.ERROR }) }
     }
 }

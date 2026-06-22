@@ -24,5 +24,6 @@ fun initKoin() = startKoin {
         referenceModule,
         friendGroupModule,
         realtimeModule,
+        feedbackModule,
     )
 }

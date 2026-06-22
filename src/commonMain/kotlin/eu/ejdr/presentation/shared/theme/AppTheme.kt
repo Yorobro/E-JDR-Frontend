@@ -14,6 +14,7 @@ private val LocalAppColors = staticCompositionLocalOf<AppColors> {
 }
 private val LocalAppTypography = staticCompositionLocalOf { AppTypography() }
 private val LocalAppDimens = staticCompositionLocalOf { AppDimens() }
+private val LocalAppMotion = staticCompositionLocalOf { AppMotion() }
 
 /**
  * Point d'accès unique au design system depuis les composables.
@@ -29,6 +30,8 @@ object AppTheme {
         @Composable @ReadOnlyComposable get() = LocalAppTypography.current
     val dimens: AppDimens
         @Composable @ReadOnlyComposable get() = LocalAppDimens.current
+    val motion: AppMotion
+        @Composable @ReadOnlyComposable get() = LocalAppMotion.current
 }
 
 /**
@@ -37,22 +40,24 @@ object AppTheme {
  * À placer une fois à la racine de l'application. Tout composant descendant peut
  * alors lire [AppTheme.colors], [AppTheme.typography] et [AppTheme.dimens].
  *
- * @param colors Palette à utiliser (par défaut [lightColors]).
+ * @param colors Palette à utiliser (par défaut le thème [colorsFor] de [eu.ejdr.domain.features.settings.entities.ThemeVariant.DEFAULT]).
  * @param typography Typographie à utiliser.
  * @param dimens Dimensions à utiliser.
  * @param content Contenu de l'application.
  */
 @Composable
 fun AppTheme(
-    colors: AppColors = lightColors(),
-    typography: AppTypography = AppTypography(),
+    colors: AppColors = colorsFor(eu.ejdr.domain.features.settings.entities.ThemeVariant.DEFAULT),
+    typography: AppTypography = appTypography(),
     dimens: AppDimens = AppDimens(),
+    motion: AppMotion = AppMotion(),
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
         LocalAppColors provides colors,
         LocalAppTypography provides typography,
         LocalAppDimens provides dimens,
+        LocalAppMotion provides motion,
         // Couleur de contenu par défaut de l'app : les atomes qui s'appuient sur
         // LocalContentColor (ex. AppIcon sans tint explicite) héritent de `text`. Les
         // conteneurs Material (FAB, bouton…) la surchargent localement par leur contentColor.

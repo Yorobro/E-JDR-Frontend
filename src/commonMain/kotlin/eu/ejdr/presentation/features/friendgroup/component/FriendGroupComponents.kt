@@ -1,7 +1,10 @@
 package eu.ejdr.presentation.features.friendgroup.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,6 +20,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroup
 import eu.ejdr.domain.features.friendgroup.entities.GroupInvitation
@@ -27,6 +31,8 @@ import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
+import eu.ejdr.presentation.shared.component.modifier.interactiveCard
+import eu.ejdr.presentation.shared.component.modifier.interactiveCardElevation
 import eu.ejdr.presentation.shared.component.organism.AppDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 
@@ -41,11 +47,15 @@ fun GroupCard(
 ) {
     val borderColor = if (isActive) AppTheme.colors.primary else AppTheme.colors.border
     val borderWidth = if (isActive) 2.dp else 1.dp
+    val interactionSource = remember { MutableInteractionSource() }
+    val elevation = interactiveCardElevation(interactionSource, enabled = true, base = AppTheme.dimens.elevationSm)
 
     Card(
         onClick = onClick,
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().interactiveCard(interactionSource, enabled = true),
+        interactionSource = interactionSource,
         colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
         border = BorderStroke(borderWidth, borderColor),
         shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
     ) {
@@ -57,11 +67,19 @@ fun GroupCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     AppText(text = group.name, style = AppTextStyle.Subtitle)
-                    AppText(
-                        text = if (group.myRole == "ADMIN") "Admin" else "Membre",
-                        style = AppTextStyle.Body,
-                        color = AppTheme.colors.textSecondary,
-                    )
+                    Box(
+                        modifier = Modifier
+                            .padding(top = AppTheme.dimens.xs)
+                            .clip(RoundedCornerShape(AppTheme.dimens.radiusSm))
+                            .background(AppTheme.colors.beige)
+                            .padding(horizontal = AppTheme.dimens.sm, vertical = AppTheme.dimens.xs),
+                    ) {
+                        AppText(
+                            text = roleLabel(group.myRole),
+                            style = AppTextStyle.Caption,
+                            color = AppTheme.colors.text,
+                        )
+                    }
                     if (isActive) {
                         AppText(text = "● Groupe actif", style = AppTextStyle.Body, color = AppTheme.colors.primary)
                     }
@@ -85,6 +103,8 @@ fun CreateGroupDialog(
     onConfirm: (String) -> Unit,
 ) {
     var name by remember { mutableStateOf("") }
+    var touched by remember { mutableStateOf(false) }
+    val fieldError = if (touched && name.isBlank()) "Le nom ne peut pas être vide" else null
 
     AppDialog(
         title = "Nouveau groupe",
@@ -95,8 +115,9 @@ fun CreateGroupDialog(
     ) {
         AppTextField(
             value = name,
-            onValueChange = { name = it },
+            onValueChange = { name = it; touched = true },
             label = "Nom du groupe",
+            errorMessage = fieldError,
             modifier = Modifier.fillMaxWidth(),
         )
     }

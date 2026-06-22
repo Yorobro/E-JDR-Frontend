@@ -26,7 +26,7 @@ class SettingsViewModelTest {
     @AfterTest fun tearDown() = Dispatchers.resetMain()
 
     private fun viewModel(
-        initial: ThemeVariant = ThemeVariant.LIGHT,
+        initial: ThemeVariant = ThemeVariant.PARCHEMIN,
         setResult: Result<Unit, SettingsError> = Result.Success(Unit),
         persisted: MutableList<ThemeVariant> = mutableListOf(),
     ) = SettingsViewModel(
@@ -36,42 +36,42 @@ class SettingsViewModelTest {
 
     @Test
     fun `exposes the initial theme from the get use case`() = runTest {
-        val vm = viewModel(initial = ThemeVariant.DARK)
+        val vm = viewModel(initial = ThemeVariant.GRIMOIRE)
         advanceUntilIdle()
-        assertEquals(ThemeVariant.DARK, vm.currentTheme.value)
+        assertEquals(ThemeVariant.GRIMOIRE, vm.currentTheme.value)
         assertNull(vm.error.value)
     }
 
     @Test
     fun `successful selection persists, updates state and notifies`() = runTest {
         val persisted = mutableListOf<ThemeVariant>()
-        val vm = viewModel(initial = ThemeVariant.LIGHT, persisted = persisted)
+        val vm = viewModel(initial = ThemeVariant.PARCHEMIN, persisted = persisted)
         advanceUntilIdle()
 
         var applied: ThemeVariant? = null
-        vm.onThemeSelected(ThemeVariant.DARK) { applied = it }
+        vm.onThemeSelected(ThemeVariant.GRIMOIRE) { applied = it }
         advanceUntilIdle()
 
-        assertEquals(ThemeVariant.DARK, applied)
-        assertEquals(listOf(ThemeVariant.DARK), persisted)
-        assertEquals(ThemeVariant.DARK, vm.currentTheme.value)
+        assertEquals(ThemeVariant.GRIMOIRE, applied)
+        assertEquals(listOf(ThemeVariant.GRIMOIRE), persisted)
+        assertEquals(ThemeVariant.GRIMOIRE, vm.currentTheme.value)
         assertNull(vm.error.value)
     }
 
     @Test
     fun `failed persistence keeps state unchanged and exposes an error`() = runTest {
         val vm = viewModel(
-            initial = ThemeVariant.LIGHT,
+            initial = ThemeVariant.PARCHEMIN,
             setResult = Result.Failure(SettingsError.ThemePersistenceFailed),
         )
         advanceUntilIdle()
 
         var applied: ThemeVariant? = null
-        vm.onThemeSelected(ThemeVariant.DARK) { applied = it }
+        vm.onThemeSelected(ThemeVariant.GRIMOIRE) { applied = it }
         advanceUntilIdle()
 
         assertNull(applied)
-        assertEquals(ThemeVariant.LIGHT, vm.currentTheme.value)
+        assertEquals(ThemeVariant.PARCHEMIN, vm.currentTheme.value)
         assertEquals(SettingsError.ThemePersistenceFailed.message, vm.error.value)
     }
 
@@ -79,20 +79,20 @@ class SettingsViewModelTest {
     fun `a successful selection clears a previous error`() = runTest {
         var nextResult: Result<Unit, SettingsError> = Result.Failure(SettingsError.ThemePersistenceFailed)
         val vm = SettingsViewModel(
-            getTheme = GetThemeUseCase { ThemeVariant.LIGHT },
+            getTheme = GetThemeUseCase { ThemeVariant.PARCHEMIN },
             setTheme = SetThemeUseCase { nextResult },
         )
         advanceUntilIdle()
 
-        vm.onThemeSelected(ThemeVariant.DARK) {}
+        vm.onThemeSelected(ThemeVariant.GRIMOIRE) {}
         advanceUntilIdle()
         assertEquals(SettingsError.ThemePersistenceFailed.message, vm.error.value)
 
         nextResult = Result.Success(Unit)
-        vm.onThemeSelected(ThemeVariant.DARK) {}
+        vm.onThemeSelected(ThemeVariant.GRIMOIRE) {}
         advanceUntilIdle()
 
         assertNull(vm.error.value)
-        assertEquals(ThemeVariant.DARK, vm.currentTheme.value)
+        assertEquals(ThemeVariant.GRIMOIRE, vm.currentTheme.value)
     }
 }

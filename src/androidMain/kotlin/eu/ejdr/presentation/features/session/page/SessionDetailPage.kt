@@ -15,6 +15,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.session.abstraction.usecase.DeleteSessionUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
@@ -46,6 +47,7 @@ fun SessionDetailPage(
             getById = get<GetSessionUseCase>(),
             update = get<UpdateSessionUseCase>(),
             deleteSession = get<DeleteSessionUseCase>(),
+            uiMessageBus = get<UiMessageBus>(),
         )
     }
     val activeGroupState = koinInject<ActiveGroupState>()

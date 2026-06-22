@@ -1,5 +1,8 @@
 package eu.ejdr.presentation.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,10 +54,14 @@ fun AppNavDisplay(
     resetTo: (Route) -> Unit,
 ) {
     val actions = NavActions(backStack, onLoggedIn, onLogout, onThemeChange, resetTo)
+    // Changement de page instantané : aucune transition (pas de fondu ni de glissement, qui
+    // laissaient entrevoir le fond pendant le chevauchement des écrans).
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
         entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
+        transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+        popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
         entryProvider = entryProvider {
             entry<Route.Splash> { SplashScreen() }
             authEntries(actions)

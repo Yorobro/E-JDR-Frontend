@@ -45,7 +45,7 @@ class ReferenceListViewModelTest {
         updateItem: UpdateReferenceItemUseCase =
             UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _, _ -> Result.Success(item("a")) },
         deleteItem: DeleteReferenceItemUseCase = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
-    ) = ReferenceListViewModel(type, activeGroupId, listItems, createItem, updateItem, deleteItem)
+    ) = ReferenceListViewModel(type, activeGroupId, listItems, createItem, updateItem, deleteItem, io.mockk.mockk(relaxed = true))
 
     @Test
     fun `loads the items of the given type and active group at init`() = runTest {

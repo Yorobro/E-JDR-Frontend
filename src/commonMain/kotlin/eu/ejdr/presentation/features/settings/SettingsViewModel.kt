@@ -30,7 +30,7 @@ class SettingsViewModel(
     private val setTheme: SetThemeUseCase,
 ) : ViewModel() {
 
-    private val _currentTheme = MutableStateFlow(ThemeVariant.LIGHT)
+    private val _currentTheme = MutableStateFlow(ThemeVariant.DEFAULT)
     val currentTheme: StateFlow<ThemeVariant> = _currentTheme.asStateFlow()
 
     private val _error = MutableStateFlow<String?>(null)

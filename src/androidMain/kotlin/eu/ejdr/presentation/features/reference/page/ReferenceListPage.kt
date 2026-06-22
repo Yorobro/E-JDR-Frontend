@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Category
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
@@ -30,22 +33,26 @@ import eu.ejdr.presentation.features.reference.ReferenceListViewModel
 import eu.ejdr.presentation.features.reference.component.ConfirmDeleteReferenceDialog
 import eu.ejdr.presentation.features.reference.component.ReferenceCard
 import eu.ejdr.presentation.features.reference.component.ReferenceFormDialog
-import eu.ejdr.presentation.shared.component.atomic.AppFab
+import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
+import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
 private val MinTileWidth = 180.dp
 private val GridBottomPadding = 96.dp
+private val ReferenceCardHeight = 120.dp
 
 /**
  * Page **générique** de gestion d'un catalogue d'éléments de référence (composant INTELLIGENT).
  *
  * Paramétrée par [type] : crée un [ReferenceListViewModel] retenu par la destination, affiche les
- * éléments en grille, un FAB de création et gère localement les modals. Une seule page pour les six
+ * éléments en grille, une action de création dans l'en-tête et gère localement les modals. Une seule page pour les six
  * catégories (clone de `CampaignListPage`).
  *
  * @param type Catégorie gérée.
@@ -66,6 +73,7 @@ fun ReferenceListPage(
             get<CreateReferenceItemUseCase>(),
             get<UpdateReferenceItemUseCase>(),
             get<DeleteReferenceItemUseCase>(),
+            get<UiMessageBus>(),
         )
     }
     val items by viewModel.items.collectAsStateWithLifecycle()
@@ -92,6 +100,19 @@ fun ReferenceListPage(
                 modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.xl),
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
+                PageHeader(
+                    title = type.label.replaceFirstChar { it.uppercase() },
+                    subtitle = "${items.size} ${if (items.size > 1) "éléments" else "élément"}",
+                    action = if (canEdit) {
+                        {
+                            AppButton(
+                                label = "Ajouter",
+                                onClick = { showCreate = true },
+                                leadingIcon = Icons.Default.Add,
+                            )
+                        }
+                    } else null,
+                )
                 FormError(message = error)
                 ReferenceGrid(
                     type = type,
@@ -101,14 +122,7 @@ fun ReferenceListPage(
                     canEdit = canEdit,
                     onEditRequest = { pendingEdit = it },
                     onDeleteRequest = { pendingDelete = it },
-                )
-            }
-
-            if (canEdit) {
-                AppFab(
-                    onClick = { showCreate = true },
-                    contentDescription = "Ajouter une ${type.singularLabel}",
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
+                    onCreateRequest = { showCreate = true },
                 )
             }
         }
@@ -180,7 +194,7 @@ private fun ReferenceFormDialogs(
     }
 }
 
-/** Zone de contenu : chargement initial, message si vide, ou grille de tuiles. */
+/** Zone de contenu : skeleton de chargement initial, état vide accueillant, ou grille de tuiles. */
 @Composable
 private fun ReferenceGrid(
     type: ReferenceType,
@@ -190,20 +204,20 @@ private fun ReferenceGrid(
     canEdit: Boolean,
     onEditRequest: (ReferenceItem) -> Unit,
     onDeleteRequest: (ReferenceItem) -> Unit,
+    onCreateRequest: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         when {
             isLoading && items.isEmpty() ->
-                CircularProgressIndicator(
-                    modifier = Modifier.align(Alignment.Center),
-                    color = AppTheme.colors.primary,
-                )
+                SkeletonGrid(itemHeight = ReferenceCardHeight)
 
             items.isEmpty() ->
-                AppText(
-                    text = "Aucun élément pour le moment.",
-                    style = AppTextStyle.Body,
-                    color = AppTheme.colors.muted,
+                EmptyState(
+                    icon = Icons.Default.Category,
+                    title = "Aucun élément",
+                    message = "Ajoute ton premier élément de référence.",
+                    actionLabel = if (canEdit) "Ajouter" else null,
+                    onAction = if (canEdit) onCreateRequest else null,
                     modifier = Modifier.align(Alignment.Center),
                 )
 
@@ -221,6 +235,7 @@ private fun ReferenceGrid(
                         competenceNames = competenceNames,
                         onEdit = if (canEdit) ({ onEditRequest(item) }) else null,
                         onDelete = if (canEdit) ({ onDeleteRequest(item) }) else null,
+                        modifier = Modifier.animateItem(),
                     )
                 }
             }
