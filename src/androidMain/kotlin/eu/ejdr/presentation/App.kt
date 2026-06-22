@@ -1,5 +1,6 @@
 package eu.ejdr.presentation
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -19,6 +20,7 @@ import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
+import eu.ejdr.presentation.shared.feedback.UiMessageHost
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.theme.colorsFor
 import kotlinx.coroutines.launch
@@ -77,15 +79,18 @@ fun App() {
             modifier = Modifier.fillMaxSize(),
             color = AppTheme.colors.background,
         ) {
-            AppNavDisplay(
-                backStack = backStack,
-                sessionStatus = rootState.sessionStatus,
-                activeGroupId = activeGroupState.activeGroupId,
-                onLoggedIn = rootState::onLoggedIn,
-                onLogout = { scope.launch { logout(); rootState.onLoggedOut(); resetTo(Route.Login) } },
-                onThemeChange = rootState::setTheme,
-                resetTo = ::resetTo,
-            )
+            Box(Modifier.fillMaxSize()) {
+                AppNavDisplay(
+                    backStack = backStack,
+                    sessionStatus = rootState.sessionStatus,
+                    activeGroupId = activeGroupState.activeGroupId,
+                    onLoggedIn = rootState::onLoggedIn,
+                    onLogout = { scope.launch { logout(); rootState.onLoggedOut(); resetTo(Route.Login) } },
+                    onThemeChange = rootState::setTheme,
+                    resetTo = ::resetTo,
+                )
+                UiMessageHost(bus = koinInject())
+            }
         }
     }
 }

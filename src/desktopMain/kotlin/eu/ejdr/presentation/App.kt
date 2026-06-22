@@ -1,5 +1,7 @@
 package eu.ejdr.presentation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -7,6 +9,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation3.runtime.rememberNavBackStack
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
@@ -23,6 +26,7 @@ import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
 import eu.ejdr.presentation.shared.component.organism.UpdateDialog
+import eu.ejdr.presentation.shared.feedback.UiMessageHost
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.theme.colorsFor
 import java.awt.Desktop
@@ -87,13 +91,16 @@ fun App() {
             }
         }
 
-        AppNavDisplay(
-            backStack = backStack,
-            onLoggedIn = rootState::onLoggedIn,
-            onLogout = { scope.launch { logout(); rootState.onLoggedOut(); resetTo(Route.Login) } },
-            onThemeChange = rootState::setTheme,
-            resetTo = ::resetTo,
-        )
+        Box(Modifier.fillMaxSize()) {
+            AppNavDisplay(
+                backStack = backStack,
+                onLoggedIn = rootState::onLoggedIn,
+                onLogout = { scope.launch { logout(); rootState.onLoggedOut(); resetTo(Route.Login) } },
+                onThemeChange = rootState::setTheme,
+                resetTo = ::resetTo,
+            )
+            UiMessageHost(bus = koinInject())
+        }
 
         updateInfo?.let { info ->
             val updateController = remember { UpdateController(downloadAndInstall, scope) }
