@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
 import eu.ejdr.domain.features.campaign.entities.Campaign
@@ -29,12 +31,13 @@ import eu.ejdr.presentation.features.campaign.component.CampaignCard
 import eu.ejdr.presentation.features.campaign.component.ConfirmDeleteDialog
 import eu.ejdr.presentation.features.campaign.component.CreateCampaignDialog
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
-import eu.ejdr.presentation.shared.component.atomic.AppFab
+import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
+import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
@@ -67,6 +70,7 @@ fun CampaignListPage(
             get<ListCampaignsUseCase>(),
             get<CreateCampaignUseCase>(),
             get<DeleteCampaignUseCase>(),
+            get<UiMessageBus>(),
         )
     }
     val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()
@@ -92,6 +96,19 @@ fun CampaignListPage(
                     .padding(AppTheme.dimens.xl),
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
+                PageHeader(
+                    title = "Campagnes",
+                    subtitle = "${campaigns.size} ${if (campaigns.size > 1) "campagnes" else "campagne"}",
+                    action = if (canEdit) {
+                        {
+                            AppButton(
+                                label = "Nouvelle campagne",
+                                onClick = { showCreate = true },
+                                leadingIcon = Icons.Default.Add,
+                            )
+                        }
+                    } else null,
+                )
                 FormError(message = error)
                 CampaignGrid(
                     campaigns = campaigns,
@@ -100,16 +117,6 @@ fun CampaignListPage(
                     onOpenCampaign = onOpenCampaign,
                     onDeleteRequest = { pendingDelete = it },
                     onCreateRequest = { showCreate = true },
-                )
-            }
-
-            if (canEdit) {
-                AppFab(
-                    onClick = { showCreate = true },
-                    contentDescription = "Ajouter une campagne",
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(AppTheme.dimens.xl),
                 )
             }
         }

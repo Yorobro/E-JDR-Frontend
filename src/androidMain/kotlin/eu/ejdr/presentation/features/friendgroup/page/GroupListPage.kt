@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Group
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -30,13 +31,11 @@ import eu.ejdr.presentation.features.friendgroup.GroupListViewModel
 import eu.ejdr.presentation.features.friendgroup.component.CreateGroupDialog
 import eu.ejdr.presentation.features.friendgroup.component.GroupCard
 import eu.ejdr.presentation.shared.component.atomic.AppButton
-import eu.ejdr.presentation.shared.component.atomic.AppFab
-import eu.ejdr.presentation.shared.component.atomic.AppText
-import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonList
+import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
@@ -77,7 +76,17 @@ fun GroupListPage(
             modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.md),
             verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
         ) {
-            AppText(text = "Mes groupes", style = AppTextStyle.Title)
+            PageHeader(
+                title = "Mes groupes",
+                subtitle = "${groups.size} ${if (groups.size > 1) "groupes" else "groupe"}",
+                action = {
+                    AppButton(
+                        label = "Nouveau groupe",
+                        onClick = { showCreate = true },
+                        leadingIcon = Icons.Default.Add,
+                    )
+                },
+            )
             AppButton(
                 label = "Invitations reçues",
                 onClick = onNavigateToInvitations,
@@ -123,12 +132,6 @@ fun GroupListPage(
                     }
             }
         }
-
-        AppFab(
-            onClick = { showCreate = true },
-            contentDescription = "Créer un groupe",
-            modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
-        )
     }
 
     if (showCreate) {

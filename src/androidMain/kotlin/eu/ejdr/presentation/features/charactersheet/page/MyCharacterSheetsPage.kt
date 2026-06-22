@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,12 +33,13 @@ import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCard
 import eu.ejdr.presentation.features.charactersheet.component.ConfirmDeleteSheetDialog
 import eu.ejdr.presentation.features.charactersheet.component.CreateCharacterSheetDialog
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
-import eu.ejdr.presentation.shared.component.atomic.AppFab
+import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
+import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
@@ -90,7 +92,17 @@ fun MyCharacterSheetsPage(
                 modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.md),
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
-                AppText(text = "Mes fiches", style = AppTextStyle.Title)
+                PageHeader(
+                    title = "Mes fiches",
+                    subtitle = "${sheets.size} ${if (sheets.size > 1) "fiches" else "fiche"}",
+                    action = {
+                        AppButton(
+                            label = "Nouvelle fiche",
+                            onClick = { showCreate = true },
+                            leadingIcon = Icons.Default.Add,
+                        )
+                    },
+                )
                 FormError(message = error)
                 CharacterSheetGrid(
                     sheets = sheets,
@@ -102,12 +114,6 @@ fun MyCharacterSheetsPage(
                     onCreateRequest = { showCreate = true },
                 )
             }
-
-            AppFab(
-                onClick = { showCreate = true },
-                contentDescription = "Ajouter une fiche",
-                modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
-            )
         }
     }
 

@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Category
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -32,12 +33,13 @@ import eu.ejdr.presentation.features.reference.ReferenceListViewModel
 import eu.ejdr.presentation.features.reference.component.ConfirmDeleteReferenceDialog
 import eu.ejdr.presentation.features.reference.component.ReferenceCard
 import eu.ejdr.presentation.features.reference.component.ReferenceFormDialog
-import eu.ejdr.presentation.shared.component.atomic.AppFab
+import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
+import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
@@ -98,6 +100,19 @@ fun ReferenceListPage(
                 modifier = Modifier.fillMaxSize().padding(AppTheme.dimens.xl),
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
+                PageHeader(
+                    title = type.label.replaceFirstChar { it.uppercase() },
+                    subtitle = "${items.size} ${if (items.size > 1) "éléments" else "élément"}",
+                    action = if (canEdit) {
+                        {
+                            AppButton(
+                                label = "Ajouter",
+                                onClick = { showCreate = true },
+                                leadingIcon = Icons.Default.Add,
+                            )
+                        }
+                    } else null,
+                )
                 FormError(message = error)
                 ReferenceGrid(
                     type = type,
@@ -108,14 +123,6 @@ fun ReferenceListPage(
                     onEditRequest = { pendingEdit = it },
                     onDeleteRequest = { pendingDelete = it },
                     onCreateRequest = { showCreate = true },
-                )
-            }
-
-            if (canEdit) {
-                AppFab(
-                    onClick = { showCreate = true },
-                    contentDescription = "Ajouter une ${type.singularLabel}",
-                    modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
                 )
             }
         }
