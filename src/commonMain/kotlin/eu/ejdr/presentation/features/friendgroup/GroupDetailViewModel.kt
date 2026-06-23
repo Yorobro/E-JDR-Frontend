@@ -2,10 +2,12 @@ package eu.ejdr.presentation.features.friendgroup
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMemberRoleUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.InviteMemberUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.RemoveMemberUseCase
+import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroupDetail
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,6 +21,7 @@ class GroupDetailViewModel(
     private val inviteMember: InviteMemberUseCase,
     private val removeMember: RemoveMemberUseCase,
     private val changeMemberRole: ChangeMemberRoleUseCase,
+    private val getCurrentUser: GetCurrentUserUseCase,
 ) : ViewModel() {
 
     private val _detail = MutableStateFlow<FriendGroupDetail?>(null)
@@ -33,8 +36,18 @@ class GroupDetailViewModel(
     private val _inviteSuccess = MutableStateFlow(false)
     val inviteSuccess: StateFlow<Boolean> = _inviteSuccess.asStateFlow()
 
+    /** Identifiant de l'utilisateur courant : sert à distinguer « ma carte » (quitter) des autres (retirer). */
+    private val _currentUserId = MutableStateFlow<String?>(null)
+    val currentUserId: StateFlow<String?> = _currentUserId.asStateFlow()
+
     init {
         load()
+        viewModelScope.launch {
+            when (val r = getCurrentUser()) {
+                is Result.Success -> _currentUserId.value = r.value.id
+                is Result.Failure -> Unit
+            }
+        }
     }
 
     fun load() {
