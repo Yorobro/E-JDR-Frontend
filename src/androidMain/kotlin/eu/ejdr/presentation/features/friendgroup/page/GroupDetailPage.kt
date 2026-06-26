@@ -101,9 +101,10 @@ fun GroupDetailPage(
                             val wouldDemoteLastAdmin = member.role == "ADMIN" && adminCount <= 1
                             val isMe = member.userId == currentUserId
                             // Quitter : sur MA carte, sauf si dernier admin (le back refuse). Retirer :
-                            // un autre membre, et je suis admin.
+                            // un autre membre non-admin, et je suis admin. Un admin ne peut pas retirer
+                            // un autre admin (le back refuse : CannotRemoveAdmin).
                             val canLeave = isMe && !wouldDemoteLastAdmin
-                            val canRemoveOther = !isMe && isAdmin
+                            val canRemoveOther = !isMe && isAdmin && member.role != "ADMIN"
                             MemberCard(
                                 member = member,
                                 canLeave = canLeave,
