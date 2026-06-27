@@ -19,7 +19,12 @@ object CampaignHttpMapper {
      * @return La [Campaign] correspondante.
      */
     fun toCampaign(dto: CampaignDto): Campaign =
-        Campaign(id = dto.id, name = dto.name, createdAt = dto.createdAt)
+        Campaign(
+            id = dto.id,
+            name = dto.name,
+            gameMasterId = dto.gameMasterId,
+            createdAt = dto.createdAt,
+        )
 
     /**
      * Traduit un échec HTTP en erreur métier campagne.

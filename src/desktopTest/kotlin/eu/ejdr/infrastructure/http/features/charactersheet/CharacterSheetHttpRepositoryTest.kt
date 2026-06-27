@@ -93,11 +93,44 @@ class CharacterSheetHttpRepositoryTest {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
         }
 
-        val result = repository(client).create("Aragorn", "g-1")
+        val result = repository(client).create("Aragorn", "g-1", "c-1")
 
         assertIs<Result.Success<CharacterSheet>>(result)
         assertEquals("s-1", result.value.id)
         assertTrue(requestBody.contains("\"groupId\":\"g-1\""), "Body should carry groupId: $requestBody")
+        assertTrue(
+            requestBody.contains("\"campaignId\":\"c-1\""),
+            "Body should carry campaignId: $requestBody",
+        )
+    }
+
+    @Test
+    fun `copy posts the target campaign and maps the new sheet`() = runTest {
+        val body = """{"id":"s-2","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z"}"""
+        var requestBody = ""
+        var requestedUrl = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            requestedUrl = request.url.toString()
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).copyToCampaign("s-1", "c-2")
+
+        assertIs<Result.Success<CharacterSheet>>(result)
+        assertEquals("s-2", result.value.id)
+        assertTrue(requestedUrl.contains("/character-sheets/s-1/copy"), "URL: $requestedUrl")
+        assertTrue(
+            requestBody.contains("\"targetCampaignId\":\"c-2\""),
+            "Body should carry targetCampaignId: $requestBody",
+        )
     }
 
     @Test
@@ -214,50 +247,54 @@ class CharacterSheetHttpRepositoryTest {
     fun `create 400 maps to InvalidName`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.BadRequest, """{"code":"INVALID_CHARACTER_SHEET_NAME"}"""),
-        ).create("", "g-1")
+        ).create("", "g-1", "c-1")
         assertIs<Result.Failure<CharacterSheetError>>(result)
         assertEquals(CharacterSheetError.InvalidName, result.error)
     }
 
     @Test
-    fun `link 409 GM rule maps to GmCannotJoinOwnCampaign`() = runTest {
+    fun `copy 409 GM rule maps to GmCannotJoinOwnCampaign`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.Conflict, """{"code":"GM_CANNOT_JOIN_OWN_CAMPAIGN"}"""),
-        ).linkToCampaign("c-1", "s-1")
+        ).copyToCampaign("s-1", "c-1")
         assertIs<Result.Failure<CharacterSheetError>>(result)
         assertEquals(CharacterSheetError.GmCannotJoinOwnCampaign, result.error)
     }
 
     @Test
-    fun `link 409 duplicate maps to AlreadyInCampaign`() = runTest {
-        val result = repository(
-            clientReturning(HttpStatusCode.Conflict, """{"code":"SHEET_ALREADY_IN_CAMPAIGN"}"""),
-        ).linkToCampaign("c-1", "s-1")
-        assertIs<Result.Failure<CharacterSheetError>>(result)
-        assertEquals(CharacterSheetError.AlreadyInCampaign, result.error)
+    fun `listPendingForCampaign success maps the characters`() = runTest {
+        val body =
+            """{"characters":[{"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z"}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).listPendingForCampaign("c-1")
+
+        assertIs<Result.Success<List<CharacterSheet>>>(result)
+        assertEquals("Aragorn", result.value.first().name)
     }
 
     @Test
-    fun `link success on 201`() = runTest {
-        val result = repository(clientReturning(HttpStatusCode.Created, "")).linkToCampaign("c-1", "s-1")
+    fun `acceptCharacter success on 204`() = runTest {
+        val result =
+            repository(clientReturning(HttpStatusCode.NoContent, "")).acceptCharacter("c-1", "s-1")
         assertIs<Result.Success<Unit>>(result)
     }
 
     @Test
-    fun `unlink success on 204`() = runTest {
+    fun `refuseCharacter success on 204`() = runTest {
         val result =
-            repository(clientReturning(HttpStatusCode.NoContent, "")).unlinkFromCampaign("c-1", "s-1")
+            repository(clientReturning(HttpStatusCode.NoContent, "")).refuseCharacter("c-1", "s-1")
         assertIs<Result.Success<Unit>>(result)
     }
 
     @Test
     fun `getCampaignsForSheet success maps the campaigns`() = runTest {
-        val body =
-            """{"campaigns":[{"campaignId":"c-1","campaignName":"Donjon","gameMasterPseudo":"MJ"}]}"""
+        val body = """
+            {"campaigns":[{"campaignId":"c-1","campaignName":"Donjon","gameMasterPseudo":"MJ",
+             "linkStatus":"PENDING"}]}
+        """.trimIndent()
         val result = repository(clientReturning(HttpStatusCode.OK, body)).getCampaignsForSheet("s-1")
 
         assertIs<Result.Success<List<SheetCampaign>>>(result)
-        assertEquals(listOf(SheetCampaign("c-1", "Donjon", "MJ")), result.value)
+        assertEquals(listOf(SheetCampaign("c-1", "Donjon", "MJ", "PENDING")), result.value)
     }
 
     @Test

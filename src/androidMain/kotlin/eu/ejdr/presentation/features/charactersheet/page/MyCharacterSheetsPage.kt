@@ -23,14 +23,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
+import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.CopyCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.features.charactersheet.MyCharacterSheetsViewModel
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCard
 import eu.ejdr.presentation.features.charactersheet.component.ConfirmDeleteSheetDialog
+import eu.ejdr.presentation.features.charactersheet.component.CopyCharacterSheetDialog
 import eu.ejdr.presentation.features.charactersheet.component.CreateCharacterSheetDialog
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.shared.component.atomic.AppButton
@@ -64,12 +68,15 @@ fun MyCharacterSheetsPage(
             get<ListCharacterSheetsUseCase>(),
             get<CreateCharacterSheetUseCase>(),
             get<DeleteCharacterSheetUseCase>(),
+            get<CopyCharacterSheetUseCase>(),
+            get<ListCampaignsUseCase>(),
             get<GetCurrentUserUseCase>(),
             get<InvalidationBus>(),
             get<UiMessageBus>(),
         )
     }
     val sheets by viewModel.sheets.collectAsStateWithLifecycle()
+    val eligibleCampaigns by viewModel.eligibleCampaigns.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val needsGroup by viewModel.needsGroup.collectAsStateWithLifecycle()
@@ -78,6 +85,7 @@ fun MyCharacterSheetsPage(
 
     var showCreate by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<CharacterSheet?>(null) }
+    var pendingCopy by remember { mutableStateOf<CharacterSheet?>(null) }
 
     Box(modifier = modifier.fillMaxSize()) {
         if (needsGroup) {
@@ -111,30 +119,66 @@ fun MyCharacterSheetsPage(
                     currentUserId = currentUserId,
                     onOpenSheet = onOpenSheet,
                     onDeleteRequest = { pendingDelete = it },
+                    onCopyRequest = { pendingCopy = it },
                     onCreateRequest = { showCreate = true },
                 )
             }
         }
     }
 
+    SheetDialogs(
+        showCreate = showCreate,
+        eligibleCampaigns = eligibleCampaigns,
+        pendingCopy = pendingCopy,
+        pendingDelete = pendingDelete,
+        onCreate = { name, campaignId -> showCreate = false; viewModel.create(name, campaignId) },
+        onDismissCreate = { showCreate = false },
+        onCopy = { sheet, campaignId -> pendingCopy = null; viewModel.copy(sheet.id, campaignId) },
+        onDismissCopy = { pendingCopy = null },
+        onDelete = { sheet -> pendingDelete = null; viewModel.delete(sheet.id) },
+        onDismissDelete = { pendingDelete = null },
+    )
+}
+
+/**
+ * Regroupe les trois modals de la page « Mes fiches » (création, copie, confirmation de
+ * suppression). Extrait de [MyCharacterSheetsPage] pour garder cette dernière concise.
+ */
+@Composable
+private fun SheetDialogs(
+    showCreate: Boolean,
+    eligibleCampaigns: List<Campaign>,
+    pendingCopy: CharacterSheet?,
+    pendingDelete: CharacterSheet?,
+    onCreate: (name: String, campaignId: String) -> Unit,
+    onDismissCreate: () -> Unit,
+    onCopy: (sheet: CharacterSheet, campaignId: String) -> Unit,
+    onDismissCopy: () -> Unit,
+    onDelete: (CharacterSheet) -> Unit,
+    onDismissDelete: () -> Unit,
+) {
     if (showCreate) {
         CreateCharacterSheetDialog(
-            onDismiss = { showCreate = false },
-            onConfirm = { name ->
-                showCreate = false
-                viewModel.create(name)
-            },
+            campaigns = eligibleCampaigns,
+            onDismiss = onDismissCreate,
+            onConfirm = onCreate,
+        )
+    }
+
+    pendingCopy?.let { sheet ->
+        CopyCharacterSheetDialog(
+            sheetName = sheet.name,
+            campaigns = eligibleCampaigns,
+            onDismiss = onDismissCopy,
+            onConfirm = { campaignId -> onCopy(sheet, campaignId) },
         )
     }
 
     pendingDelete?.let { sheet ->
         ConfirmDeleteSheetDialog(
             sheetName = sheet.name,
-            onConfirm = {
-                pendingDelete = null
-                viewModel.delete(sheet.id)
-            },
-            onDismiss = { pendingDelete = null },
+            onConfirm = { onDelete(sheet) },
+            onDismiss = onDismissDelete,
         )
     }
 }
@@ -147,6 +191,7 @@ private fun CharacterSheetGrid(
     currentUserId: String?,
     onOpenSheet: (id: String, name: String) -> Unit,
     onDeleteRequest: (CharacterSheet) -> Unit,
+    onCopyRequest: (CharacterSheet) -> Unit,
     onCreateRequest: () -> Unit,
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
@@ -172,10 +217,12 @@ private fun CharacterSheetGrid(
                 verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
             ) {
                 items(sheets, key = { it.id }) { sheet ->
-                    val canDelete = canEdit || sheet.ownerId == currentUserId
+                    val isOwner = sheet.ownerId == currentUserId
+                    val canDelete = canEdit || isOwner
                     CharacterSheetCard(
                         sheet = sheet,
                         onClick = { onOpenSheet(sheet.id, sheet.name) },
+                        onCopy = if (isOwner) ({ onCopyRequest(sheet) }) else null,
                         onDelete = if (canDelete) ({ onDeleteRequest(sheet) }) else null,
                         modifier = Modifier.animateItem(),
                     )

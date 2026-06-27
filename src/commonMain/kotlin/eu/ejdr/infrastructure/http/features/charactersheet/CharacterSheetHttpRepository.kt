@@ -11,8 +11,8 @@ import eu.ejdr.infrastructure.http.features.auth.dto.ApiErrorDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CampaignCharactersResponseDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CharacterSheetListResponseDto
+import eu.ejdr.infrastructure.http.features.charactersheet.dto.CopyCharacterSheetRequestDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.CreateCharacterSheetRequestDto
-import eu.ejdr.infrastructure.http.features.charactersheet.dto.LinkCharacterRequestDto
 import eu.ejdr.infrastructure.http.features.charactersheet.dto.SheetCampaignsResponseDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -60,11 +60,12 @@ class CharacterSheetHttpRepository(
     override suspend fun create(
         name: String,
         groupId: String,
+        campaignId: String,
     ): Result<CharacterSheet, CharacterSheetError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/character-sheets") {
                 contentType(ContentType.Application.Json)
-                setBody(CreateCharacterSheetRequestDto(name, groupId))
+                setBody(CreateCharacterSheetRequestDto(name, groupId, campaignId))
             }
             if (response.status.isSuccess()) {
                 Result.Success(CharacterSheetHttpMapper.toCharacterSheet(response.body<CharacterSheetDto>()))
@@ -117,12 +118,12 @@ class CharacterSheetHttpRepository(
             }
         }.getOrElse { Result.Failure(CharacterSheetError.Network) }
 
-    override suspend fun listLinkableForCampaign(
+    override suspend fun listPendingForCampaign(
         campaignId: String,
     ): Result<List<CharacterSheet>, CharacterSheetError> =
         runCatchingCancellable {
             val response =
-                client.get("${config.baseUrl}/campaigns/$campaignId/linkable-characters")
+                client.get("${config.baseUrl}/campaigns/$campaignId/pending-characters")
             if (response.status.isSuccess()) {
                 val body = response.body<CampaignCharactersResponseDto>()
                 Result.Success(body.characters.map(CharacterSheetHttpMapper::toCharacterSheet))
@@ -131,26 +132,42 @@ class CharacterSheetHttpRepository(
             }
         }.getOrElse { Result.Failure(CharacterSheetError.Network) }
 
-    override suspend fun linkToCampaign(
+    override suspend fun acceptCharacter(
         campaignId: String,
         characterSheetId: String,
     ): Result<Unit, CharacterSheetError> =
         runCatchingCancellable {
-            val response = client.post("${config.baseUrl}/campaigns/$campaignId/characters") {
-                contentType(ContentType.Application.Json)
-                setBody(LinkCharacterRequestDto(characterSheetId))
-            }
+            val response = client.post(
+                "${config.baseUrl}/campaigns/$campaignId/characters/$characterSheetId/accept",
+            )
             if (response.status.isSuccess()) Result.Success(Unit) else failure(response)
         }.getOrElse { Result.Failure(CharacterSheetError.Network) }
 
-    override suspend fun unlinkFromCampaign(
+    override suspend fun refuseCharacter(
         campaignId: String,
         characterSheetId: String,
     ): Result<Unit, CharacterSheetError> =
         runCatchingCancellable {
-            val response =
-                client.delete("${config.baseUrl}/campaigns/$campaignId/characters/$characterSheetId")
+            val response = client.post(
+                "${config.baseUrl}/campaigns/$campaignId/characters/$characterSheetId/refuse",
+            )
             if (response.status.isSuccess()) Result.Success(Unit) else failure(response)
+        }.getOrElse { Result.Failure(CharacterSheetError.Network) }
+
+    override suspend fun copyToCampaign(
+        sheetId: String,
+        targetCampaignId: String,
+    ): Result<CharacterSheet, CharacterSheetError> =
+        runCatchingCancellable {
+            val response = client.post("${config.baseUrl}/character-sheets/$sheetId/copy") {
+                contentType(ContentType.Application.Json)
+                setBody(CopyCharacterSheetRequestDto(targetCampaignId))
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(CharacterSheetHttpMapper.toCharacterSheet(response.body<CharacterSheetDto>()))
+            } else {
+                failure(response)
+            }
         }.getOrElse { Result.Failure(CharacterSheetError.Network) }
 
     override suspend fun getCampaignsForSheet(

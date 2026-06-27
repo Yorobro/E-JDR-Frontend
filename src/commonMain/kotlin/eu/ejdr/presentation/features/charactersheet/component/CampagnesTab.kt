@@ -59,8 +59,9 @@ fun CampagnesTab(campaigns: List<SheetCampaign>) {
 }
 
 /**
- * Carte lecture seule d'une campagne : nom (titre) + pseudo du MJ (sous-titre, secondaire).
- * Non cliquable, sans suppression. Style aligné sur [SheetCard].
+ * Carte lecture seule d'une campagne : nom (titre) + pseudo du MJ (sous-titre, secondaire) + badge
+ * « En attente de validation » quand le rattachement est PENDING. Non cliquable, sans suppression.
+ * Style aligné sur [SheetCard].
  *
  * @param campaign Campagne à afficher.
  * @param modifier Modifier Compose appliqué à la carte.
@@ -82,5 +83,12 @@ fun SheetCampaignCard(campaign: SheetCampaign, modifier: Modifier = Modifier) {
             style = AppTextStyle.Caption,
             color = AppTheme.colors.textSecondary,
         )
+        if (campaign.linkStatus == "PENDING") {
+            AppText(
+                text = "En attente de validation",
+                style = AppTextStyle.Caption,
+                color = AppTheme.colors.muted,
+            )
+        }
     }
 }

@@ -1,12 +1,15 @@
 package eu.ejdr.presentation.features.charactersheet
 
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.CopyCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.auth.entities.User
+import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
@@ -37,11 +40,16 @@ class MyCharacterSheetsViewModelTest {
     private fun sheet(id: String, name: String = "Sheet $id") =
         CharacterSheet(id = id, ownerId = "u-1", name = name, createdAt = "2026-06-13T10:00:00.000Z")
 
+    private fun campaign(id: String, gameMasterId: String) =
+        Campaign(id = id, name = "Campagne $id", gameMasterId = gameMasterId, createdAt = "2026-06-13T10:00:00.000Z")
+
     private fun buildVm(
         activeGroupId: String? = "g-1",
         listSheets: ListCharacterSheetsUseCase = ListCharacterSheetsUseCase { Result.Success(emptyList()) },
-        createSheet: CreateCharacterSheetUseCase = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
+        createSheet: CreateCharacterSheetUseCase = CreateCharacterSheetUseCase { _, _, _ -> Result.Success(sheet("x")) },
         deleteSheet: DeleteCharacterSheetUseCase = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+        copySheet: CopyCharacterSheetUseCase = CopyCharacterSheetUseCase { _, _ -> Result.Success(sheet("copy")) },
+        listCampaigns: ListCampaignsUseCase = ListCampaignsUseCase { Result.Success(emptyList()) },
         getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com", "current")) },
         invalidationBus: InvalidationBus = InMemoryInvalidationBus(),
     ) = MyCharacterSheetsViewModel(
@@ -49,9 +57,11 @@ class MyCharacterSheetsViewModelTest {
         listSheets = listSheets,
         createSheet = createSheet,
         deleteSheet = deleteSheet,
+        copySheet = copySheet,
+        listCampaigns = listCampaigns,
         getCurrentUser = getCurrentUser,
         invalidationBus = invalidationBus,
-            uiMessageBus = io.mockk.mockk(relaxed = true),
+        uiMessageBus = io.mockk.mockk(relaxed = true),
     )
 
     @Test
@@ -93,8 +103,10 @@ class MyCharacterSheetsViewModelTest {
         val vm = MyCharacterSheetsViewModel(
             activeGroupId = active,
             listSheets = ListCharacterSheetsUseCase { groupId -> Result.Success(listOf(sheet(groupId))) },
-            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
+            createSheet = CreateCharacterSheetUseCase { _, _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+            copySheet = CopyCharacterSheetUseCase { _, _ -> Result.Success(sheet("copy")) },
+            listCampaigns = ListCampaignsUseCase { Result.Success(emptyList()) },
             getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-current", "current@test.com", "current")) },
             invalidationBus = InMemoryInvalidationBus(),
             uiMessageBus = io.mockk.mockk(relaxed = true),
@@ -119,25 +131,66 @@ class MyCharacterSheetsViewModelTest {
     }
 
     @Test
-    fun `create uses the active group and reloads the list`() = runTest {
+    fun `create uses the active group and the chosen campaign then reloads the list`() = runTest {
         var createdGroup: String? = null
+        var createdCampaign: String? = null
         var listing = listOf(sheet("s-1"))
         val vm = buildVm(
             listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
-            createSheet = CreateCharacterSheetUseCase { name, groupId ->
+            createSheet = CreateCharacterSheetUseCase { name, groupId, campaignId ->
                 createdGroup = groupId
+                createdCampaign = campaignId
                 listing = listing + sheet("s-2", name)
                 Result.Success(sheet("s-2", name))
             },
         )
         advanceUntilIdle()
 
-        vm.create("Nouvelle")
+        vm.create("Nouvelle", "c-1")
         advanceUntilIdle()
 
         assertEquals("g-1", createdGroup)
+        assertEquals("c-1", createdCampaign)
         assertEquals(2, vm.sheets.value.size)
         assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `copy delegates to the copy use case then reloads the list`() = runTest {
+        var copiedSheet: String? = null
+        var copiedCampaign: String? = null
+        var listing = listOf(sheet("s-1"))
+        val vm = buildVm(
+            listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
+            copySheet = CopyCharacterSheetUseCase { sheetId, campaignId ->
+                copiedSheet = sheetId
+                copiedCampaign = campaignId
+                listing = listing + sheet("s-2")
+                Result.Success(sheet("s-2"))
+            },
+        )
+        advanceUntilIdle()
+
+        vm.copy("s-1", "c-2")
+        advanceUntilIdle()
+
+        assertEquals("s-1", copiedSheet)
+        assertEquals("c-2", copiedCampaign)
+        assertEquals(2, vm.sheets.value.size)
+        assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `eligibleCampaigns excludes campaigns where the user is the game master`() = runTest {
+        val vm = buildVm(
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-42", "u42@test.com", "u42")) },
+            listCampaigns = ListCampaignsUseCase {
+                Result.Success(listOf(campaign("c-own", "u-42"), campaign("c-other", "u-99")))
+            },
+        )
+        advanceUntilIdle()
+
+        assertEquals(listOf("c-other"), vm.eligibleCampaigns.value.map { it.id })
     }
 
     @Test

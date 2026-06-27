@@ -37,7 +37,7 @@ class CampaignListViewModelTest {
     @AfterTest fun tearDown() = Dispatchers.resetMain()
 
     private fun campaign(id: String, name: String = "Campagne $id") =
-        Campaign(id = id, name = name, createdAt = "2026-06-13T10:00:00.000Z")
+        Campaign(id = id, name = name, gameMasterId = "gm-1", createdAt = "2026-06-13T10:00:00.000Z")
 
     @Test
     fun `loads campaigns of the active group at init`() = runTest {

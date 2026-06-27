@@ -243,6 +243,7 @@ kover {
                     "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetSectionsKt",
                     "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetTabsKt",
                     "eu.ejdr.presentation.features.charactersheet.component.ConfirmDeleteSheetDialogKt",
+                    "eu.ejdr.presentation.features.charactersheet.component.CopyCharacterSheetDialogKt",
                     "eu.ejdr.presentation.features.charactersheet.component.CreateCharacterSheetDialogKt",
                     "eu.ejdr.presentation.features.charactersheet.component.SheetCardKt",
                     "eu.ejdr.presentation.features.charactersheet.component.SheetLayoutKt",

@@ -10,10 +10,16 @@ import kotlinx.serialization.Serializable
  *
  * @property id Identifiant unique de la campagne.
  * @property name Nom de la campagne.
+ * @property gameMasterId Identifiant du maître du jeu (propriétaire de la campagne).
  * @property createdAt Date de création au format ISO 8601.
  */
 @Serializable
-data class CampaignDto(val id: String, val name: String, val createdAt: String)
+data class CampaignDto(
+    val id: String,
+    val name: String,
+    val gameMasterId: String,
+    val createdAt: String,
+)
 
 /**
  * Corps de requête envoyé au serveur pour créer une campagne (`POST /campaigns`).

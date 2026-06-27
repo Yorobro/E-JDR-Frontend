@@ -8,10 +8,12 @@ package eu.ejdr.domain.features.campaign.entities
  *
  * @property id Identifiant unique stable de la campagne.
  * @property name Nom affiché de la campagne.
+ * @property gameMasterId Identifiant du maître du jeu (propriétaire de la campagne).
  * @property createdAt Date de création au format ISO 8601 (telle que renvoyée par l'API).
  */
 data class Campaign(
     val id: String,
     val name: String,
+    val gameMasterId: String,
     val createdAt: String,
 )

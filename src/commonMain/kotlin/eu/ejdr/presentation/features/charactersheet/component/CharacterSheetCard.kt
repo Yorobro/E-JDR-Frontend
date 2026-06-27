@@ -2,14 +2,17 @@ package eu.ejdr.presentation.features.charactersheet.component
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
@@ -33,14 +36,15 @@ private val CardHeight = 140.dp
  * Tuile d'une fiche de personnage dans la grille (composant bête).
  *
  * Tuile à hauteur fixe (fond `surface`, bordure, coins arrondis, ombre douce) : nom et date de
- * création alignés en haut, icône de suppression optionnelle en coin haut-droite. Quand [onClick] est `null`, la tuile
- * n'est pas cliquable (ex. liste en lecture seule du détail de campagne) ; sinon toute la tuile
- * est cliquable et ouvre le détail de la fiche. Quand [onDelete] est `null`, l'icône de
- * suppression n'est pas affichée (le clic sur l'icône remonte [onDelete] sans déclencher
- * [onClick]).
+ * création alignés en haut, icônes optionnelles de copie puis de suppression en coin haut-droite.
+ * Quand [onClick] est `null`, la tuile n'est pas cliquable (ex. liste en lecture seule du détail de
+ * campagne) ; sinon toute la tuile est cliquable et ouvre le détail de la fiche. Quand [onCopy] ou
+ * [onDelete] est `null`, l'icône correspondante n'est pas affichée (le clic sur une icône remonte
+ * son callback sans déclencher [onClick]).
  *
  * @param sheet Fiche à afficher.
  * @param onClick Callback déclenché au clic sur la tuile (ouvre le détail) ; si `null`, la tuile n'est pas cliquable.
+ * @param onCopy Callback déclenché au clic sur l'icône de copie ; si `null`, l'icône est masquée.
  * @param onDelete Callback déclenché au clic sur l'icône de suppression ; si `null`, l'icône est masquée.
  * @param modifier Modifier Compose appliqué à la tuile.
  */
@@ -48,6 +52,7 @@ private val CardHeight = 140.dp
 fun CharacterSheetCard(
     sheet: CharacterSheet,
     onClick: (() -> Unit)? = null,
+    onCopy: (() -> Unit)? = null,
     onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -79,16 +84,29 @@ fun CharacterSheetCard(
                     color = AppTheme.colors.textSecondary,
                 )
             }
-            if (onDelete != null) {
-                IconButton(
-                    onClick = onDelete,
+            if (onCopy != null || onDelete != null) {
+                Row(
                     modifier = Modifier.align(Alignment.TopEnd),
+                    horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
                 ) {
-                    AppIcon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = "Supprimer la fiche",
-                        tint = AppTheme.colors.danger,
-                    )
+                    if (onCopy != null) {
+                        IconButton(onClick = onCopy) {
+                            AppIcon(
+                                imageVector = Icons.Filled.ContentCopy,
+                                contentDescription = "Copier la fiche",
+                                tint = AppTheme.colors.textSecondary,
+                            )
+                        }
+                    }
+                    if (onDelete != null) {
+                        IconButton(onClick = onDelete) {
+                            AppIcon(
+                                imageVector = Icons.Filled.Delete,
+                                contentDescription = "Supprimer la fiche",
+                                tint = AppTheme.colors.danger,
+                            )
+                        }
+                    }
                 }
             }
         }

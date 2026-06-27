@@ -1,6 +1,8 @@
 package eu.ejdr.presentation.features.charactersheet
 
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.CopyCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
@@ -47,8 +49,10 @@ class MyCharacterSheetsRealtimeTest {
         val vm = MyCharacterSheetsViewModel(
             activeGroupId = MutableStateFlow("g-1"),
             listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
-            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
+            createSheet = CreateCharacterSheetUseCase { _, _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+            copySheet = CopyCharacterSheetUseCase { _, _ -> Result.Success(sheet("copy")) },
+            listCampaigns = ListCampaignsUseCase { Result.Success(emptyList()) },
             getCurrentUser = GetCurrentUserUseCase { Result.Success(User(id = "u1", email = "a@b.c", pseudo = "A")) },
             invalidationBus = bus,
             uiMessageBus = io.mockk.mockk(relaxed = true),
@@ -71,8 +75,10 @@ class MyCharacterSheetsRealtimeTest {
         val vm = MyCharacterSheetsViewModel(
             activeGroupId = MutableStateFlow("g-1"),
             listSheets = ListCharacterSheetsUseCase { Result.Success(listing) },
-            createSheet = CreateCharacterSheetUseCase { _, _ -> Result.Success(sheet("x")) },
+            createSheet = CreateCharacterSheetUseCase { _, _, _ -> Result.Success(sheet("x")) },
             deleteSheet = DeleteCharacterSheetUseCase { Result.Success(Unit) },
+            copySheet = CopyCharacterSheetUseCase { _, _ -> Result.Success(sheet("copy")) },
+            listCampaigns = ListCampaignsUseCase { Result.Success(emptyList()) },
             getCurrentUser = GetCurrentUserUseCase { Result.Success(User(id = "u1", email = "a@b.c", pseudo = "A")) },
             invalidationBus = bus,
             uiMessageBus = io.mockk.mockk(relaxed = true),

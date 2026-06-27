@@ -1,17 +1,18 @@
 package eu.ejdr.application.features.charactersheet.usecase
 
 import eu.ejdr.application.features.charactersheet.abstraction.repository.CharacterSheetRepository
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.AcceptCharacterUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.CopyCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.CreateCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.DeleteCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCharacterSheetsUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCharacterUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
@@ -32,7 +33,8 @@ class CreateCharacterSheetUseCaseImpl(
     override suspend fun invoke(
         name: String,
         groupId: String,
-    ): Result<CharacterSheet, CharacterSheetError> = repository.create(name, groupId)
+        campaignId: String,
+    ): Result<CharacterSheet, CharacterSheetError> = repository.create(name, groupId, campaignId)
 }
 
 class GetCharacterSheetUseCaseImpl(
@@ -65,32 +67,41 @@ class ListCampaignCharactersUseCaseImpl(
     ): Result<List<CharacterSheet>, CharacterSheetError> = repository.listForCampaign(campaignId)
 }
 
-class ListLinkableCharactersUseCaseImpl(
+class ListPendingCharactersUseCaseImpl(
     private val repository: CharacterSheetRepository,
-) : ListLinkableCharactersUseCase {
+) : ListPendingCharactersUseCase {
     override suspend fun invoke(
         campaignId: String,
     ): Result<List<CharacterSheet>, CharacterSheetError> =
-        repository.listLinkableForCampaign(campaignId)
+        repository.listPendingForCampaign(campaignId)
 }
 
-class LinkCharacterToCampaignUseCaseImpl(
+class AcceptCharacterUseCaseImpl(
     private val repository: CharacterSheetRepository,
-) : LinkCharacterToCampaignUseCase {
+) : AcceptCharacterUseCase {
     override suspend fun invoke(
         campaignId: String,
         characterSheetId: String,
-    ): Result<Unit, CharacterSheetError> = repository.linkToCampaign(campaignId, characterSheetId)
+    ): Result<Unit, CharacterSheetError> = repository.acceptCharacter(campaignId, characterSheetId)
 }
 
-class UnlinkCharacterFromCampaignUseCaseImpl(
+class RefuseCharacterUseCaseImpl(
     private val repository: CharacterSheetRepository,
-) : UnlinkCharacterFromCampaignUseCase {
+) : RefuseCharacterUseCase {
     override suspend fun invoke(
         campaignId: String,
         characterSheetId: String,
-    ): Result<Unit, CharacterSheetError> =
-        repository.unlinkFromCampaign(campaignId, characterSheetId)
+    ): Result<Unit, CharacterSheetError> = repository.refuseCharacter(campaignId, characterSheetId)
+}
+
+class CopyCharacterSheetUseCaseImpl(
+    private val repository: CharacterSheetRepository,
+) : CopyCharacterSheetUseCase {
+    override suspend fun invoke(
+        sheetId: String,
+        targetCampaignId: String,
+    ): Result<CharacterSheet, CharacterSheetError> =
+        repository.copyToCampaign(sheetId, targetCampaignId)
 }
 
 class GetSheetCampaignsUseCaseImpl(

@@ -10,11 +10,15 @@ fun interface ListCharacterSheetsUseCase {
     suspend operator fun invoke(groupId: String): Result<List<CharacterSheet>, CharacterSheetError>
 }
 
-/** Use case : crée une fiche dans le groupe actif (propriétaire = utilisateur courant). */
+/**
+ * Use case : crée une fiche dans le groupe actif (propriétaire = utilisateur courant), rattachée à
+ * une campagne (statut PENDING en attente de validation du MJ).
+ */
 fun interface CreateCharacterSheetUseCase {
     suspend operator fun invoke(
         name: String,
         groupId: String,
+        campaignId: String,
     ): Result<CharacterSheet, CharacterSheetError>
 }
 
@@ -33,34 +37,42 @@ fun interface DeleteCharacterSheetUseCase {
     suspend operator fun invoke(id: String): Result<Unit, CharacterSheetError>
 }
 
-/** Use case : liste les fiches rattachées à une campagne. */
+/** Use case : liste les fiches ACCEPTÉES rattachées à une campagne. */
 fun interface ListCampaignCharactersUseCase {
     suspend operator fun invoke(
         campaignId: String,
     ): Result<List<CharacterSheet>, CharacterSheetError>
 }
 
-/** Use case : liste les fiches rattachables à une campagne (MJ uniquement, côté back). */
-fun interface ListLinkableCharactersUseCase {
+/** Use case : liste les demandes de rattachement en attente d'une campagne (MJ uniquement). */
+fun interface ListPendingCharactersUseCase {
     suspend operator fun invoke(
         campaignId: String,
     ): Result<List<CharacterSheet>, CharacterSheetError>
 }
 
-/** Use case : rattache une fiche à une campagne. */
-fun interface LinkCharacterToCampaignUseCase {
+/** Use case : valide (MJ) une demande de rattachement en attente. */
+fun interface AcceptCharacterUseCase {
     suspend operator fun invoke(
         campaignId: String,
         characterSheetId: String,
     ): Result<Unit, CharacterSheetError>
 }
 
-/** Use case : détache une fiche d'une campagne. */
-fun interface UnlinkCharacterFromCampaignUseCase {
+/** Use case : refuse (MJ) une demande de rattachement (la fiche est supprimée côté serveur). */
+fun interface RefuseCharacterUseCase {
     suspend operator fun invoke(
         campaignId: String,
         characterSheetId: String,
     ): Result<Unit, CharacterSheetError>
+}
+
+/** Use case : copie une fiche vers une autre campagne (nouvelle fiche PENDING). */
+fun interface CopyCharacterSheetUseCase {
+    suspend operator fun invoke(
+        sheetId: String,
+        targetCampaignId: String,
+    ): Result<CharacterSheet, CharacterSheetError>
 }
 
 /** Use case : liste les campagnes d'une fiche (lecture seule, avec pseudo MJ). */

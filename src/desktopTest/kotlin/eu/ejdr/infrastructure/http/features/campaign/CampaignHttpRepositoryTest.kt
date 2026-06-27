@@ -59,7 +59,10 @@ class CampaignHttpRepositoryTest {
 
     @Test
     fun `list scopes the request by the active group`() = runTest {
-        val body = """{"campaigns":[{"id":"c-1","name":"Alpha","createdAt":"2026-06-13T10:00:00.000Z"}]}"""
+        val body = """
+            {"campaigns":[{"id":"c-1","name":"Alpha","gameMasterId":"gm-1",
+             "createdAt":"2026-06-13T10:00:00.000Z"}]}
+        """.trimIndent()
         var requestedUrl = ""
         val engine = MockEngine { request ->
             requestedUrl = request.url.toString()
@@ -83,7 +86,8 @@ class CampaignHttpRepositoryTest {
 
     @Test
     fun `create sends name and group in the body`() = runTest {
-        val body = """{"id":"c-1","name":"Alpha","createdAt":"2026-06-13T10:00:00.000Z"}"""
+        val body =
+            """{"id":"c-1","name":"Alpha","gameMasterId":"gm-1","createdAt":"2026-06-13T10:00:00.000Z"}"""
         var requestBody = ""
         val engine = MockEngine { request ->
             requestBody = (request.body as io.ktor.http.content.TextContent).text
