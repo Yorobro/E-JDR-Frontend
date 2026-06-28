@@ -6,7 +6,6 @@ import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCa
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
@@ -18,7 +17,6 @@ import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.fold
 import eu.ejdr.application.shared.getOrElse
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
-import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -38,9 +36,8 @@ import kotlinx.coroutines.launch
  * la fiche reconstruite.
  *
  * @param sheetId Identifiant de la fiche affichée.
- * @property getById Use case de récupération du détail d'une fiche.
+ * @property getById Use case de récupération du détail d'une fiche (porte sa campagne + statut).
  * @property update Use case de mise à jour d'une fiche.
- * @property getCampaigns Use case de récupération des campagnes rattachées (onglet Campagnes).
  * @property exportPdf Use case de récupération du PDF (binaire) de la fiche.
  * @property fileSaver Port d'enregistrement du fichier via le dialogue natif « Enregistrer sous ».
  * @property listReferenceItems Use case de listing du catalogue d'un type (dropdowns + dialogs).
@@ -53,7 +50,6 @@ class CharacterSheetDetailViewModel(
     private val activeGroupId: StateFlow<String?>,
     private val getById: GetCharacterSheetUseCase,
     private val update: UpdateCharacterSheetUseCase,
-    private val getCampaigns: GetSheetCampaignsUseCase,
     private val exportPdf: ExportCharacterSheetPdfUseCase,
     private val fileSaver: FileSaver,
     private val listReferenceItems: ListReferenceItemsUseCase,
@@ -73,9 +69,6 @@ class CharacterSheetDetailViewModel(
     val isOwner: StateFlow<Boolean> =
         combine(_sheet, _currentUserId) { sheet, uid -> sheet != null && uid != null && sheet.ownerId == uid }
             .stateIn(viewModelScope, SharingStarted.Eagerly, false)
-
-    private val _campaigns = MutableStateFlow<List<SheetCampaign>>(emptyList())
-    val campaigns: StateFlow<List<SheetCampaign>> = _campaigns.asStateFlow()
 
     /** Catalogues N‑1 de l'utilisateur (pour les dropdowns formation/peuple). */
     private val _formations = MutableStateFlow<List<ReferenceItem>>(emptyList())
@@ -138,17 +131,13 @@ class CharacterSheetDetailViewModel(
     /** Types de référence rattachables en N‑N à une fiche. */
     private val linkableTypes = ReferenceType.entries.filter { it.linkable }
 
-    /** Recharge la fiche complète, ses campagnes, et les données de référence (catalogues + liaisons). */
+    /** Recharge la fiche complète (avec sa campagne + statut) et les données de référence. */
     fun load() {
         viewModelScope.launch {
             _isLoading.value = true
             getById(sheetId).fold(
                 onSuccess = { _sheet.value = it; _error.value = null },
                 onFailure = { _error.value = it.message },
-            )
-            getCampaigns(sheetId).fold(
-                onSuccess = { _campaigns.value = it },
-                onFailure = { /* onglet vide : ne pas écraser l'erreur principale */ },
             )
             loadReferences()
             _isLoading.value = false

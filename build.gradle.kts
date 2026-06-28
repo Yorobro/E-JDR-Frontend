@@ -238,7 +238,6 @@ kover {
                     "eu.ejdr.presentation.features.charactersheet.CharacterSheetNavEntriesKt",
                     "eu.ejdr.presentation.features.friendgroup.FriendGroupNavEntriesKt",
                     "eu.ejdr.presentation.navigation.NavActions",
-                    "eu.ejdr.presentation.features.charactersheet.component.CampagnesTabKt",
                     "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCardKt",
                     "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetSectionsKt",
                     "eu.ejdr.presentation.features.charactersheet.component.CharacterSheetTabsKt",

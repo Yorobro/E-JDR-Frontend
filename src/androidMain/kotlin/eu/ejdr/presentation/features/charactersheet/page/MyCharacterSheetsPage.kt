@@ -171,6 +171,7 @@ private fun SheetDialogs(
             campaigns = eligibleCampaigns,
             onDismiss = onDismissCopy,
             onConfirm = { campaignId -> onCopy(sheet, campaignId) },
+            excludeCampaignId = sheet.campaignId,
         )
     }
 

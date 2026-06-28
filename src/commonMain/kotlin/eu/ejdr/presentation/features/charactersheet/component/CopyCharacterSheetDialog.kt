@@ -31,6 +31,8 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param onConfirm Callback de confirmation, portant la campagne cible choisie.
  * @param modifier Modifier Compose appliqué au dialog.
  * @param errorMessage Message d'erreur à afficher sous le champ.
+ * @param excludeCampaignId Campagne actuelle de la fiche source, exclue du choix (on ne copie pas
+ *   une fiche vers sa propre campagne).
  */
 @Composable
 fun CopyCharacterSheetDialog(
@@ -40,9 +42,11 @@ fun CopyCharacterSheetDialog(
     onConfirm: (campaignId: String) -> Unit,
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
+    excludeCampaignId: String? = null,
 ) {
+    val targetCampaigns = campaigns.filter { it.id != excludeCampaignId }
     var selectedCampaignId by remember { mutableStateOf<String?>(null) }
-    val selectedName = campaigns.firstOrNull { it.id == selectedCampaignId }?.name
+    val selectedName = targetCampaigns.firstOrNull { it.id == selectedCampaignId }?.name
 
     AppDialog(
         title = "Copier « $sheetName »",
@@ -56,9 +60,9 @@ fun CopyCharacterSheetDialog(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
         ) {
-            if (campaigns.isEmpty()) {
+            if (targetCampaigns.isEmpty()) {
                 AppText(
-                    text = "Aucune campagne disponible : crée d'abord une campagne " +
+                    text = "Aucune autre campagne disponible : crée d'abord une campagne " +
                         "(où tu n'es pas MJ pour y jouer).",
                     style = AppTextStyle.Caption,
                     color = AppTheme.colors.muted,
@@ -66,9 +70,9 @@ fun CopyCharacterSheetDialog(
             } else {
                 AppDropdown(
                     value = selectedName,
-                    options = campaigns.map { it.name },
+                    options = targetCampaigns.map { it.name },
                     onSelect = { chosen ->
-                        selectedCampaignId = campaigns.firstOrNull { it.name == chosen }?.id
+                        selectedCampaignId = targetCampaigns.firstOrNull { it.name == chosen }?.id
                     },
                     label = "Campagne cible",
                     modifier = Modifier.fillMaxWidth(),

@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.AcceptCharacterUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
@@ -62,22 +64,25 @@ fun CampaignDetailPage(
     modifier: Modifier = Modifier,
 ) {
     val activeGroupState = koinInject<ActiveGroupState>()
-    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
     val viewModel = koinViewModel {
         CampaignDetailViewModel(
             campaignId = id,
+            activeGroupId = activeGroupState.activeGroupId,
             listCampaignCharacters = get<ListCampaignCharactersUseCase>(),
             listPendingCharacters = get<ListPendingCharactersUseCase>(),
             acceptCharacter = get<AcceptCharacterUseCase>(),
             refuseCharacter = get<RefuseCharacterUseCase>(),
             listCampaignSessions = get<ListCampaignSessionsUseCase>(),
             createSession = get<CreateSessionUseCase>(),
+            listCampaigns = get<ListCampaignsUseCase>(),
+            getCurrentUser = get<GetCurrentUserUseCase>(),
             uiMessageBus = get<UiMessageBus>(),
         )
     }
     val characters by viewModel.characters.collectAsStateWithLifecycle()
     val pendingCharacters by viewModel.pendingCharacters.collectAsStateWithLifecycle()
     val sessions by viewModel.sessions.collectAsStateWithLifecycle()
+    val isGameMaster by viewModel.isGameMaster.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
 
     var showCreateSession by remember { mutableStateOf(false) }
@@ -94,7 +99,7 @@ fun CampaignDetailPage(
 
         CharactersSection(characters = characters)
 
-        if (canEdit) {
+        if (isGameMaster) {
             PendingRequestsSection(
                 pending = pendingCharacters,
                 onAccept = viewModel::accept,
@@ -104,7 +109,7 @@ fun CampaignDetailPage(
 
         SessionsSection(
             sessions = sessions,
-            onAddRequest = if (canEdit) ({ showCreateSession = true }) else null,
+            onAddRequest = if (isGameMaster) ({ showCreateSession = true }) else null,
             onOpenSession = onOpenSession,
         )
     }

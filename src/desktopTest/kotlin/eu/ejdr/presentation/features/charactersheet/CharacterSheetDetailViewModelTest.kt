@@ -4,7 +4,6 @@ import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCa
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.LinkSheetReferenceUseCase
@@ -17,7 +16,6 @@ import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedReference
-import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import kotlinx.coroutines.Dispatchers
@@ -64,7 +62,6 @@ class CharacterSheetDetailViewModelTest {
         getById: GetCharacterSheetUseCase,
         activeGroupId: String? = "g-1",
         update: UpdateCharacterSheetUseCase = UpdateCharacterSheetUseCase { Result.Success(it) },
-        getCampaigns: GetSheetCampaignsUseCase = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         exportPdf: ExportCharacterSheetPdfUseCase = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
         fileSaver: FileSaver = FileSaver { _, _ -> true },
         listReferenceItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },
@@ -77,7 +74,6 @@ class CharacterSheetDetailViewModelTest {
         activeGroupId = MutableStateFlow(activeGroupId),
         getById = getById,
         update = update,
-        getCampaigns = getCampaigns,
         exportPdf = exportPdf,
         fileSaver = fileSaver,
         listReferenceItems = listReferenceItems,
@@ -98,7 +94,6 @@ class CharacterSheetDetailViewModelTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet(vigueur = 6)) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
             exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
             fileSaver = FileSaver { _, _ -> true },
         )
@@ -115,7 +110,6 @@ class CharacterSheetDetailViewModelTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Failure(CharacterSheetError.NotFound) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
             exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
             fileSaver = FileSaver { _, _ -> true },
         )
@@ -130,7 +124,6 @@ class CharacterSheetDetailViewModelTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
             exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
             fileSaver = FileSaver { _, _ -> true },
         )
@@ -178,7 +171,6 @@ class CharacterSheetDetailViewModelTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Failure(CharacterSheetError.Network) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
             exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
             fileSaver = FileSaver { _, _ -> true },
         )
@@ -193,34 +185,13 @@ class CharacterSheetDetailViewModelTest {
     }
 
     @Test
-    fun `loads the linked campaigns at init`() = runTest {
-        val campaigns = listOf(SheetCampaign("c-1", "Donjon", "MJ", "ACCEPTED"))
-        val vm = buildVm(
-            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
-            update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(campaigns) },
-            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
-            fileSaver = FileSaver { _, _ -> true },
-        )
+    fun `title carries the campaign on the sheet (campaignName + linkStatus exposed)`() = runTest {
+        val accepted = sheet().copy(campaignName = "Donjon", linkStatus = "ACCEPTED")
+        val vm = buildVm(getById = GetCharacterSheetUseCase { Result.Success(accepted) })
         advanceUntilIdle()
 
-        assertEquals(campaigns, vm.campaigns.value)
-    }
-
-    @Test
-    fun `campaigns failure leaves the list empty without overwriting the sheet`() = runTest {
-        val vm = buildVm(
-            getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
-            update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Failure(CharacterSheetError.Network) },
-            exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
-            fileSaver = FileSaver { _, _ -> true },
-        )
-        advanceUntilIdle()
-
-        assertTrue(vm.campaigns.value.isEmpty())
-        assertEquals("Aragorn", vm.sheet.value?.name)
-        assertNull(vm.error.value)
+        assertEquals("Donjon", vm.sheet.value?.campaignName)
+        assertEquals("ACCEPTED", vm.sheet.value?.linkStatus)
     }
 
     @Test
@@ -230,7 +201,6 @@ class CharacterSheetDetailViewModelTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet(name = "Aragorn")) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
             exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf(37, 80, 68, 70)) },
             fileSaver = FileSaver { name, bytes -> savedNames += name; savedBytes += bytes; true },
         )
@@ -251,7 +221,6 @@ class CharacterSheetDetailViewModelTest {
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },
-            getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
             exportPdf = ExportCharacterSheetPdfUseCase { Result.Failure(CharacterSheetError.Network) },
             fileSaver = FileSaver { _, _ -> saveCalls++; true },
         )

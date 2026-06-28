@@ -78,6 +78,7 @@ fun CharacterSheetCard(
                     style = AppTextStyle.Subtitle,
                     maxLines = 2,
                 )
+                CampaignCaption(sheet)
                 AppText(
                     text = "Créée le ${formatDate(sheet.createdAt)}",
                     style = AppTextStyle.Caption,
@@ -132,5 +133,29 @@ fun CharacterSheetCard(
             shadowElevation = AppTheme.dimens.elevationMd,
             border = border,
         ) { content() }
+    }
+}
+
+/**
+ * Sous-titre de campagne d'une tuile : « En attente de validation » tant que le rattachement est
+ * PENDING, sinon le nom de la campagne (indispensable pour distinguer les copies d'une même fiche).
+ * N'affiche rien si la fiche ne porte pas d'info de campagne.
+ */
+@Composable
+private fun CampaignCaption(sheet: CharacterSheet) {
+    when {
+        sheet.linkStatus == "PENDING" ->
+            AppText(
+                text = "En attente de validation",
+                style = AppTextStyle.Caption,
+                color = AppTheme.colors.muted,
+            )
+
+        !sheet.campaignName.isNullOrBlank() ->
+            AppText(
+                text = sheet.campaignName,
+                style = AppTextStyle.Caption,
+                color = AppTheme.colors.textSecondary,
+            )
     }
 }

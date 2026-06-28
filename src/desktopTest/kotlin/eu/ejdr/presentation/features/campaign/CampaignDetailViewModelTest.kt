@@ -1,5 +1,7 @@
 package eu.ejdr.presentation.features.campaign
 
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.AcceptCharacterUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
@@ -7,12 +9,15 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCha
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.shared.Result
+import eu.ejdr.domain.features.auth.entities.User
+import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.error.CharacterSheetError
 import eu.ejdr.domain.features.session.entities.Session
 import eu.ejdr.domain.features.session.error.SessionError
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
@@ -22,7 +27,9 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CampaignDetailViewModelTest {
@@ -52,16 +59,26 @@ class CampaignDetailViewModelTest {
         refuseCharacter: RefuseCharacterUseCase = RefuseCharacterUseCase { _, _ -> Result.Success(Unit) },
         listCampaignSessions: ListCampaignSessionsUseCase = emptySessions,
         createSession: CreateSessionUseCase = createSessionOk,
+        listCampaigns: ListCampaignsUseCase = ListCampaignsUseCase { Result.Success(emptyList()) },
+        getCurrentUser: GetCurrentUserUseCase =
+            GetCurrentUserUseCase { Result.Success(User("u-1", "u1@test.com", "u1")) },
     ) = CampaignDetailViewModel(
         campaignId = "camp-1",
+        activeGroupId = MutableStateFlow("g-1"),
         listCampaignCharacters = listCampaignCharacters,
         listPendingCharacters = listPendingCharacters,
         acceptCharacter = acceptCharacter,
         refuseCharacter = refuseCharacter,
         listCampaignSessions = listCampaignSessions,
         createSession = createSession,
+        listCampaigns = listCampaigns,
+        getCurrentUser = getCurrentUser,
         uiMessageBus = io.mockk.mockk(relaxed = true),
     )
+
+    /** Construit une campagne de test (id camp-1 par défaut). */
+    private fun campaign(id: String = "camp-1", gameMasterId: String) =
+        Campaign(id = id, name = "Camp $id", gameMasterId = gameMasterId, createdAt = "2026-06-13T10:00:00.000Z")
 
     @Test
     fun `loads accepted characters and pending requests at init`() = runTest {
@@ -174,5 +191,27 @@ class CampaignDetailViewModelTest {
         advanceUntilIdle()
 
         assertEquals(SessionError.InvalidDate.message, vm.error.value)
+    }
+
+    @Test
+    fun `isGameMaster vrai quand l'utilisateur courant est le MJ de la campagne`() = runTest {
+        val vm = buildVm(
+            listCampaigns = ListCampaignsUseCase { Result.Success(listOf(campaign(gameMasterId = "u-1"))) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-1", "u1@test.com", "u1")) },
+        )
+        advanceUntilIdle()
+
+        assertTrue(vm.isGameMaster.value)
+    }
+
+    @Test
+    fun `isGameMaster faux quand l'utilisateur courant n'est pas le MJ de la campagne`() = runTest {
+        val vm = buildVm(
+            listCampaigns = ListCampaignsUseCase { Result.Success(listOf(campaign(gameMasterId = "autre"))) },
+            getCurrentUser = GetCurrentUserUseCase { Result.Success(User("u-1", "u1@test.com", "u1")) },
+        )
+        advanceUntilIdle()
+
+        assertFalse(vm.isGameMaster.value)
     }
 }
