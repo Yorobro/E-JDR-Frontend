@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMemberRoleUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.InviteMemberUseCase
@@ -48,6 +49,7 @@ fun GroupDetailPage(
             get<InviteMemberUseCase>(),
             get<RemoveMemberUseCase>(),
             get<ChangeMemberRoleUseCase>(),
+            get<GetCurrentUserUseCase>(),
         )
     }
 
@@ -55,6 +57,7 @@ fun GroupDetailPage(
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val inviteSuccess by viewModel.inviteSuccess.collectAsStateWithLifecycle()
+    val currentUserId by viewModel.currentUserId.collectAsStateWithLifecycle()
 
     var showInvite by remember { mutableStateOf(false) }
 
@@ -96,10 +99,17 @@ fun GroupDetailPage(
                     ) {
                         items(d.members, key = { it.userId }) { member ->
                             val wouldDemoteLastAdmin = member.role == "ADMIN" && adminCount <= 1
+                            val isMe = member.userId == currentUserId
+                            // Quitter : sur MA carte, sauf si dernier admin (le back refuse). Retirer :
+                            // un autre membre non-admin, et je suis admin. Un admin ne peut pas retirer
+                            // un autre admin (le back refuse : CannotRemoveAdmin).
+                            val canLeave = isMe && !wouldDemoteLastAdmin
+                            val canRemoveOther = !isMe && isAdmin && member.role != "ADMIN"
                             MemberCard(
                                 member = member,
-                                canRemove = d.members.size > 1,
-                                canManageRole = isAdmin && !wouldDemoteLastAdmin,
+                                canLeave = canLeave,
+                                canRemove = canRemoveOther,
+                                canManageRole = isAdmin && !isMe && !wouldDemoteLastAdmin,
                                 onRemove = { viewModel.removeMember(member.userId) },
                                 onChangeRole = { newRole -> viewModel.changeRole(member.userId, newRole) },
                             )
@@ -109,11 +119,14 @@ fun GroupDetailPage(
             }
         }
 
-        AppFab(
-            onClick = { showInvite = true },
-            contentDescription = "Inviter un membre",
-            modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
-        )
+        // L'invitation de nouveaux membres est une action de gestion : réservée aux admins.
+        if (detail?.myRole == "ADMIN") {
+            AppFab(
+                onClick = { showInvite = true },
+                contentDescription = "Inviter un membre",
+                modifier = Modifier.align(Alignment.BottomEnd).padding(AppTheme.dimens.xl),
+            )
+        }
     }
 
     if (showInvite) {

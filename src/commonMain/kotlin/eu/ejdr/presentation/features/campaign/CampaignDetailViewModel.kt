@@ -2,10 +2,10 @@ package eu.ejdr.presentation.features.campaign
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.AcceptCharacterUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCharacterUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
@@ -21,24 +21,24 @@ import kotlinx.coroutines.launch
 /**
  * ViewModel de la page détail d'une campagne.
  *
- * Charge les fiches rattachées à la campagne ([characters]) et les fiches rattachables
- * ([linkableSheets], filtrées côté back, pour proposer un rattachement). Expose le rattachement
- * et le détachement, ainsi que les [sessions] de la campagne et leur création.
+ * Charge les fiches ACCEPTÉES rattachées à la campagne ([characters], lecture seule) et les demandes
+ * de rattachement en attente ([pendingCharacters], visibles du MJ). Expose la validation et le refus
+ * d'une demande, ainsi que les [sessions] de la campagne et leur création.
  *
  * @param campaignId Identifiant de la campagne affichée.
- * @property listCampaignCharacters Use case de listing des fiches rattachées.
- * @property listLinkable Use case de listing des fiches rattachables à la campagne.
- * @property linkCharacter Use case de rattachement.
- * @property unlinkCharacter Use case de détachement.
+ * @property listCampaignCharacters Use case de listing des fiches acceptées.
+ * @property listPendingCharacters Use case de listing des demandes en attente.
+ * @property acceptCharacter Use case de validation d'une demande.
+ * @property refuseCharacter Use case de refus d'une demande.
  * @property listCampaignSessions Use case de listing des sessions de la campagne.
  * @property createSession Use case de création d'une session.
  */
 class CampaignDetailViewModel(
     private val campaignId: String,
     private val listCampaignCharacters: ListCampaignCharactersUseCase,
-    private val listLinkable: ListLinkableCharactersUseCase,
-    private val linkCharacter: LinkCharacterToCampaignUseCase,
-    private val unlinkCharacter: UnlinkCharacterFromCampaignUseCase,
+    private val listPendingCharacters: ListPendingCharactersUseCase,
+    private val acceptCharacter: AcceptCharacterUseCase,
+    private val refuseCharacter: RefuseCharacterUseCase,
     private val listCampaignSessions: ListCampaignSessionsUseCase,
     private val createSession: CreateSessionUseCase,
     private val uiMessageBus: UiMessageBus,
@@ -47,8 +47,8 @@ class CampaignDetailViewModel(
     private val _characters = MutableStateFlow<List<CharacterSheet>>(emptyList())
     val characters: StateFlow<List<CharacterSheet>> = _characters.asStateFlow()
 
-    private val _linkableSheets = MutableStateFlow<List<CharacterSheet>>(emptyList())
-    val linkableSheets: StateFlow<List<CharacterSheet>> = _linkableSheets.asStateFlow()
+    private val _pendingCharacters = MutableStateFlow<List<CharacterSheet>>(emptyList())
+    val pendingCharacters: StateFlow<List<CharacterSheet>> = _pendingCharacters.asStateFlow()
 
     private val _sessions = MutableStateFlow<List<Session>>(emptyList())
     val sessions: StateFlow<List<Session>> = _sessions.asStateFlow()
@@ -60,15 +60,15 @@ class CampaignDetailViewModel(
         load()
     }
 
-    /** Recharge les fiches rattachées, les fiches rattachables et les sessions. */
+    /** Recharge les fiches acceptées, les demandes en attente et les sessions. */
     fun load() {
         viewModelScope.launch {
             listCampaignCharacters(campaignId).fold(
                 onSuccess = { _characters.value = it; _error.value = null },
                 onFailure = { _error.value = it.message },
             )
-            listLinkable(campaignId).fold(
-                onSuccess = { _linkableSheets.value = it },
+            listPendingCharacters(campaignId).fold(
+                onSuccess = { _pendingCharacters.value = it },
                 onFailure = { _error.value = it.message },
             )
             loadSessions()
@@ -102,13 +102,13 @@ class CampaignDetailViewModel(
         }
     }
 
-    /** Rattache la fiche d'un autre joueur à la campagne (MJ), puis recharge. */
-    fun link(characterSheetId: String) {
+    /** Valide (MJ) une demande de rattachement en attente, puis recharge. */
+    fun accept(characterSheetId: String) {
         viewModelScope.launch {
-            linkCharacter(campaignId, characterSheetId).fold(
+            acceptCharacter(campaignId, characterSheetId).fold(
                 onSuccess = {
                     _error.value = null
-                    uiMessageBus.emit(UiMessage.success("Fiche rattachée"))
+                    uiMessageBus.emit(UiMessage.success("Demande acceptée"))
                     load()
                 },
                 onFailure = {
@@ -119,13 +119,13 @@ class CampaignDetailViewModel(
         }
     }
 
-    /** Détache une fiche de la campagne, puis recharge. */
-    fun unlink(characterSheetId: String) {
+    /** Refuse (MJ) une demande de rattachement en attente (fiche supprimée), puis recharge. */
+    fun refuse(characterSheetId: String) {
         viewModelScope.launch {
-            unlinkCharacter(campaignId, characterSheetId).fold(
+            refuseCharacter(campaignId, characterSheetId).fold(
                 onSuccess = {
                     _error.value = null
-                    uiMessageBus.emit(UiMessage.success("Fiche retirée"))
+                    uiMessageBus.emit(UiMessage.success("Demande refusée (fiche supprimée)"))
                     load()
                 },
                 onFailure = {

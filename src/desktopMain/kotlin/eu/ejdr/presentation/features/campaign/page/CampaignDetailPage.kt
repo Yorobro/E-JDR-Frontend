@@ -2,6 +2,7 @@ package eu.ejdr.presentation.features.campaign.page
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,19 +15,19 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.session.entities.Session
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.LinkCharacterToCampaignUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.AcceptCharacterUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListLinkableCharactersUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.UnlinkCharacterFromCampaignUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
+import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCharacterUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.presentation.features.campaign.CampaignDetailViewModel
-import eu.ejdr.presentation.features.campaign.component.LinkCharacterDialog
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetCard
 import eu.ejdr.presentation.features.session.component.CreateSessionDialog
@@ -34,6 +35,7 @@ import eu.ejdr.presentation.features.session.component.SessionCard
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
@@ -42,9 +44,10 @@ import org.koin.compose.koinInject
 /**
  * Page détail d'une campagne (composant INTELLIGENT).
  *
- * Affiche le nom de la campagne, la liste des fiches rattachées (avec détachement et
- * rattachement par le MJ), puis une section **Sessions** : les sessions de la campagne sous
- * forme de cartes cliquables (ouvrant leur détail via [onOpenSession]) et un bouton d'ajout.
+ * Affiche le nom de la campagne, la liste des fiches acceptées (lecture seule), une section
+ * **Demandes en attente** où le MJ valide/refuse les rattachements PENDING, puis une section
+ * **Sessions** : les sessions de la campagne sous forme de cartes cliquables (ouvrant leur détail
+ * via [onOpenSession]) et un bouton d'ajout.
  *
  * @param id Identifiant de la campagne.
  * @param name Nom de la campagne (affiché en titre).
@@ -64,20 +67,19 @@ fun CampaignDetailPage(
         CampaignDetailViewModel(
             campaignId = id,
             listCampaignCharacters = get<ListCampaignCharactersUseCase>(),
-            listLinkable = get<ListLinkableCharactersUseCase>(),
-            linkCharacter = get<LinkCharacterToCampaignUseCase>(),
-            unlinkCharacter = get<UnlinkCharacterFromCampaignUseCase>(),
+            listPendingCharacters = get<ListPendingCharactersUseCase>(),
+            acceptCharacter = get<AcceptCharacterUseCase>(),
+            refuseCharacter = get<RefuseCharacterUseCase>(),
             listCampaignSessions = get<ListCampaignSessionsUseCase>(),
             createSession = get<CreateSessionUseCase>(),
             uiMessageBus = get<UiMessageBus>(),
         )
     }
     val characters by viewModel.characters.collectAsStateWithLifecycle()
-    val linkableSheets by viewModel.linkableSheets.collectAsStateWithLifecycle()
+    val pendingCharacters by viewModel.pendingCharacters.collectAsStateWithLifecycle()
     val sessions by viewModel.sessions.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
 
-    var showLink by remember { mutableStateOf(false) }
     var showCreateSession by remember { mutableStateOf(false) }
 
     Column(
@@ -90,28 +92,20 @@ fun CampaignDetailPage(
         AppText(text = name, style = AppTextStyle.Title)
         FormError(message = error)
 
-        CharactersSection(
-            characters = characters,
-            onLinkRequest = if (canEdit) ({ showLink = true }) else null,
-            onUnlink = viewModel::unlink,
-        )
+        CharactersSection(characters = characters)
+
+        if (canEdit) {
+            PendingRequestsSection(
+                pending = pendingCharacters,
+                onAccept = viewModel::accept,
+                onRefuse = viewModel::refuse,
+            )
+        }
 
         SessionsSection(
             sessions = sessions,
             onAddRequest = if (canEdit) ({ showCreateSession = true }) else null,
             onOpenSession = onOpenSession,
-        )
-    }
-
-    if (showLink) {
-        // Les fiches rattachables sont déjà filtrées côté back (autres joueurs, hors déjà liées).
-        LinkCharacterDialog(
-            sheets = linkableSheets,
-            onSelect = { sheetId ->
-                showLink = false
-                viewModel.link(sheetId)
-            },
-            onDismiss = { showLink = false },
         )
     }
 
@@ -126,25 +120,14 @@ fun CampaignDetailPage(
     }
 }
 
-/** Section « Personnages » : bouton de rattachement + liste des fiches rattachées. */
+/** Section « Personnages » : liste des fiches acceptées (lecture seule). */
 @Composable
-private fun CharactersSection(
-    characters: List<CharacterSheet>,
-    onLinkRequest: (() -> Unit)?,
-    onUnlink: (String) -> Unit,
-) {
+private fun CharactersSection(characters: List<CharacterSheet>) {
     AppText(
         text = "Personnages",
         style = AppTextStyle.Subtitle,
         color = AppTheme.colors.textSecondary,
     )
-    if (onLinkRequest != null) {
-        AppButton(
-            label = "Rattacher une fiche",
-            onClick = onLinkRequest,
-            leadingIcon = Icons.Filled.Add,
-        )
-    }
     if (characters.isEmpty()) {
         AppText(
             text = "Aucune fiche rattachée.",
@@ -153,12 +136,59 @@ private fun CharactersSection(
         )
     } else {
         characters.forEach { sheet ->
-            CharacterSheetCard(
-                sheet = sheet,
-                onDelete = { onUnlink(sheet.id) },
-                modifier = Modifier.fillMaxWidth(),
-            )
+            CharacterSheetCard(sheet = sheet, modifier = Modifier.fillMaxWidth())
         }
+    }
+}
+
+/**
+ * Section « Demandes en attente » (MJ) : pour chaque demande PENDING, le nom de la fiche et deux
+ * actions « Accepter » / « Refuser ».
+ */
+@Composable
+private fun PendingRequestsSection(
+    pending: List<CharacterSheet>,
+    onAccept: (String) -> Unit,
+    onRefuse: (String) -> Unit,
+) {
+    AppText(
+        text = "Demandes en attente",
+        style = AppTextStyle.Subtitle,
+        color = AppTheme.colors.textSecondary,
+        modifier = Modifier.padding(top = AppTheme.dimens.md),
+    )
+    if (pending.isEmpty()) {
+        AppText(
+            text = "Aucune demande en attente.",
+            style = AppTextStyle.Body,
+            color = AppTheme.colors.muted,
+        )
+    } else {
+        pending.forEach { sheet ->
+            PendingRequestRow(sheet = sheet, onAccept = onAccept, onRefuse = onRefuse)
+        }
+    }
+}
+
+/** Une ligne de demande en attente : nom de la fiche + boutons Accepter/Refuser. */
+@Composable
+private fun PendingRequestRow(
+    sheet: CharacterSheet,
+    onAccept: (String) -> Unit,
+    onRefuse: (String) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        AppText(text = sheet.name, style = AppTextStyle.Body, modifier = Modifier.weight(1f))
+        AppButton(label = "Accepter", onClick = { onAccept(sheet.id) })
+        AppButton(
+            label = "Refuser",
+            onClick = { onRefuse(sheet.id) },
+            variant = ButtonVariant.Danger,
+        )
     }
 }
 

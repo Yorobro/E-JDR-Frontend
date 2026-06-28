@@ -86,9 +86,23 @@ data class CharacterSheetDto(
     val vigueurTotale: Int? = null,
 )
 
-/** Corps de requête de création d'une fiche (`POST /character-sheets`). */
+/**
+ * Corps de requête de création d'une fiche (`POST /character-sheets`).
+ *
+ * @property name Nom de la fiche.
+ * @property groupId Groupe actif auquel rattacher la fiche.
+ * @property campaignId Campagne (requise) à laquelle la fiche demande son rattachement (statut PENDING).
+ */
 @Serializable
-data class CreateCharacterSheetRequestDto(val name: String, val groupId: String)
+data class CreateCharacterSheetRequestDto(
+    val name: String,
+    val groupId: String,
+    val campaignId: String,
+)
+
+/** Corps de requête de copie d'une fiche vers une autre campagne (`POST /character-sheets/:id/copy`). */
+@Serializable
+data class CopyCharacterSheetRequestDto(val targetCampaignId: String)
 
 /**
  * Corps de requête de mise à jour d'une fiche (`PUT /character-sheets/:id`).
@@ -126,16 +140,17 @@ data class CharacterSheetListResponseDto(val characterSheets: List<CharacterShee
 @Serializable
 data class CampaignCharactersResponseDto(val characters: List<CharacterSheetDto>)
 
-/** Corps de requête de rattachement (`POST /campaigns/:id/characters`). */
-@Serializable
-data class LinkCharacterRequestDto(val characterSheetId: String)
-
-/** Une campagne rattachée à une fiche, avec le pseudo du MJ (`GET /character-sheets/:id/campaigns`). */
+/**
+ * Une campagne rattachée à une fiche, avec le pseudo du MJ (`GET /character-sheets/:id/campaigns`).
+ *
+ * @property linkStatus Statut de la demande de rattachement : `"PENDING"` ou `"ACCEPTED"`.
+ */
 @Serializable
 data class SheetCampaignDto(
     val campaignId: String,
     val campaignName: String,
     val gameMasterPseudo: String,
+    val linkStatus: String,
 )
 
 /** Réponse de `GET /character-sheets/:id/campaigns`. */

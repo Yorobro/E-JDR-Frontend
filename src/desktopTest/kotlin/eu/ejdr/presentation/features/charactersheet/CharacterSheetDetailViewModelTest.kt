@@ -194,7 +194,7 @@ class CharacterSheetDetailViewModelTest {
 
     @Test
     fun `loads the linked campaigns at init`() = runTest {
-        val campaigns = listOf(SheetCampaign("c-1", "Donjon", "MJ"))
+        val campaigns = listOf(SheetCampaign("c-1", "Donjon", "MJ", "ACCEPTED"))
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(sheet()) },
             update = UpdateCharacterSheetUseCase { Result.Success(it) },

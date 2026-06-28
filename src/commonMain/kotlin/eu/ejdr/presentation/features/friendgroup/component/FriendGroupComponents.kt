@@ -149,20 +149,26 @@ fun InviteMemberDialog(
 /**
  * Carte d'un membre de groupe.
  *
- * Composant bête : affiche l'identité du membre et son rôle, et expose les actions de gestion
- * uniquement quand l'utilisateur courant est administrateur ([canManageRole]) :
- * sélecteur 3 rôles (ADMIN / MJ / MEMBER). Le retrait reste régi par
- * [canRemove] (calculé par l'appelant, ex. ne pas pouvoir retirer le dernier membre).
+ * Composant bête : affiche l'identité du membre et son rôle, et expose deux actions distinctes,
+ * mutuellement exclusives, décidées par l'appelant :
+ * - [canLeave] : c'est **ma** carte → bouton « Quitter le groupe » (départ volontaire, tout membre).
+ * - [canRemove] : carte d'un **autre** membre que je peux gérer → bouton « Retirer » (admin uniquement).
+ *
+ * Le sélecteur de rôle ([canManageRole]) reste réservé aux admins. Les deux actions appellent le
+ * même [onRemove] : la distinction quitter/retirer est portée par l'autorisation back (un membre ne
+ * peut retirer que lui-même ; retirer autrui exige le rôle admin).
  *
  * @param member Membre affiché (rôle `"ADMIN"`, `"MJ"` ou `"MEMBER"`).
- * @param canRemove Affiche le bouton « Retirer » si vrai.
+ * @param canLeave Affiche le bouton « Quitter le groupe » si vrai (réservé à la carte de l'utilisateur courant).
+ * @param canRemove Affiche le bouton « Retirer » si vrai (admin agissant sur un autre membre).
  * @param canManageRole Affiche le sélecteur de rôle si vrai (admin uniquement).
- * @param onRemove Callback de retrait du membre.
+ * @param onRemove Callback de retrait/départ du membre.
  * @param onChangeRole Callback de changement de rôle ; reçoit le nouveau rôle (`"ADMIN"`/`"MJ"`/`"MEMBER"`).
  */
 @Composable
 fun MemberCard(
     member: GroupMember,
+    canLeave: Boolean,
     canRemove: Boolean,
     canManageRole: Boolean,
     onRemove: () -> Unit,
@@ -204,7 +210,13 @@ fun MemberCard(
                         modifier = Modifier.width(140.dp),
                     )
                 }
-                if (canRemove) {
+                if (canLeave) {
+                    AppButton(
+                        label = "Quitter le groupe",
+                        onClick = onRemove,
+                        variant = ButtonVariant.Danger,
+                    )
+                } else if (canRemove) {
                     AppButton(label = "Retirer", onClick = onRemove, variant = ButtonVariant.Danger)
                 }
             }

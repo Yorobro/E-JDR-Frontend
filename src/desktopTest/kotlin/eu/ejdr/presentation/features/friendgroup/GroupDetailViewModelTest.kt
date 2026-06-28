@@ -1,10 +1,12 @@
 package eu.ejdr.presentation.features.friendgroup
 
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMemberRoleUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.InviteMemberUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.RemoveMemberUseCase
 import eu.ejdr.application.shared.Result
+import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroupDetail
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
 import eu.ejdr.domain.features.friendgroup.error.FriendGroupError
@@ -46,7 +48,17 @@ class GroupDetailViewModelTest {
         inviteMember: InviteMemberUseCase = InviteMemberUseCase { _, _ -> Result.Success("inv-1") },
         removeMember: RemoveMemberUseCase = RemoveMemberUseCase { _, _ -> Result.Success(Unit) },
         changeMemberRole: ChangeMemberRoleUseCase = ChangeMemberRoleUseCase { _, _, _ -> Result.Success(Unit) },
-    ) = GroupDetailViewModel("group-1", getGroup, inviteMember, removeMember, changeMemberRole)
+        getCurrentUser: GetCurrentUserUseCase = GetCurrentUserUseCase {
+            Result.Success(User(id = "user-a", email = "me@test.com", pseudo = "Moi"))
+        },
+    ) = GroupDetailViewModel(
+        "group-1",
+        getGroup,
+        inviteMember,
+        removeMember,
+        changeMemberRole,
+        getCurrentUser,
+    )
 
     @Test
     fun `loads group detail at init`() = runTest {
@@ -123,6 +135,19 @@ class GroupDetailViewModelTest {
 
         assertEquals(1, vm.detail.value?.members?.size)
         assertNull(vm.error.value)
+    }
+
+    @Test
+    fun `exposes current user id for self vs others distinction`() = runTest {
+        val vm = viewModel(
+            getGroup = GetGroupUseCase { Result.Success(detail(member("user-a", "ADMIN"))) },
+            getCurrentUser = GetCurrentUserUseCase {
+                Result.Success(User(id = "user-a", email = "me@test.com", pseudo = "Moi"))
+            },
+        )
+        advanceUntilIdle()
+
+        assertEquals("user-a", vm.currentUserId.value)
     }
 
     @Test

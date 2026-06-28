@@ -70,7 +70,7 @@ object CharacterSheetHttpMapper {
 
     /** Convertit une campagne rattachée reçue de l'API en vue domaine (onglet Campagnes). */
     fun toSheetCampaign(dto: SheetCampaignDto): SheetCampaign =
-        SheetCampaign(dto.campaignId, dto.campaignName, dto.gameMasterPseudo)
+        SheetCampaign(dto.campaignId, dto.campaignName, dto.gameMasterPseudo, dto.linkStatus)
 
     /**
      * Construit le corps de mise à jour (`PUT`) à partir d'une fiche du domaine.

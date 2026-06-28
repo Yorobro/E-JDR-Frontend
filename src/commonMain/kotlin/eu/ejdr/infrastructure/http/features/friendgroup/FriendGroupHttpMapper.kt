@@ -46,8 +46,10 @@ object FriendGroupHttpMapper {
             "INVITATION_NOT_FOUND" -> FriendGroupError.InvitationNotFound
             "INVITATION_ALREADY_RESOLVED" -> FriendGroupError.InvitationAlreadyResolved
             "ALREADY_MEMBER" -> FriendGroupError.AlreadyMember
+            "INVITATION_ALREADY_PENDING" -> FriendGroupError.InvitationAlreadyPending
             "INVITED_USER_NOT_FOUND" -> FriendGroupError.InvitedUserNotFound
             "CANNOT_REMOVE_LAST_ADMIN" -> FriendGroupError.CannotRemoveLastAdmin
+            "CANNOT_REMOVE_ADMIN" -> FriendGroupError.CannotRemoveAdmin
             "INVALID_GROUP_NAME" -> FriendGroupError.InvalidGroupName
             else -> when (status) {
                 HttpStatusCode.NotFound -> FriendGroupError.NotFound

@@ -12,58 +12,50 @@ import androidx.compose.ui.Modifier
 import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
 import eu.ejdr.presentation.shared.component.atomic.AppText
-import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.organism.AppDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
- * Boîte de dialogue de création d'une fiche (composant bête, réutilise [AppDialog]).
+ * Boîte de dialogue de copie d'une fiche vers une autre campagne (composant bête, réutilise
+ * [AppDialog]).
  *
- * Une fiche appartient à exactement une campagne : le sélecteur de campagne est obligatoire. Seules
- * les campagnes éligibles (où l'utilisateur n'est pas MJ) sont proposées ; quand la liste est vide,
- * un message d'aide invite à créer une campagne et la confirmation reste désactivée.
+ * La copie crée une nouvelle fiche PENDING dans la campagne cible. Seul un sélecteur de campagne
+ * éligible est proposé (l'utilisateur n'en est pas le MJ) ; quand la liste est vide, un message
+ * d'aide s'affiche et la confirmation reste désactivée.
  *
- * @param campaigns Campagnes éligibles (déjà filtrées : l'utilisateur n'en est pas le MJ).
- * @param onDismiss Callback de fermeture sans création.
- * @param onConfirm Callback de confirmation, portant le nom saisi et la campagne choisie.
+ * @param sheetName Nom de la fiche à copier (affiché en contexte).
+ * @param campaigns Campagnes éligibles cibles (déjà filtrées : l'utilisateur n'en est pas le MJ).
+ * @param onDismiss Callback de fermeture sans copie.
+ * @param onConfirm Callback de confirmation, portant la campagne cible choisie.
  * @param modifier Modifier Compose appliqué au dialog.
- * @param errorMessage Message d'erreur à afficher sous les champs.
+ * @param errorMessage Message d'erreur à afficher sous le champ.
  */
 @Composable
-fun CreateCharacterSheetDialog(
+fun CopyCharacterSheetDialog(
+    sheetName: String,
     campaigns: List<Campaign>,
     onDismiss: () -> Unit,
-    onConfirm: (name: String, campaignId: String) -> Unit,
+    onConfirm: (campaignId: String) -> Unit,
     modifier: Modifier = Modifier,
     errorMessage: String? = null,
 ) {
-    var name by remember { mutableStateOf("") }
-    var touched by remember { mutableStateOf(false) }
     var selectedCampaignId by remember { mutableStateOf<String?>(null) }
-    val fieldError = if (touched && name.isBlank()) "Le nom ne peut pas être vide" else null
     val selectedName = campaigns.firstOrNull { it.id == selectedCampaignId }?.name
 
     AppDialog(
-        title = "Nouvelle fiche",
+        title = "Copier « $sheetName »",
         onDismiss = onDismiss,
-        confirmLabel = "Créer",
-        onConfirm = { onConfirm(name.trim(), selectedCampaignId!!) },
+        confirmLabel = "Copier",
+        onConfirm = { onConfirm(selectedCampaignId!!) },
         modifier = modifier,
-        confirmEnabled = name.isNotBlank() && selectedCampaignId != null,
+        confirmEnabled = selectedCampaignId != null,
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
         ) {
-            AppTextField(
-                value = name,
-                onValueChange = { name = it; touched = true },
-                label = "Nom de la fiche",
-                errorMessage = fieldError,
-                modifier = Modifier.fillMaxWidth(),
-            )
             if (campaigns.isEmpty()) {
                 AppText(
                     text = "Aucune campagne disponible : crée d'abord une campagne " +
@@ -78,7 +70,7 @@ fun CreateCharacterSheetDialog(
                     onSelect = { chosen ->
                         selectedCampaignId = campaigns.firstOrNull { it.name == chosen }?.id
                     },
-                    label = "Campagne",
+                    label = "Campagne cible",
                     modifier = Modifier.fillMaxWidth(),
                 )
             }
