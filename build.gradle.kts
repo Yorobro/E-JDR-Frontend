@@ -186,6 +186,16 @@ compose.desktop {
             targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             packageName = "E-JDR"
             packageVersion = project.version.toString()
+            windows {
+                // Crée le raccourci dans le menu Démarrer → l'application devient
+                // recherchable via la loupe Windows (l'installeur .exe / Inno Setup l'honore).
+                menu = true
+                menuGroup = "E-JDR"
+                // UUID FIXE : ne JAMAIS le modifier. Il identifie le produit pour que les
+                // futures versions remplacent proprement l'ancienne (au lieu d'installer
+                // un doublon), ce qui est indispensable avec l'auto-update.
+                upgradeUuid = "68252833-3dec-4fee-bb7d-b87f6b0ff26d"
+            }
         }
     }
 }
