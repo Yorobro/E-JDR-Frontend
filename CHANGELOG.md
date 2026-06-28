@@ -1,3 +1,10 @@
+## [1.25.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.24.0...v1.25.0) (2026-06-28)
+
+
+### Features
+
+* **installer:** update silencieuse + relance auto + case « Lancer » (1re install) ([af16b26](https://github.com/Yorobro/E-JDR-Frontend/commit/af16b2676458ae7bc71e085752754ca1a74e224b))
+
 ## [1.24.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.23.0...v1.24.0) (2026-06-28)
 
 
