@@ -1,3 +1,10 @@
+## [1.24.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.23.0...v1.24.0) (2026-06-28)
+
+
+### Features
+
+* **campagnes/fiches:** droits MJ-de-la-campagne + nom de campagne sur les fiches ([45d8f9f](https://github.com/Yorobro/E-JDR-Frontend/commit/45d8f9f4673c10e9179dce5de14548112f9d128e))
+
 ## [1.23.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.22.0...v1.23.0) (2026-06-28)
 
 
