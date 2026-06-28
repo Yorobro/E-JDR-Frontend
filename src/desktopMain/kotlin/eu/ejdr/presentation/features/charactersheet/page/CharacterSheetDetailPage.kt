@@ -18,7 +18,6 @@ import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCa
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
@@ -27,10 +26,8 @@ import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceI
 import eu.ejdr.application.features.reference.abstraction.usecase.ListSheetReferencesUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UnlinkSheetReferenceUseCase
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
-import eu.ejdr.domain.features.charactersheet.entities.SheetCampaign
 import eu.ejdr.presentation.features.charactersheet.CharacterSheetDetailViewModel
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
-import eu.ejdr.presentation.features.charactersheet.component.CampagnesTab
 import eu.ejdr.presentation.features.charactersheet.component.CharacterSheetFormState
 import eu.ejdr.presentation.features.charactersheet.component.CombatTab
 import eu.ejdr.presentation.features.charactersheet.component.IdentiteTab
@@ -47,16 +44,17 @@ import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
-private val TabTitles = listOf("Identité", "Combat", "Inventaire", "Campagnes")
+private val TabTitles = listOf("Identité", "Combat", "Inventaire")
 
 /**
  * Page détail d'une fiche de personnage (composant INTELLIGENT).
  *
- * Charge la fiche via [CharacterSheetDetailViewModel] et l'affiche en QUATRE onglets
- * (Identité / Combat / Inventaire / Campagnes). L'en-tête (titre + barre d'action) et la barre
- * d'onglets restent FIXES ; seul le contenu de l'onglet défile. Édition et état de formulaire GLOBAUX :
- * éditer dans un onglet puis changer d'onglet conserve les modifications ; Enregistrer persiste
- * toute la fiche.
+ * Charge la fiche via [CharacterSheetDetailViewModel] et l'affiche en TROIS onglets
+ * (Identité / Combat / Inventaire). L'en-tête (titre « Nom - NomCampagne » + barre d'action) et la
+ * barre d'onglets restent FIXES ; seul le contenu de l'onglet défile. Édition et état de formulaire
+ * GLOBAUX : éditer dans un onglet puis changer d'onglet conserve les modifications ; Enregistrer
+ * persiste toute la fiche. Le rattachement à une campagne (« 1 fiche = 1 campagne ») est affiché
+ * directement dans le titre, plus dans un onglet dédié.
  *
  * @param id Identifiant de la fiche (sert au chargement).
  * @param name Nom de la fiche (affiché en titre, évite d'attendre le chargement).
@@ -75,7 +73,6 @@ fun CharacterSheetDetailPage(
             activeGroupId = activeGroupState.activeGroupId,
             getById = get<GetCharacterSheetUseCase>(),
             update = get<UpdateCharacterSheetUseCase>(),
-            getCampaigns = get<GetSheetCampaignsUseCase>(),
             exportPdf = get<ExportCharacterSheetPdfUseCase>(),
             fileSaver = get<FileSaver>(),
             listReferenceItems = get<ListReferenceItemsUseCase>(),
@@ -88,7 +85,6 @@ fun CharacterSheetDetailPage(
         )
     }
     val sheet by viewModel.sheet.collectAsStateWithLifecycle()
-    val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()
     val isEditing by viewModel.isEditing.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val isExporting by viewModel.isExporting.collectAsStateWithLifecycle()
@@ -114,7 +110,7 @@ fun CharacterSheetDetailPage(
         modifier = modifier.fillMaxSize().padding(AppTheme.dimens.xl),
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
     ) {
-        AppText(text = name, style = AppTextStyle.Title)
+        AppText(text = sheetTitle(name, sheet), style = AppTextStyle.Title)
         FormError(message = error)
         if (sheetChangedRemotely) {
             RemoteChangeBanner(
@@ -126,7 +122,6 @@ fun CharacterSheetDetailPage(
         sheet?.let { loaded ->
             CharacterSheetDetailContent(
                 sheet = loaded,
-                campaigns = campaigns,
                 refs = refs,
                 isEditing = isEditing,
                 isSaving = isLoading,
@@ -142,6 +137,20 @@ fun CharacterSheetDetailPage(
 }
 
 /**
+ * Titre de la fiche : « Nom - NomCampagne » quand la fiche est chargée et **acceptée** dans une
+ * campagne, sinon le nom seul (avant chargement, ou tant que le rattachement est PENDING).
+ */
+private fun sheetTitle(fallbackName: String, sheet: CharacterSheet?): String {
+    val name = sheet?.name ?: fallbackName
+    val campaign = sheet?.campaignName
+    return if (sheet?.linkStatus == "ACCEPTED" && !campaign.isNullOrBlank()) {
+        "$name - $campaign"
+    } else {
+        name
+    }
+}
+
+/**
  * Contenu de la fiche : en-tête fixe (barre d'action + onglets) puis contenu d'onglet défilant.
  *
  * Le [CharacterSheetFormState] (réamorcé à chaque nouvelle [sheet]) et l'onglet sélectionné sont
@@ -150,7 +159,6 @@ fun CharacterSheetDetailPage(
 @Composable
 private fun CharacterSheetDetailContent(
     sheet: CharacterSheet,
-    campaigns: List<SheetCampaign>,
     refs: SheetReferences,
     isEditing: Boolean,
     isSaving: Boolean,
@@ -187,7 +195,6 @@ private fun CharacterSheetDetailContent(
             TabContent(
                 selectedTab = selectedTab,
                 sheet = sheet,
-                campaigns = campaigns,
                 refs = refs,
                 isEditing = isEditing,
                 form = form,
@@ -240,7 +247,6 @@ private fun DetailActionBar(
 private fun TabContent(
     selectedTab: Int,
     sheet: CharacterSheet,
-    campaigns: List<SheetCampaign>,
     refs: SheetReferences,
     isEditing: Boolean,
     form: CharacterSheetFormState,
@@ -248,7 +254,6 @@ private fun TabContent(
     when (selectedTab) {
         0 -> IdentiteTab(sheet, isEditing, form, refs)
         1 -> CombatTab(sheet, isEditing, form, refs)
-        2 -> InventaireTab(sheet, isEditing, form, refs)
-        else -> CampagnesTab(campaigns)
+        else -> InventaireTab(sheet, isEditing, form, refs)
     }
 }

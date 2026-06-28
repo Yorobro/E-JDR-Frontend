@@ -4,7 +4,6 @@ import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCa
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetCharacterSheetUseCase
-import eu.ejdr.application.features.charactersheet.abstraction.usecase.GetSheetCampaignsUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.UpdateCharacterSheetUseCase
 import eu.ejdr.application.features.realtime.abstraction.Invalidation
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
@@ -64,7 +63,6 @@ class CharacterSheetDetailRealtimeTest {
         activeGroupId = MutableStateFlow("g-1"),
         getById = GetCharacterSheetUseCase { onGetById(); Result.Success(sheet(sheetId)) },
         update = UpdateCharacterSheetUseCase { Result.Success(it) },
-        getCampaigns = GetSheetCampaignsUseCase { Result.Success(emptyList()) },
         exportPdf = ExportCharacterSheetPdfUseCase { Result.Success(byteArrayOf()) },
         fileSaver = FileSaver { _, _ -> true },
         listReferenceItems = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList<ReferenceItem>()) },

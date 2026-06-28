@@ -13,6 +13,9 @@ package eu.ejdr.domain.features.charactersheet.entities
  * @property ownerId Identifiant du propriétaire de la fiche.
  * @property name Nom affiché de la fiche.
  * @property createdAt Date de création au format ISO 8601 (telle que renvoyée par l'API).
+ * @property campaignId Id de la campagne à laquelle la fiche est rattachée (modèle « 1 fiche = 1 campagne »).
+ * @property campaignName Nom de cette campagne (affiché « Nom - NomCampagne »), `null` si non fourni.
+ * @property linkStatus Statut du rattachement : `"PENDING"` (en attente) ou `"ACCEPTED"`, ou `null`.
  * @property formationId Id de la formation choisie (élément de référence du propriétaire), ou `null`.
  * @property niveau Niveau du personnage (entier).
  * @property peupleId Id du peuple choisi (élément de référence du propriétaire), ou `null`.
@@ -49,6 +52,9 @@ data class CharacterSheet(
     val ownerId: String,
     val name: String,
     val createdAt: String,
+    val campaignId: String? = null,
+    val campaignName: String? = null,
+    val linkStatus: String? = null,
     val formationId: String? = null,
     val niveau: Int? = null,
     val peupleId: String? = null,

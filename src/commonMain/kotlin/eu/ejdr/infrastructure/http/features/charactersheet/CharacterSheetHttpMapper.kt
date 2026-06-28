@@ -28,6 +28,9 @@ object CharacterSheetHttpMapper {
             ownerId = dto.ownerId,
             name = dto.name,
             createdAt = dto.createdAt,
+            campaignId = dto.campaignId,
+            campaignName = dto.campaignName,
+            linkStatus = dto.linkStatus,
             formationId = dto.formationId,
             niveau = dto.niveau,
             peupleId = dto.peupleId,
@@ -114,6 +117,7 @@ object CharacterSheetHttpMapper {
             "CHARACTER_SHEET_NOT_FOUND", "CAMPAIGN_NOT_FOUND" -> CharacterSheetError.NotFound
             "CHARACTER_SHEET_ACCESS_DENIED" -> CharacterSheetError.AccessDenied
             "GM_CANNOT_JOIN_OWN_CAMPAIGN" -> CharacterSheetError.GmCannotJoinOwnCampaign
+            "SAME_CAMPAIGN_COPY" -> CharacterSheetError.SameCampaignCopy
             "SHEET_ALREADY_IN_CAMPAIGN" -> CharacterSheetError.AlreadyInCampaign
             else -> when (status) {
                 HttpStatusCode.NotFound -> CharacterSheetError.NotFound

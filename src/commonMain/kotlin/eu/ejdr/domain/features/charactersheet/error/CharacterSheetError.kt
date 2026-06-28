@@ -27,6 +27,10 @@ sealed class CharacterSheetError(override val message: String) : DomainError {
     data object AlreadyInCampaign :
         CharacterSheetError("Cette fiche est déjà rattachée à cette campagne.")
 
+    /** On ne peut pas copier une fiche vers sa propre campagne (choisir une autre campagne). */
+    data object SameCampaignCopy :
+        CharacterSheetError("Choisissez une autre campagne : la fiche y est déjà.")
+
     /** Échec de communication avec le serveur. */
     data object Network : CharacterSheetError("Erreur réseau, vérifiez votre connexion.")
 
