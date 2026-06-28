@@ -186,6 +186,12 @@ compose.desktop {
             targetFormats(TargetFormat.Exe, TargetFormat.Msi)
             packageName = "E-JDR"
             packageVersion = project.version.toString()
+            // Racine des ressources d'installation passées à jpackage (--resource-dir). Les fichiers
+            // de `packaging/windows/` sont injectés côté Windows : on y place « E-JDR.iss », un
+            // template Inno Setup qui REMPLACE celui par défaut de jpackage et ajoute une case
+            // « Lancer E-JDR » précochée en fin de 1re installation (cf. packaging/windows/E-JDR.iss).
+            // Sous-dossiers reconnus : windows / macos / linux / common.
+            appResourcesRootDir.set(project.layout.projectDirectory.dir("packaging"))
             windows {
                 // Crée le raccourci dans le menu Démarrer → l'application devient
                 // recherchable via la loupe Windows (l'installeur .exe / Inno Setup l'honore).
