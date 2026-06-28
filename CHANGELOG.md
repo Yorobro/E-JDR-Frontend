@@ -1,3 +1,16 @@
+## [1.23.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.22.0...v1.23.0) (2026-06-28)
+
+
+### Features
+
+* **fiches:** une fiche = une campagne (campagne obligatoire + validation MJ + copie) ([16c9610](https://github.com/Yorobro/E-JDR-Frontend/commit/16c9610fca62b711dd8de9435d9c1cb4f9c733e4))
+* **groupes:** admin ne peut pas retirer un autre admin + messages d'invitation clairs ([e1755de](https://github.com/Yorobro/E-JDR-Frontend/commit/e1755de3ffa31ed9bd4e4c1650a153b04498bc9e)), closes [#2](https://github.com/Yorobro/E-JDR-Frontend/issues/2) [#7](https://github.com/Yorobro/E-JDR-Frontend/issues/7)
+
+
+### Bug Fixes
+
+* **friend-group:** bouton « Quitter le groupe » et retrait réservé aux admins ([a4a8b5f](https://github.com/Yorobro/E-JDR-Frontend/commit/a4a8b5f9a7e2741c63d55b7f059641108dcf19ea))
+
 ## [1.22.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.21.0...v1.22.0) (2026-06-22)
 
 
