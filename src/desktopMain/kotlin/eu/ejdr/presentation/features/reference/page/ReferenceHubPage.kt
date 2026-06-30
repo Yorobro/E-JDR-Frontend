@@ -1,9 +1,5 @@
 package eu.ejdr.presentation.features.reference.page
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -13,16 +9,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 private val MinTileWidth = 180.dp
@@ -57,23 +52,20 @@ fun ReferenceHubPage(
 /** Tuile d'une catégorie : libellé centré, cliquable. */
 @Composable
 private fun ReferenceTypeTile(label: String, onClick: () -> Unit) {
-    val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .height(TileHeight)
-            .clip(shape)
-            .background(AppTheme.colors.surface)
-            .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape)
-            .clickable(onClick = onClick),
+    AppCard(
+        modifier = Modifier.height(TileHeight),
+        onClick = onClick,
+        contentPadding = PaddingValues(0.dp),
     ) {
-        AppText(
-            text = label,
-            style = AppTextStyle.Subtitle,
-            textAlign = TextAlign.Center,
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = AppTheme.dimens.md),
-        )
+        Box(Modifier.fillMaxSize()) {
+            AppText(
+                text = label,
+                style = AppTextStyle.Subtitle,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = AppTheme.dimens.md),
+            )
+        }
     }
 }

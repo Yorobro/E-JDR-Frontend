@@ -1,32 +1,24 @@
 package eu.ejdr.presentation.features.campaign.component
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.LocalIndication
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
-import eu.ejdr.presentation.shared.component.modifier.interactiveCard
+import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.util.formatDate
 
@@ -51,48 +43,42 @@ fun CampaignCard(
     onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
-    val interactionSource = remember { MutableInteractionSource() }
-    val indication = LocalIndication.current
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(CardHeight)
-            .interactiveCard(interactionSource, enabled = true)
-            .clip(shape)
-            .background(AppTheme.colors.surface)
-            .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape)
-            .clickable(interactionSource = interactionSource, indication = indication, onClick = onClick),
+    AppCard(
+        modifier = modifier.height(CardHeight),
+        onClick = onClick,
+        contentPadding = PaddingValues(0.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = AppTheme.dimens.md),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            AppText(
-                text = campaign.name,
-                style = AppTextStyle.Subtitle,
-                maxLines = 2,
-                textAlign = TextAlign.Center,
-            )
-            AppText(
-                text = "Créée le ${formatDate(campaign.createdAt)}",
-                style = AppTextStyle.Caption,
-                color = AppTheme.colors.textSecondary,
-                textAlign = TextAlign.Center,
-            )
-        }
-        if (onDelete != null) {
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.align(Alignment.TopEnd),
+        Box(Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = AppTheme.dimens.md),
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                AppIcon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Supprimer la campagne",
-                    tint = AppTheme.colors.danger,
+                AppText(
+                    text = campaign.name,
+                    style = AppTextStyle.Subtitle,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center,
                 )
+                AppText(
+                    text = "Créée le ${formatDate(campaign.createdAt)}",
+                    style = AppTextStyle.Caption,
+                    color = AppTheme.colors.textSecondary,
+                    textAlign = TextAlign.Center,
+                )
+            }
+            if (onDelete != null) {
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.align(Alignment.TopEnd),
+                ) {
+                    AppIcon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Supprimer la campagne",
+                        tint = AppTheme.colors.danger,
+                    )
+                }
             }
         }
     }
