@@ -109,6 +109,7 @@ fun CampaignListPage(
                             )
                         }
                     } else null,
+                    flourish = true,
                 )
                 FormError(message = error)
                 CampaignGrid(
