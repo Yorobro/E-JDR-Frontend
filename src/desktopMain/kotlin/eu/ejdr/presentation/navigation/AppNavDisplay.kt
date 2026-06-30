@@ -1,7 +1,8 @@
 package eu.ejdr.presentation.navigation
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -54,14 +55,22 @@ fun AppNavDisplay(
     resetTo: (Route) -> Unit,
 ) {
     val actions = NavActions(backStack, onLoggedIn, onLogout, onThemeChange, resetTo)
-    // Changement de page instantané : aucune transition (pas de fondu ni de glissement, qui
-    // laissaient entrevoir le fond pendant le chevauchement des écrans).
+    // Transition d'écran : fondu pur (sans glissement). Le glissement faisait apparaître le fond
+    // pendant le chevauchement ; le fondu, combiné au fond du thème peint sur le conteneur racine
+    // (cf. App), évite tout flash. Durée/courbe pilotées par les tokens, neutralisées en
+    // reduced-motion (durée 0 → changement instantané).
+    val motion = AppTheme.motion
+    val fadeSpec = tween<Float>(
+        durationMillis = motion.effectiveDuration(motion.durationMedium),
+        easing = motion.easeEmphasized,
+    )
+    val fadeTransition = fadeIn(animationSpec = fadeSpec) togetherWith fadeOut(animationSpec = fadeSpec)
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
         entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
-        transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
-        popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+        transitionSpec = { fadeTransition },
+        popTransitionSpec = { fadeTransition },
         entryProvider = entryProvider {
             entry<Route.Splash> { SplashScreen() }
             authEntries(actions)

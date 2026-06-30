@@ -1,5 +1,6 @@
 package eu.ejdr.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
@@ -91,7 +92,10 @@ fun App() {
             }
         }
 
-        Box(Modifier.fillMaxSize()) {
+        // Le fond du thème est peint sur le conteneur racine : pendant le chevauchement des
+        // écrans en transition, aucun interstice clair ne peut apparaître (cause historique du
+        // « flash » lors d'un fondu — voir AppNavDisplay).
+        Box(Modifier.fillMaxSize().background(AppTheme.colors.background)) {
             AppNavDisplay(
                 backStack = backStack,
                 onLoggedIn = rootState::onLoggedIn,
