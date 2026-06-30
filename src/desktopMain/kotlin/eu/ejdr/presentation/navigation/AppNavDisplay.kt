@@ -5,7 +5,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -24,6 +26,9 @@ import eu.ejdr.presentation.features.reference.referenceEntries
 import eu.ejdr.presentation.features.charactersheet.characterSheetEntries
 import eu.ejdr.presentation.features.settings.settingsEntries
 import eu.ejdr.presentation.features.user.userEntries
+import eu.ejdr.presentation.shared.component.atomic.AppBrandMark
+import eu.ejdr.presentation.shared.component.atomic.AppText
+import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -85,11 +90,20 @@ fun AppNavDisplay(
     )
 }
 
-/** Écran de démarrage affiché pendant la restauration de session. */
+/** Écran de démarrage affiché pendant la restauration de session : marque + indicateur. */
 @Composable
 private fun SplashScreen() {
     Box(
         Modifier.fillMaxSize().background(AppTheme.colors.background),
         Alignment.Center,
-    ) { CircularProgressIndicator(color = AppTheme.colors.primary) }
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
+        ) {
+            AppBrandMark()
+            AppText(text = "E-JDR", style = AppTextStyle.Display)
+            CircularProgressIndicator(color = AppTheme.colors.primary)
+        }
+    }
 }
