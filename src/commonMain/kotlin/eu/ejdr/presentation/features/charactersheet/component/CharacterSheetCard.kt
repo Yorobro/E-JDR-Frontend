@@ -1,23 +1,18 @@
 package eu.ejdr.presentation.features.charactersheet.component
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,8 +20,7 @@ import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
-import eu.ejdr.presentation.shared.component.modifier.interactiveCard
-import eu.ejdr.presentation.shared.component.modifier.interactiveCardElevation
+import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.theme.AppTheme
 import eu.ejdr.presentation.shared.util.formatDate
 
@@ -56,16 +50,6 @@ fun CharacterSheetCard(
     onDelete: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
-    val enabled = onClick != null
-    val interactionSource = remember { MutableInteractionSource() }
-    val elevation = interactiveCardElevation(interactionSource, enabled, base = AppTheme.dimens.elevationMd)
-    val surfaceModifier = modifier
-        .fillMaxWidth()
-        .height(CardHeight)
-        .interactiveCard(interactionSource, enabled)
-    val border = BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border)
-
     val content: @Composable () -> Unit = {
         Box(Modifier.fillMaxSize()) {
             Column(
@@ -113,27 +97,12 @@ fun CharacterSheetCard(
         }
     }
 
-    if (onClick != null) {
-        Surface(
-            onClick = onClick,
-            modifier = surfaceModifier,
-            interactionSource = interactionSource,
-            shape = shape,
-            color = AppTheme.colors.surface,
-            contentColor = AppTheme.colors.text,
-            shadowElevation = elevation,
-            border = border,
-        ) { content() }
-    } else {
-        Surface(
-            modifier = surfaceModifier,
-            shape = shape,
-            color = AppTheme.colors.surface,
-            contentColor = AppTheme.colors.text,
-            shadowElevation = AppTheme.dimens.elevationMd,
-            border = border,
-        ) { content() }
-    }
+    AppCard(
+        modifier = modifier.height(CardHeight),
+        onClick = onClick,
+        contentPadding = PaddingValues(0.dp),
+        content = content,
+    )
 }
 
 /**
