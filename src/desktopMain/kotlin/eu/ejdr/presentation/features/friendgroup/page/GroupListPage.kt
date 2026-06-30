@@ -30,6 +30,7 @@ import eu.ejdr.presentation.features.friendgroup.GroupListViewModel
 import eu.ejdr.presentation.features.friendgroup.component.CreateGroupDialog
 import eu.ejdr.presentation.features.friendgroup.component.GroupCard
 import eu.ejdr.presentation.shared.component.atomic.AppButton
+import eu.ejdr.presentation.shared.component.modifier.appItemAppearSpec
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonList
@@ -97,7 +98,8 @@ fun GroupListPage(
                         )
                     }
 
-                else ->
+                else -> {
+                    val appearSpec = appItemAppearSpec()
                     LazyColumn(
                         modifier = Modifier.fillMaxSize(),
                         contentPadding = PaddingValues(bottom = ListBottomPadding),
@@ -112,10 +114,11 @@ fun GroupListPage(
                                 onDelete = if (group.myRole == "ADMIN") {
                                     { viewModel.delete(group.id) }
                                 } else null,
-                                modifier = Modifier.animateItem(),
+                                modifier = Modifier.animateItem(fadeInSpec = appearSpec),
                             )
                         }
                     }
+                }
             }
         }
     }

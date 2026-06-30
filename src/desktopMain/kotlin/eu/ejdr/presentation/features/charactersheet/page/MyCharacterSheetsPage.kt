@@ -40,6 +40,7 @@ import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.modifier.appItemAppearSpec
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
@@ -232,26 +233,29 @@ private fun CharacterSheetGrid(
                     modifier = Modifier.align(Alignment.Center),
                 )
 
-            else -> LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = MinTileWidth),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(
-                    top = AppTheme.dimens.sm,
-                    bottom = GridBottomPadding,
-                ),
-                horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-            ) {
-                items(sheets, key = { it.id }) { sheet ->
-                    val isOwner = sheet.ownerId == currentUserId
-                    val canDelete = canEdit || isOwner
-                    CharacterSheetCard(
-                        sheet = sheet,
-                        onClick = { onOpenSheet(sheet.id, sheet.name) },
-                        onCopy = if (isOwner) ({ onCopyRequest(sheet) }) else null,
-                        onDelete = if (canDelete) ({ onDeleteRequest(sheet) }) else null,
-                        modifier = Modifier.animateItem(),
-                    )
+            else -> {
+                val appearSpec = appItemAppearSpec()
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = MinTileWidth),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = AppTheme.dimens.sm,
+                        bottom = GridBottomPadding,
+                    ),
+                    horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+                    verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+                ) {
+                    items(sheets, key = { it.id }) { sheet ->
+                        val isOwner = sheet.ownerId == currentUserId
+                        val canDelete = canEdit || isOwner
+                        CharacterSheetCard(
+                            sheet = sheet,
+                            onClick = { onOpenSheet(sheet.id, sheet.name) },
+                            onCopy = if (isOwner) ({ onCopyRequest(sheet) }) else null,
+                            onDelete = if (canDelete) ({ onDeleteRequest(sheet) }) else null,
+                            modifier = Modifier.animateItem(fadeInSpec = appearSpec),
+                        )
+                    }
                 }
             }
         }
