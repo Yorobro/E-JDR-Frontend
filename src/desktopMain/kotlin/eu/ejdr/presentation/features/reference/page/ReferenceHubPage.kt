@@ -2,13 +2,14 @@ package eu.ejdr.presentation.features.reference.page
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,13 +21,17 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.theme.AppTheme
 
-private val MinTileWidth = 180.dp
-private val TileHeight = 120.dp
+/** Nombre de colonnes de la grille. Les 8 types se répartissent en 4 × 2. */
+private const val Columns = 4
 
 /**
- * Page hub « Mes éléments » : grille des six catégories de référence. Cliquer une tuile ouvre la
+ * Page hub « Mes éléments » : grille des catégories de référence. Cliquer une tuile ouvre la
  * liste de gestion de la catégorie correspondante. Composant bête : il ne fait que disposer les
  * types et remonter le clic.
+ *
+ * Les tuiles remplissent tout l'espace disponible : la grille est découpée en lignes de poids
+ * égal (hauteur) et chaque tuile prend une fraction égale de la largeur, si bien qu'agrandir la
+ * fenêtre agrandit les tuiles au lieu de laisser du vide autour.
  *
  * @param onOpenType Callback d'ouverture d'une catégorie (porte le slug du type).
  * @param modifier Modifier Compose appliqué à la page.
@@ -36,24 +41,42 @@ fun ReferenceHubPage(
     onOpenType: (slug: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = MinTileWidth),
+    val rows = ReferenceType.entries.chunked(Columns)
+    Column(
         modifier = modifier.fillMaxSize().padding(AppTheme.dimens.xl),
-        contentPadding = PaddingValues(vertical = AppTheme.dimens.sm),
-        horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
     ) {
-        items(ReferenceType.entries, key = { it.slug }) { type ->
-            ReferenceTypeTile(label = type.label, onClick = { onOpenType(type.slug) })
+        rows.forEach { rowTypes ->
+            Row(
+                modifier = Modifier.fillMaxWidth().weight(1f),
+                horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+            ) {
+                rowTypes.forEach { type ->
+                    ReferenceTypeTile(
+                        label = type.label,
+                        onClick = { onOpenType(type.slug) },
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                    )
+                }
+                // Complète la dernière ligne incomplète avec des espaceurs de même poids,
+                // pour que les tuiles gardent la même largeur d'une ligne à l'autre.
+                repeat(Columns - rowTypes.size) {
+                    Box(Modifier.weight(1f))
+                }
+            }
         }
     }
 }
 
-/** Tuile d'une catégorie : libellé centré, cliquable. */
+/** Tuile d'une catégorie : libellé centré, cliquable, remplit la cellule qui lui est allouée. */
 @Composable
-private fun ReferenceTypeTile(label: String, onClick: () -> Unit) {
+private fun RowScope.ReferenceTypeTile(
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
     AppCard(
-        modifier = Modifier.height(TileHeight),
+        modifier = modifier,
         onClick = onClick,
         contentPadding = PaddingValues(0.dp),
     ) {
