@@ -9,8 +9,9 @@ import androidx.compose.ui.unit.sp
  * Styles typographiques du design system.
  *
  * Conteneur immuable lu via [AppTheme]. Chaque style correspond à un usage
- * sémantique (titre, sous-titre, corps, label, légende, monospace).
+ * sémantique (display, titre, sous-titre, corps, label, légende, monospace).
  *
+ * @property display Titre héro (écran signature : en-tête de la fiche de personnage).
  * @property title Titres d'écran.
  * @property subtitle Sous-titres / sections.
  * @property body Texte courant.
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.sp
  * @property mono Valeurs numériques / stats (monospace).
  */
 data class AppTypography(
+    val display: TextStyle = TextStyle(fontSize = 38.sp, fontWeight = FontWeight.SemiBold, lineHeight = 44.sp),
     val title: TextStyle = TextStyle(fontSize = 28.sp, fontWeight = FontWeight.SemiBold, lineHeight = 34.sp),
     val subtitle: TextStyle = TextStyle(fontSize = 19.sp, fontWeight = FontWeight.Medium, lineHeight = 26.sp),
     val body: TextStyle = TextStyle(fontSize = 15.sp, fontWeight = FontWeight.Normal, lineHeight = 22.sp),
@@ -30,7 +32,7 @@ data class AppTypography(
 /**
  * Construit un [AppTypography] avec les familles de polices custom du design system.
  *
- * - title/subtitle → Fraunces (display)
+ * - display/title/subtitle → Fraunces (display)
  * - body/label/caption → Inter (corps)
  * - mono → JetBrains Mono
  */
@@ -40,6 +42,7 @@ fun appTypography(): AppTypography {
     val body = appBodyFamily()
     val mono = appMonoFamily()
     return AppTypography(
+        display = AppTypography().display.copy(fontFamily = display),
         title = AppTypography().title.copy(fontFamily = display),
         subtitle = AppTypography().subtitle.copy(fontFamily = display),
         body = AppTypography().body.copy(fontFamily = body),

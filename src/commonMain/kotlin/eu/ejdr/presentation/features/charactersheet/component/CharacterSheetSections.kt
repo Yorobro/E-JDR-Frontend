@@ -130,7 +130,7 @@ private fun StatBonusLine(display: StatDisplay) {
     ) {
         AppText(
             text = display.total.toString(),
-            style = AppTextStyle.Subtitle,
+            style = AppTextStyle.Mono,
             color = AppTheme.colors.primary,
         )
         AppText(text = "= ${display.base ?: 0} base", style = AppTextStyle.Body)

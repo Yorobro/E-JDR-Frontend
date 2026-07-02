@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import eu.ejdr.presentation.shared.component.atomic.AppCornerFlourish
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.theme.AppTheme
@@ -22,6 +23,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param modifier Modifier Compose appliqué à l'en-tête.
  * @param subtitle Sous-titre contextuel optionnel (ex. compteur de la liste).
  * @param action Slot d'action principale optionnel, aligné à droite (ex. bouton de création).
+ * @param flourish Affiche un fleuron ornemental sous l'en-tête (signature « grimoire » des hubs).
  */
 @Composable
 fun PageHeader(
@@ -29,22 +31,28 @@ fun PageHeader(
     modifier: Modifier = Modifier,
     subtitle: String? = null,
     action: (@Composable () -> Unit)? = null,
+    flourish: Boolean = false,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth().padding(bottom = AppTheme.dimens.md),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs)) {
-            AppText(text = title, style = AppTextStyle.Title)
-            if (subtitle != null) {
-                AppText(
-                    text = subtitle,
-                    style = AppTextStyle.Caption,
-                    color = AppTheme.colors.textSecondary,
-                )
+    Column(modifier = modifier.fillMaxWidth()) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = AppTheme.dimens.md),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs)) {
+                AppText(text = title, style = AppTextStyle.Title)
+                if (subtitle != null) {
+                    AppText(
+                        text = subtitle,
+                        style = AppTextStyle.Caption,
+                        color = AppTheme.colors.textSecondary,
+                    )
+                }
             }
+            if (action != null) action()
         }
-        if (action != null) action()
+        if (flourish) {
+            AppCornerFlourish(modifier = Modifier.padding(bottom = AppTheme.dimens.md))
+        }
     }
 }

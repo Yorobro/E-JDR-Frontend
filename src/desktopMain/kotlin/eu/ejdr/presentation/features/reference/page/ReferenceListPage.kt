@@ -36,6 +36,7 @@ import eu.ejdr.presentation.features.reference.component.ReferenceFormDialog
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.modifier.appItemAppearSpec
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
@@ -221,22 +222,25 @@ private fun ReferenceGrid(
                     modifier = Modifier.align(Alignment.Center),
                 )
 
-            else -> LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = MinTileWidth),
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(top = AppTheme.dimens.sm, bottom = GridBottomPadding),
-                horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-            ) {
-                items(items, key = { it.id }) { item ->
-                    ReferenceCard(
-                        item = item,
-                        type = type,
-                        competenceNames = competenceNames,
-                        onEdit = if (canEdit) ({ onEditRequest(item) }) else null,
-                        onDelete = if (canEdit) ({ onDeleteRequest(item) }) else null,
-                        modifier = Modifier.animateItem(),
-                    )
+            else -> {
+                val appearSpec = appItemAppearSpec()
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = MinTileWidth),
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(top = AppTheme.dimens.sm, bottom = GridBottomPadding),
+                    horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+                    verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+                ) {
+                    items(items, key = { it.id }) { item ->
+                        ReferenceCard(
+                            item = item,
+                            type = type,
+                            competenceNames = competenceNames,
+                            onEdit = if (canEdit) ({ onEditRequest(item) }) else null,
+                            onDelete = if (canEdit) ({ onDeleteRequest(item) }) else null,
+                            modifier = Modifier.animateItem(fadeInSpec = appearSpec),
+                        )
+                    }
                 }
             }
         }

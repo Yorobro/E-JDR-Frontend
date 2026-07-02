@@ -110,7 +110,7 @@ fun CharacterSheetDetailPage(
         modifier = modifier.fillMaxSize().padding(AppTheme.dimens.xl),
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
     ) {
-        AppText(text = sheetTitle(name, sheet), style = AppTextStyle.Title)
+        AppText(text = sheetTitle(name, sheet), style = AppTextStyle.Display)
         FormError(message = error)
         if (sheetChangedRemotely) {
             RemoteChangeBanner(

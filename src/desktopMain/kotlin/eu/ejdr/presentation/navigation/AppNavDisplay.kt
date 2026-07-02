@@ -1,10 +1,13 @@
 package eu.ejdr.presentation.navigation
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
@@ -23,6 +26,9 @@ import eu.ejdr.presentation.features.reference.referenceEntries
 import eu.ejdr.presentation.features.charactersheet.characterSheetEntries
 import eu.ejdr.presentation.features.settings.settingsEntries
 import eu.ejdr.presentation.features.user.userEntries
+import eu.ejdr.presentation.shared.component.atomic.AppBrandMark
+import eu.ejdr.presentation.shared.component.atomic.AppText
+import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -54,14 +60,22 @@ fun AppNavDisplay(
     resetTo: (Route) -> Unit,
 ) {
     val actions = NavActions(backStack, onLoggedIn, onLogout, onThemeChange, resetTo)
-    // Changement de page instantané : aucune transition (pas de fondu ni de glissement, qui
-    // laissaient entrevoir le fond pendant le chevauchement des écrans).
+    // Transition d'écran : fondu pur (sans glissement). Le glissement faisait apparaître le fond
+    // pendant le chevauchement ; le fondu, combiné au fond du thème peint sur le conteneur racine
+    // (cf. App), évite tout flash. Durée/courbe pilotées par les tokens, neutralisées en
+    // reduced-motion (durée 0 → changement instantané).
+    val motion = AppTheme.motion
+    val fadeSpec = tween<Float>(
+        durationMillis = motion.effectiveDuration(motion.durationMedium),
+        easing = motion.easeEmphasized,
+    )
+    val fadeTransition = fadeIn(animationSpec = fadeSpec) togetherWith fadeOut(animationSpec = fadeSpec)
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
         entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
-        transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
-        popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
+        transitionSpec = { fadeTransition },
+        popTransitionSpec = { fadeTransition },
         entryProvider = entryProvider {
             entry<Route.Splash> { SplashScreen() }
             authEntries(actions)
@@ -76,11 +90,20 @@ fun AppNavDisplay(
     )
 }
 
-/** Écran de démarrage affiché pendant la restauration de session. */
+/** Écran de démarrage affiché pendant la restauration de session : marque + indicateur. */
 @Composable
 private fun SplashScreen() {
     Box(
         Modifier.fillMaxSize().background(AppTheme.colors.background),
         Alignment.Center,
-    ) { CircularProgressIndicator(color = AppTheme.colors.primary) }
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
+        ) {
+            AppBrandMark()
+            AppText(text = "E-JDR", style = AppTextStyle.Display)
+            CircularProgressIndicator(color = AppTheme.colors.primary)
+        }
+    }
 }

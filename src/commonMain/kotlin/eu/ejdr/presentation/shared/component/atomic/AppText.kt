@@ -9,7 +9,7 @@ import androidx.compose.ui.text.style.TextAlign
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /** Styles sémantiques disponibles pour [AppText]. */
-enum class AppTextStyle { Title, Subtitle, Body, Label, Caption, Mono }
+enum class AppTextStyle { Display, Title, Subtitle, Body, Label, Caption, Mono }
 
 /**
  * Atome d'affichage de texte du design system.
@@ -35,6 +35,7 @@ fun AppText(
 ) {
     val typo = AppTheme.typography
     val resolved: TextStyle = when (style) {
+        AppTextStyle.Display -> typo.display
         AppTextStyle.Title -> typo.title
         AppTextStyle.Subtitle -> typo.subtitle
         AppTextStyle.Body -> typo.body

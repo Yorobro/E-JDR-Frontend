@@ -20,7 +20,10 @@ data class AppMotion(
     /** Réservé à l'apparition des listes (Lot 2 UX) ; pas encore consommé. */
     val durationSlow: Int = 300,
     val easeStandard: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f),
-    val easeEmphasized: Easing = CubicBezierEasing(0.2f, 0f, 0f, 1f),
+    // Courbe « emphasized » plus expressive (décélération marquée) : réservée aux transitions
+    // d'écran et à l'apparition des listes, là où un peu de caractère est souhaité. `easeStandard`
+    // reste sobre pour les micro-interactions (press/hover).
+    val easeEmphasized: Easing = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f),
     val pressScale: Float = 0.97f,
     val enabled: Boolean = true,
 ) {

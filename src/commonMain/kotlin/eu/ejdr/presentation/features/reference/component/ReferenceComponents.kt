@@ -1,18 +1,16 @@
 package eu.ejdr.presentation.features.reference.component
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
@@ -41,6 +39,7 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.component.organism.AppDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 
@@ -97,46 +96,44 @@ fun ReferenceCard(
     modifier: Modifier = Modifier,
     competenceNames: Map<String, String> = emptyMap(),
 ) {
-    val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(CardHeight)
-            .clip(shape)
-            .background(AppTheme.colors.surface)
-            .border(BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border), shape),
+    AppCard(
+        modifier = modifier.height(CardHeight),
+        onClick = null,
+        contentPadding = PaddingValues(0.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .padding(horizontal = AppTheme.dimens.md),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
-        ) {
-            AppText(
-                text = item.name,
-                style = AppTextStyle.Subtitle,
-                maxLines = 2,
-                textAlign = TextAlign.Center,
-            )
-            ReferenceCardDetails(item = item, type = type, competenceNames = competenceNames)
-        }
-        if (onEdit != null) {
-            IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
-                AppIcon(
-                    imageVector = Icons.Filled.Edit,
-                    contentDescription = "Modifier",
-                    tint = AppTheme.colors.primary,
+        Box(Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .padding(horizontal = AppTheme.dimens.md),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+            ) {
+                AppText(
+                    text = item.name,
+                    style = AppTextStyle.Subtitle,
+                    maxLines = 2,
+                    textAlign = TextAlign.Center,
                 )
+                ReferenceCardDetails(item = item, type = type, competenceNames = competenceNames)
             }
-        }
-        if (onDelete != null) {
-            IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
-                AppIcon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Supprimer",
-                    tint = AppTheme.colors.danger,
-                )
+            if (onEdit != null) {
+                IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
+                    AppIcon(
+                        imageVector = Icons.Filled.Edit,
+                        contentDescription = "Modifier",
+                        tint = AppTheme.colors.primary,
+                    )
+                }
+            }
+            if (onDelete != null) {
+                IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
+                    AppIcon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Supprimer",
+                        tint = AppTheme.colors.danger,
+                    )
+                }
             }
         }
     }

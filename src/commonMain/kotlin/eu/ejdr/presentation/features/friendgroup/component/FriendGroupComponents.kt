@@ -1,18 +1,13 @@
 package eu.ejdr.presentation.features.friendgroup.component
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -20,19 +15,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroup
 import eu.ejdr.domain.features.friendgroup.entities.GroupInvitation
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
+import eu.ejdr.presentation.shared.component.atomic.AppBadge
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
-import eu.ejdr.presentation.shared.component.modifier.interactiveCard
-import eu.ejdr.presentation.shared.component.modifier.interactiveCardElevation
+import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.component.organism.AppDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
 
@@ -45,21 +39,13 @@ fun GroupCard(
     onDelete: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    val borderColor = if (isActive) AppTheme.colors.primary else AppTheme.colors.border
-    val borderWidth = if (isActive) 2.dp else 1.dp
-    val interactionSource = remember { MutableInteractionSource() }
-    val elevation = interactiveCardElevation(interactionSource, enabled = true, base = AppTheme.dimens.elevationSm)
-
-    Card(
+    AppCard(
+        modifier = modifier,
         onClick = onClick,
-        modifier = modifier.fillMaxWidth().interactiveCard(interactionSource, enabled = true),
-        interactionSource = interactionSource,
-        colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface),
-        elevation = CardDefaults.cardElevation(defaultElevation = elevation),
-        border = BorderStroke(borderWidth, borderColor),
-        shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
+        selected = isActive,
+        elevation = AppTheme.dimens.elevationSm,
     ) {
-        Column(modifier = Modifier.padding(AppTheme.dimens.md)) {
+        Column {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -67,19 +53,10 @@ fun GroupCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     AppText(text = group.name, style = AppTextStyle.Subtitle)
-                    Box(
-                        modifier = Modifier
-                            .padding(top = AppTheme.dimens.xs)
-                            .clip(RoundedCornerShape(AppTheme.dimens.radiusSm))
-                            .background(AppTheme.colors.beige)
-                            .padding(horizontal = AppTheme.dimens.sm, vertical = AppTheme.dimens.xs),
-                    ) {
-                        AppText(
-                            text = roleLabel(group.myRole),
-                            style = AppTextStyle.Caption,
-                            color = AppTheme.colors.text,
-                        )
-                    }
+                    AppBadge(
+                        text = roleLabel(group.myRole),
+                        modifier = Modifier.padding(top = AppTheme.dimens.xs),
+                    )
                     if (isActive) {
                         AppText(text = "● Groupe actif", style = AppTextStyle.Body, color = AppTheme.colors.primary)
                     }
@@ -175,27 +152,28 @@ fun MemberCard(
     onChangeRole: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = AppTheme.colors.beige),
-        border = BorderStroke(1.dp, AppTheme.colors.border),
+    AppCard(
+        modifier = modifier,
+        onClick = null,
+        elevation = AppTheme.dimens.elevationSm,
         shape = RoundedCornerShape(AppTheme.dimens.radiusSm),
+        containerColor = AppTheme.colors.beige,
+        contentPadding = PaddingValues(AppTheme.dimens.sm),
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(AppTheme.dimens.sm),
+            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
+            ) {
                 AppText(
                     text = member.pseudo.ifBlank { member.userId },
                     style = AppTextStyle.Body,
                 )
-                AppText(
-                    text = roleLabel(member.role),
-                    style = AppTextStyle.Body,
-                    color = AppTheme.colors.textSecondary,
-                )
+                AppBadge(text = roleLabel(member.role))
             }
             Row(horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs)) {
                 if (canManageRole) {
@@ -245,13 +223,8 @@ fun InvitationCard(
     onDecline: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(containerColor = AppTheme.colors.surface),
-        border = BorderStroke(1.dp, AppTheme.colors.border),
-        shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
-    ) {
-        Column(modifier = Modifier.padding(AppTheme.dimens.md)) {
+    AppCard(modifier = modifier, onClick = null) {
+        Column {
             AppText(text = invitation.groupName, style = AppTextStyle.Subtitle)
             AppText(
                 text = "Invité par ${invitation.invitedByPseudo.ifBlank { invitation.invitedBy }}",

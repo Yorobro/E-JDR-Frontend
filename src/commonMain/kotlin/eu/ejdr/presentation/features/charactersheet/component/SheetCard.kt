@@ -1,16 +1,12 @@
 package eu.ejdr.presentation.features.charactersheet.component
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -29,19 +25,12 @@ fun SheetCard(
     modifier: Modifier = Modifier,
     content: @Composable () -> Unit,
 ) {
-    val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = shape,
-        color = AppTheme.colors.surface,
-        contentColor = AppTheme.colors.text,
-        shadowElevation = AppTheme.dimens.elevationSm,
-        border = BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border),
+    AppCard(
+        modifier = modifier,
+        onClick = null,
+        elevation = AppTheme.dimens.elevationSm,
     ) {
-        Column(
-            modifier = Modifier.padding(AppTheme.dimens.md),
-            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-        ) {
+        Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md)) {
             AppText(text = title, style = AppTextStyle.Subtitle)
             content()
         }
