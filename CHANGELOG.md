@@ -1,3 +1,24 @@
+## [1.26.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.25.0...v1.26.0) (2026-07-02)
+
+
+### Features
+
+* apparition en fondu des listes via durationSlow ([dec951c](https://github.com/Yorobro/E-JDR-Frontend/commit/dec951c19d5ac78edc4f637c71ebc8ccd831843b))
+* carte unique appCard du design system ([eacf99c](https://github.com/Yorobro/E-JDR-Frontend/commit/eacf99c5189e5a95198621357a80679a253b725f))
+* composant appBadge et migration des pastilles de rôle ([8645643](https://github.com/Yorobro/E-JDR-Frontend/commit/86456437c382a8879cd2075c875fc56294d7a2a0))
+* états vides plus riches (icône en pastille) ([fec812f](https://github.com/Yorobro/E-JDR-Frontend/commit/fec812f2acda3a66aec6745586acaba5032133d1))
+* étendre les échelles de rayon, élévation et la courbe emphasized ([d70092c](https://github.com/Yorobro/E-JDR-Frontend/commit/d70092c3c29539036bb626d9048f1fc1ee0c97ad))
+* fenêtre desktop dimensionnée (1100x740) ([b59d660](https://github.com/Yorobro/E-JDR-Frontend/commit/b59d6604ab89b5c25f505ed1f214cca3d267ee38))
+* fleuron ornemental d'en-tête (signature grimoire, opt-in) ([b3022fc](https://github.com/Yorobro/E-JDR-Frontend/commit/b3022fc11c16406bb87c555234274d4ff2945e4e))
+* hiérarchie premium de la fiche (hero title + stats monospace) ([25a8cea](https://github.com/Yorobro/E-JDR-Frontend/commit/25a8cea43c13821ca07b8d2086e4080dc78b53dc))
+* marque vectorielle et écran de démarrage branué ([cc9c6ee](https://github.com/Yorobro/E-JDR-Frontend/commit/cc9c6ee8c739b2be8ea76c67f0a781d79d539a7e))
+* réactiver les transitions de navigation desktop sans flash clair ([e6f66d5](https://github.com/Yorobro/E-JDR-Frontend/commit/e6f66d5784896f00b863627695b3f9c94371cfe8))
+
+
+### Bug Fixes
+
+* **reference:** la grille des éléments remplit toute la page ([415a0c7](https://github.com/Yorobro/E-JDR-Frontend/commit/415a0c7c13b095bdd7c0089a1ff68e9bc884c24b))
+
 ## [1.25.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.24.0...v1.25.0) (2026-06-28)
 
 
