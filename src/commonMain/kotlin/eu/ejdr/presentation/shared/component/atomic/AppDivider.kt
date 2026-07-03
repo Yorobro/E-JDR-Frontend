@@ -1,9 +1,11 @@
 package eu.ejdr.presentation.shared.component.atomic
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Dp
@@ -19,10 +21,10 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  */
 @Composable
 fun AppDivider(modifier: Modifier = Modifier) {
-    HorizontalDivider(
-        modifier = modifier,
-        thickness = AppTheme.dimens.borderWidth,
-        color = AppTheme.colors.border,
+    Box(
+        modifier.fillMaxWidth()
+            .height(AppTheme.dimens.borderWidth)
+            .background(AppTheme.colors.border),
     )
 }
 
