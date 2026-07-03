@@ -2,7 +2,7 @@ package eu.ejdr.presentation.shared.component.atomic
 
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LocalContentColor
+import eu.ejdr.presentation.shared.theme.LocalContentColor
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
