@@ -11,6 +11,7 @@ private val LocalAppColors = staticCompositionLocalOf<AppColors> {
 private val LocalAppTypography = staticCompositionLocalOf { AppTypography() }
 private val LocalAppDimens = staticCompositionLocalOf { AppDimens() }
 private val LocalAppMotion = staticCompositionLocalOf { AppMotion() }
+private val LocalAppElevation = staticCompositionLocalOf { AppElevation() }
 
 /**
  * Point d'accès unique au design system depuis les composables.
@@ -28,6 +29,10 @@ object AppTheme {
         @Composable @ReadOnlyComposable get() = LocalAppDimens.current
     val motion: AppMotion
         @Composable @ReadOnlyComposable get() = LocalAppMotion.current
+    val elevation: AppElevation
+        @Composable @ReadOnlyComposable get() = LocalAppElevation.current
+    val treatment: AppTreatment
+        @Composable @ReadOnlyComposable get() = LocalAppTreatment.current
 }
 
 /**
@@ -37,6 +42,7 @@ object AppTheme {
  * @param typography Typographie à utiliser.
  * @param dimens Dimensions à utiliser.
  * @param motion Jetons d'animation à utiliser.
+ * @param elevation Jetons d'ombre à utiliser.
  * @param content Contenu de l'application.
  */
 @Composable
@@ -45,6 +51,7 @@ fun AppTheme(
     typography: AppTypography = appTypography(),
     dimens: AppDimens = AppDimens(),
     motion: AppMotion = AppMotion(),
+    elevation: AppElevation = AppElevation(),
     content: @Composable () -> Unit,
 ) {
     CompositionLocalProvider(
@@ -52,6 +59,7 @@ fun AppTheme(
         LocalAppTypography provides typography,
         LocalAppDimens provides dimens,
         LocalAppMotion provides motion,
+        LocalAppElevation provides elevation,
         LocalContentColor provides colors.text,
         content = content,
     )
