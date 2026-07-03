@@ -44,7 +44,7 @@ class CampaignDetailViewModelTest {
         CharacterSheet(id = id, ownerId = "u-1", name = "S-$id", createdAt = "2026-06-13T10:00:00.000Z")
 
     private fun session(id: String) =
-        Session(id = id, campaignId = "camp-1", title = "T-$id", date = "2026-06-20", createdAt = "2026-06-13T10:00:00.000Z")
+        Session(id = id, campaignId = "camp-1", title = "T-$id", date = "2026-06-20", status = "PLANNED", createdAt = "2026-06-13T10:00:00.000Z")
 
     /** Use case sessions par défaut : liste vide. */
     private val emptySessions = ListCampaignSessionsUseCase { Result.Success(emptyList<Session>()) }

@@ -2,6 +2,7 @@ package eu.ejdr.application.features.session.abstraction.repository
 
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.entities.SessionLobby
 import eu.ejdr.domain.features.session.error.SessionError
 
 /**
@@ -33,6 +34,21 @@ interface SessionRepository {
         title: String,
         date: String,
     ): Result<Session, SessionError>
+
+    /**
+     * Ouvre le lobby d'une session (réservé au MJ côté backend) en conviant les joueurs choisis.
+     *
+     * Le MJ n'est pas dans [participantUserIds] : il accède à la session via son rôle.
+     *
+     * @param sessionId identifiant de la session à passer en lobby.
+     * @param participantUserIds identifiants des joueurs conviés.
+     * @return le lobby créé, ou une [SessionError] ([SessionError.EmptyParticipantSelection] /
+     *         [SessionError.ParticipantNotInGroup] / [SessionError.SessionNotLaunchable] / …).
+     */
+    suspend fun createLobby(
+        sessionId: String,
+        participantUserIds: List<String>,
+    ): Result<SessionLobby, SessionError>
 
     /**
      * Récupère le détail d'une session.

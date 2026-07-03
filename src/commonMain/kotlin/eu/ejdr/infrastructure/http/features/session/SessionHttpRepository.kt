@@ -4,9 +4,12 @@ import eu.ejdr.application.features.session.abstraction.repository.SessionReposi
 import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.runCatchingCancellable
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.entities.SessionLobby
 import eu.ejdr.domain.features.session.error.SessionError
 import eu.ejdr.infrastructure.config.AppConfig
 import eu.ejdr.infrastructure.http.features.auth.dto.ApiErrorDto
+import eu.ejdr.infrastructure.http.features.session.dto.CreateLobbyRequestDto
+import eu.ejdr.infrastructure.http.features.session.dto.CreateLobbyResponseDto
 import eu.ejdr.infrastructure.http.features.session.dto.CreateSessionRequestDto
 import eu.ejdr.infrastructure.http.features.session.dto.SessionDto
 import eu.ejdr.infrastructure.http.features.session.dto.SessionListResponseDto
@@ -63,6 +66,22 @@ class SessionHttpRepository(
             }
             if (response.status.isSuccess()) {
                 Result.Success(SessionHttpMapper.toSession(response.body<SessionDto>()))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(SessionError.Network) }
+
+    override suspend fun createLobby(
+        sessionId: String,
+        participantUserIds: List<String>,
+    ): Result<SessionLobby, SessionError> =
+        runCatchingCancellable {
+            val response = client.post("${config.baseUrl}/sessions/$sessionId/launch") {
+                contentType(ContentType.Application.Json)
+                setBody(CreateLobbyRequestDto(participantUserIds))
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(SessionHttpMapper.toLobby(response.body<CreateLobbyResponseDto>()))
             } else {
                 failure(response)
             }

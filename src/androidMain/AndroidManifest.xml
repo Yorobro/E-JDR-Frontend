@@ -7,6 +7,7 @@
         android:name=".EjdrApplication"
         android:allowBackup="true"
         android:label="E-JDR"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light.NoActionBar">
 

@@ -26,6 +26,15 @@ sealed class SessionError(override val message: String) : DomainError {
     /** Échec de communication avec le serveur (connectivité, timeout). */
     data object Network : SessionError("Erreur réseau, vérifiez votre connexion.")
 
+    /** Aucun joueur sélectionné pour rejoindre le lobby. */
+    data object EmptyParticipantSelection : SessionError("Veuillez sélectionner au moins un joueur.")
+
+    /** Au moins un joueur sélectionné n'est pas membre du groupe. */
+    data object ParticipantNotInGroup : SessionError("Un ou plusieurs joueurs ne font pas partie du groupe.")
+
+    /** La session n'est pas dans un état permettant d'ouvrir un lobby (déjà lancée, etc.). */
+    data object SessionNotLaunchable : SessionError("Cette session ne peut pas être lancée.")
+
     /**
      * Erreur non catégorisée.
      *

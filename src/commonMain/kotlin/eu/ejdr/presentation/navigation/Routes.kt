@@ -63,6 +63,17 @@ sealed interface Route : NavKey {
     @Serializable
     data class SessionDetail(val id: String, val title: String) : Route
 
+    /**
+     * Salon d'attente (lobby) d'une session : le MJ y suit les réponses aux invitations, convie
+     * au besoin d'autres joueurs, puis démarre réellement la session. Atteint après l'ouverture
+     * du lobby depuis [SessionDetail].
+     *
+     * @property id Identifiant de la session en lobby.
+     * @property title Titre de la session (affiché en titre, évite un appel réseau).
+     */
+    @Serializable
+    data class SessionLobby(val id: String, val title: String) : Route
+
     /** Hub « Mes éléments » : liste des catégories d'éléments de référence. */
     @Serializable
     data object ReferenceHub : Route
@@ -131,6 +142,7 @@ val appNavConfiguration: SavedStateConfiguration = SavedStateConfiguration {
             subclass(Route.Campaigns::class)
             subclass(Route.CampaignDetail::class)
             subclass(Route.SessionDetail::class)
+            subclass(Route.SessionLobby::class)
             subclass(Route.ReferenceHub::class)
             subclass(Route.ReferenceList::class)
             subclass(Route.CharacterSheets::class)
