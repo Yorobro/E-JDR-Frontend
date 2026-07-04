@@ -1,5 +1,6 @@
 package eu.ejdr.presentation.features.auth.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,17 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import eu.ejdr.presentation.shared.component.atomic.AppDivider
+import eu.ejdr.presentation.shared.component.base.AppSurface
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppPasswordField
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -79,12 +77,12 @@ fun AuthForm(
         modifier = modifier.fillMaxSize().background(AppTheme.colors.background),
         contentAlignment = Alignment.Center,
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier.width(360.dp),
-            shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
+            shape = RoundedCornerShape(AppTheme.dimens.radiusLg),
             color = AppTheme.colors.surface,
-            shadowElevation = 2.dp,
-            tonalElevation = 0.dp,
+            border = BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border),
+            elevation = AppTheme.dimens.elevationMd,
         ) {
             Column(
                 modifier = Modifier
@@ -162,7 +160,7 @@ private fun AuthFormFields(
             onValueChange = onPseudoChange,
             label = "Pseudo",
             enabled = !loading,
-            leadingIcon = Icons.Outlined.Person,
+            leadingIcon = AppIcons.PersonOutline,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(AppTheme.dimens.sm))
@@ -172,7 +170,7 @@ private fun AuthFormFields(
         onValueChange = onEmailChange,
         label = "Email",
         enabled = !loading,
-        leadingIcon = Icons.Outlined.Email,
+        leadingIcon = AppIcons.Email,
         modifier = Modifier.fillMaxWidth(),
     )
     Spacer(Modifier.height(AppTheme.dimens.sm))
@@ -181,7 +179,7 @@ private fun AuthFormFields(
         onValueChange = onPasswordChange,
         label = "Mot de passe",
         enabled = !loading,
-        leadingIcon = Icons.Outlined.Lock,
+        leadingIcon = AppIcons.Lock,
         modifier = Modifier.fillMaxWidth(),
     )
 
@@ -199,7 +197,7 @@ private fun AuthFormFooter(
     onSecondaryAction: () -> Unit,
 ) {
     Spacer(Modifier.height(AppTheme.dimens.md))
-    HorizontalDivider(color = AppTheme.colors.border)
+    AppDivider()
     Spacer(Modifier.height(AppTheme.dimens.xs))
 
     Row(
