@@ -7,6 +7,7 @@ bin/
 .kotlin/
 .superpowers/
 local.properties
+config.local.properties
 *.jceks
 *.keystore
 secure-cookies.enc

@@ -1,0 +1,20 @@
+# Prettier ne gère pas le Kotlin (couvert par detekt) : on ne vise que JS/JSON/MD/YML.
+# Code source et artefacts de build Gradle/Kotlin.
+src
+build
+bin
+.gradle
+.kotlin
+gradle
+
+# Dépendances et lockfile (générés).
+node_modules
+package-lock.json
+
+# Documentation : mise en forme manuelle préservée.
+*.md
+
+# Config de build versionnée mais éditée à la main.
+*.properties
+gradlew
+gradlew.bat

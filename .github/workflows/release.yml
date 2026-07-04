@@ -11,8 +11,31 @@ permissions:
   pull-requests: write
 
 jobs:
+  ci:
+    name: CI (detekt + tests + coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Verify (detekt + build + tests + coverage)
+        run: ./gradlew verify --no-daemon --stacktrace
+
   semantic_release:
     name: semantic-release
+    needs: ci
     runs-on: ubuntu-latest
     outputs:
       released: ${{ steps.release_check.outputs.released }}
@@ -27,7 +50,7 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: "18"
 
       - name: Install dependencies
         run: npm install
@@ -69,7 +92,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: "21"
 
       - name: Setup Gradle cache
         uses: gradle/actions/setup-gradle@v4
@@ -77,10 +100,24 @@ jobs:
       - name: Build EXE and MSI
         run: .\gradlew.bat packageDistributionForCurrentOS --no-daemon --stacktrace
 
+      # Empreinte SHA-256 publiée à côté de chaque installeur (asset "<installeur>.sha256",
+      # format "<digest>  <nom>"). Le client la télécharge et la compare avant de lancer le
+      # binaire : sans cet asset, l'auto-update refuse l'installation (vérification d'intégrité).
+      - name: Generate SHA-256 checksums
+        shell: pwsh
+        run: |
+          Get-ChildItem -Recurse -Path build/compose/binaries -Include *.exe,*.msi |
+            ForEach-Object {
+              $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+              "$hash  $($_.Name)" | Set-Content -NoNewline -Path "$($_.FullName).sha256"
+            }
+
       - name: Attach binaries to release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.semantic_release.outputs.tag }}
           files: |
             build/compose/binaries/**/exe/*.exe
+            build/compose/binaries/**/exe/*.exe.sha256
             build/compose/binaries/**/msi/*.msi
+            build/compose/binaries/**/msi/*.msi.sha256

@@ -40,20 +40,31 @@ Les secrets et le KeyStore sont stockés dans `%APPDATA%/E-JDR/` (jamais commit�
 ## Architecture
 
 Quatre couches en packages sous `eu.ejdr`, dépendances unidirectionnelles
-`presentation → application → domain` et `infrastructure → application/domain` :
+`presentation → application → domain` et `infrastructure → application/domain`.
 
-- **`domain/`** — entités métier **pures** (data classes sans méthode) et erreurs
-  (`DomainError`, `error/entities/<feature>/...Error`).
-- **`application/`** — par feature : `abstraction/{repository,service,usecase}`
-  (interfaces), `service/` (logique réutilisable), `usecase/` (orchestration pure).
+**Convention transverse — `shared/` vs `features/` :** dans chaque couche, ce qui
+est **transverse** (non lié à une fonctionnalité) vit sous `shared/`, et tout ce qui
+appartient à une fonctionnalité vit sous `features/<feature>/`. Ajouter une feature
+revient à créer le dossier `features/<feature>/` correspondant dans chaque couche
+concernée — la structure est donc prévisible et auto-documentée.
+
+- **`domain/`** — `shared/error/DomainError` (contrat transverse) ;
+  `features/<feature>/entities/` (data classes **pures**, sans méthode) et
+  `features/<feature>/error/<Feature>Error` (`sealed class : DomainError`).
+- **`application/`** — `shared/Result.kt` (type railway transverse) ;
+  `features/<feature>/` avec `abstraction/{repository,service,usecase}` (interfaces),
+  `service/` (logique réutilisable), `usecase/` (orchestration pure).
   Règles : un use case n'appelle jamais un autre use case ; un service peut appeler
   repositories et autres services. Les use cases renvoient `Result<T, DomainError>`.
 - **`infrastructure/`** — `config/` (AppConfig), `security/`
-  (KeyStore JCEKS + chiffrement AES-GCM + `SecureCookiesStorage`), `http/`
-  (client Ktor, DTO, mappers, repositories HTTP).
+  (KeyStore JCEKS + chiffrement AES-GCM + `SecureCookiesStorage`), `http/` :
+  `KtorClientFactory` (transverse) à la racine, et un repository HTTP par feature
+  sous `http/features/<feature>/` (DTO, mappers, repositories).
 - **`presentation/`** — `shared/component/{atomic,molecule,organism}` (atomic design
-  réutilisable) ; `feature/<feature>/{page,component}`. Seules les **pages**
-  appellent les use cases ; les **composants** sont bêtes (props + callbacks).
+  réutilisable) ; `features/<feature>/` avec un **ViewModel** (état + use cases
+  injectés), `page/` (pages fines qui créent et observent le VM) et `component/`
+  (composants bêtes : props + callbacks). Navigation par **back-stack possédé par
+  l'app** (Navigation 3, `navigation/`), ViewModels retenus par destination.
 
 L'injection de dépendances est gérée par **Koin** (`di/`).
 

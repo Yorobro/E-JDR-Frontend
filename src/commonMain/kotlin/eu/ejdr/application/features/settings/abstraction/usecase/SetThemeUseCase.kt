@@ -1,0 +1,15 @@
+package eu.ejdr.application.features.settings.abstraction.usecase
+
+import eu.ejdr.domain.features.settings.entities.ThemeVariant
+import eu.ejdr.application.shared.Result
+import eu.ejdr.domain.features.settings.error.SettingsError
+
+fun interface SetThemeUseCase {
+    /**
+     * Persiste le thème choisi.
+     *
+     * @return [Result.Success] si la persistance a réussi, sinon
+     * [Result.Failure] avec [SettingsError.ThemePersistenceFailed].
+     */
+    suspend operator fun invoke(theme: ThemeVariant): Result<Unit, SettingsError>
+}
