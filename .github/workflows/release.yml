@@ -169,3 +169,43 @@ jobs:
             build/compose/binaries/**/exe/*.exe.sha256
             build/compose/binaries/**/msi/*.msi
             build/compose/binaries/**/msi/*.msi.sha256
+
+  android_build:
+    name: Build and publish Android APK
+    needs: semantic_release
+    if: ${{ needs.semantic_release.outputs.released == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout at release tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.semantic_release.outputs.tag }}
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # L'APK sort dans build/outputs/apk/debug/ejdr-frontend-debug.apk (confirmé localement).
+      # On le copie sous un nom versionné et clair pour l'asset de release.
+      - name: Rename APK with version
+        run: |
+          APK=$(find build -path '*/apk/debug/*.apk' | head -1)
+          if [ -z "$APK" ]; then echo "APK debug introuvable"; exit 1; fi
+          cp "$APK" "E-JDR-${{ needs.semantic_release.outputs.tag }}.apk"
+
+      - name: Attach APK to release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ needs.semantic_release.outputs.tag }}
+          files: E-JDR-${{ needs.semantic_release.outputs.tag }}.apk
