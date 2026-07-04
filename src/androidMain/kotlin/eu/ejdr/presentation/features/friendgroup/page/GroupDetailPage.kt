@@ -24,6 +24,8 @@ import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMember
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.InviteMemberUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.RemoveMemberUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.presentation.features.friendgroup.GroupDetailViewModel
 import eu.ejdr.presentation.features.friendgroup.component.InviteMemberDialog
 import eu.ejdr.presentation.features.friendgroup.component.MemberCard
@@ -50,6 +52,8 @@ fun GroupDetailPage(
             get<RemoveMemberUseCase>(),
             get<ChangeMemberRoleUseCase>(),
             get<GetCurrentUserUseCase>(),
+            get<InvalidationBus>(),
+            get<RealtimeSubscriptions>(),
         )
     }
 

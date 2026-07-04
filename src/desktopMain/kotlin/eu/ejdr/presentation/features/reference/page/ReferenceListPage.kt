@@ -25,6 +25,8 @@ import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenc
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
@@ -75,6 +77,8 @@ fun ReferenceListPage(
             get<UpdateReferenceItemUseCase>(),
             get<DeleteReferenceItemUseCase>(),
             get<UiMessageBus>(),
+            get<InvalidationBus>(),
+            get<RealtimeSubscriptions>(),
         )
     }
     val items by viewModel.items.collectAsStateWithLifecycle()

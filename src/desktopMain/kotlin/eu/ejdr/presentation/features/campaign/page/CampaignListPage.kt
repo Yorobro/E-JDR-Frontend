@@ -25,6 +25,8 @@ import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignU
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.domain.features.campaign.entities.Campaign
 import eu.ejdr.presentation.features.campaign.CampaignListViewModel
 import eu.ejdr.presentation.features.campaign.component.CampaignCard
@@ -72,6 +74,8 @@ fun CampaignListPage(
             get<CreateCampaignUseCase>(),
             get<DeleteCampaignUseCase>(),
             get<UiMessageBus>(),
+            get<InvalidationBus>(),
+            get<RealtimeSubscriptions>(),
         )
     }
     val campaigns by viewModel.campaigns.collectAsStateWithLifecycle()

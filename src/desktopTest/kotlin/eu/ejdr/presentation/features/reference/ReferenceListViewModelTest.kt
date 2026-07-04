@@ -1,9 +1,11 @@
 package eu.ejdr.presentation.features.reference
 
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.UpdateReferenceItemUseCase
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
@@ -45,7 +47,16 @@ class ReferenceListViewModelTest {
         updateItem: UpdateReferenceItemUseCase =
             UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _, _ -> Result.Success(item("a")) },
         deleteItem: DeleteReferenceItemUseCase = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
-    ) = ReferenceListViewModel(type, activeGroupId, listItems, createItem, updateItem, deleteItem, io.mockk.mockk(relaxed = true))
+    ) = ReferenceListViewModel(
+        type, activeGroupId, listItems, createItem, updateItem, deleteItem,
+        io.mockk.mockk(relaxed = true),
+        InMemoryInvalidationBus(),
+        object : RealtimeSubscriptions {
+            override fun subscribe(channel: String) = Unit
+            override fun unsubscribe(channel: String) = Unit
+            override suspend fun resubscribeAll() = Unit
+        },
+    )
 
     @Test
     fun `loads the items of the given type and active group at init`() = runTest {

@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.CreateGroupUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeleteGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyGroupsUseCase
@@ -53,6 +54,7 @@ fun GroupListPage(
             get<CreateGroupUseCase>(),
             get<DeleteGroupUseCase>(),
             get<UiMessageBus>(),
+            get<InvalidationBus>(),
         )
     }
     val activeGroupState = koinInject<ActiveGroupState>()

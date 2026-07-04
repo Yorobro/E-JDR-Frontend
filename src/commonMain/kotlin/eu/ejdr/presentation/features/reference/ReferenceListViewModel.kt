@@ -2,6 +2,8 @@ package eu.ejdr.presentation.features.reference
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
@@ -40,6 +42,8 @@ class ReferenceListViewModel(
     private val updateItem: UpdateReferenceItemUseCase,
     private val deleteItem: DeleteReferenceItemUseCase,
     private val uiMessageBus: UiMessageBus,
+    private val invalidationBus: InvalidationBus,
+    private val subscriptions: RealtimeSubscriptions,
 ) : ViewModel() {
 
     private val _items = MutableStateFlow<List<ReferenceItem>>(emptyList())
@@ -72,10 +76,26 @@ class ReferenceListViewModel(
             .map { list -> list.associate { it.id to it.name } }
             .stateIn(viewModelScope, SharingStarted.Eagerly, emptyMap())
 
+    private var currentGroupChannel: String? = null
+
     init {
         viewModelScope.launch {
-            activeGroupId.collect { groupId -> reload(groupId) }
+            activeGroupId.collect { groupId ->
+                currentGroupChannel?.let { subscriptions.unsubscribe(it) }
+                currentGroupChannel = groupId?.let { "group:$it" }?.also { subscriptions.subscribe(it) }
+                reload(groupId)
+            }
         }
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                if (invalidation.resource == "references") load()
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        currentGroupChannel?.let { subscriptions.unsubscribe(it) }
     }
 
     /** Recharge la liste du type pour le groupe actif (ou vide + onboarding si aucun groupe). */

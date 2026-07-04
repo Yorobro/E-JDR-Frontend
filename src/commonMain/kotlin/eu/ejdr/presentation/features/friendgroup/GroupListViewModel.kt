@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.CreateGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeleteGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyGroupsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroup
@@ -19,6 +20,7 @@ class GroupListViewModel(
     private val createGroup: CreateGroupUseCase,
     private val deleteGroup: DeleteGroupUseCase,
     private val uiMessageBus: UiMessageBus,
+    private val invalidationBus: InvalidationBus,
 ) : ViewModel() {
 
     private val _groups = MutableStateFlow<List<FriendGroup>>(emptyList())
@@ -32,6 +34,11 @@ class GroupListViewModel(
 
     init {
         load()
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                if (invalidation.resource == "my-groups") load()
+            }
+        }
     }
 
     fun load() {

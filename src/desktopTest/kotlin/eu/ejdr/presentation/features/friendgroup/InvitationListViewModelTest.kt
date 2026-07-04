@@ -6,6 +6,7 @@ import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyInvita
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.friendgroup.entities.GroupInvitation
 import eu.ejdr.domain.features.friendgroup.error.FriendGroupError
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -42,6 +43,7 @@ class InvitationListViewModelTest {
             listMyInvitations = ListMyInvitationsUseCase { Result.Success(listOf(invitation("inv-1"))) },
             acceptInvitation = AcceptInvitationUseCase { Result.Success(Unit) },
             declineInvitation = DeclineInvitationUseCase { Result.Success(Unit) },
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 
@@ -59,6 +61,7 @@ class InvitationListViewModelTest {
                 Result.Success(Unit)
             },
             declineInvitation = DeclineInvitationUseCase { Result.Success(Unit) },
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 
@@ -79,6 +82,7 @@ class InvitationListViewModelTest {
                 stored = emptyList()
                 Result.Success(Unit)
             },
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 
@@ -95,6 +99,7 @@ class InvitationListViewModelTest {
             listMyInvitations = ListMyInvitationsUseCase { Result.Success(listOf(invitation("inv-1"))) },
             acceptInvitation = AcceptInvitationUseCase { Result.Failure(FriendGroupError.InvitationAlreadyResolved) },
             declineInvitation = DeclineInvitationUseCase { Result.Success(Unit) },
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 

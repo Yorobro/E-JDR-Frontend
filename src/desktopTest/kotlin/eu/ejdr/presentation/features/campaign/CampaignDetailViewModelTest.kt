@@ -6,8 +6,10 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.AcceptCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCharacterUseCase
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.campaign.entities.Campaign
@@ -74,6 +76,12 @@ class CampaignDetailViewModelTest {
         listCampaigns = listCampaigns,
         getCurrentUser = getCurrentUser,
         uiMessageBus = io.mockk.mockk(relaxed = true),
+        invalidationBus = InMemoryInvalidationBus(),
+        subscriptions = object : RealtimeSubscriptions {
+            override fun subscribe(channel: String) = Unit
+            override fun unsubscribe(channel: String) = Unit
+            override suspend fun resubscribeAll() = Unit
+        },
     )
 
     /** Construit une campagne de test (id camp-1 par défaut). */

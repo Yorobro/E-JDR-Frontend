@@ -25,6 +25,8 @@ import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCharacterUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
@@ -65,6 +67,8 @@ fun CampaignDetailPage(
             listCampaigns = get<ListCampaignsUseCase>(),
             getCurrentUser = get<GetCurrentUserUseCase>(),
             uiMessageBus = get<UiMessageBus>(),
+            invalidationBus = get<InvalidationBus>(),
+            subscriptions = get<RealtimeSubscriptions>(),
         )
     }
     val characters by viewModel.characters.collectAsStateWithLifecycle()

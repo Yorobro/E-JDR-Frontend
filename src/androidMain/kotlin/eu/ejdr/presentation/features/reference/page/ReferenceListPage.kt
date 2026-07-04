@@ -21,6 +21,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
@@ -74,6 +76,8 @@ fun ReferenceListPage(
             get<UpdateReferenceItemUseCase>(),
             get<DeleteReferenceItemUseCase>(),
             get<UiMessageBus>(),
+            get<InvalidationBus>(),
+            get<RealtimeSubscriptions>(),
         )
     }
     val items by viewModel.items.collectAsStateWithLifecycle()

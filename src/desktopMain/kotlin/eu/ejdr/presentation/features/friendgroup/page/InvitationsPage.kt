@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.AcceptInvitationUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeclineInvitationUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyInvitationsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.presentation.features.friendgroup.InvitationListViewModel
 import eu.ejdr.presentation.features.friendgroup.component.InvitationCard
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -31,6 +32,7 @@ fun InvitationsPage(modifier: Modifier = Modifier) {
             get<ListMyInvitationsUseCase>(),
             get<AcceptInvitationUseCase>(),
             get<DeclineInvitationUseCase>(),
+            get<InvalidationBus>(),
         )
     }
 
