@@ -8,15 +8,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ContentCopy
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
+import eu.ejdr.presentation.shared.component.base.AppIconButton
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
@@ -75,19 +73,19 @@ fun CharacterSheetCard(
                     horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
                 ) {
                     if (onCopy != null) {
-                        IconButton(onClick = onCopy) {
+                        AppIconButton(onClick = onCopy, contentDescription = "Copier la fiche") {
                             AppIcon(
-                                imageVector = Icons.Filled.ContentCopy,
-                                contentDescription = "Copier la fiche",
+                                imageVector = AppIcons.ContentCopy,
+                                contentDescription = null,
                                 tint = AppTheme.colors.textSecondary,
                             )
                         }
                     }
                     if (onDelete != null) {
-                        IconButton(onClick = onDelete) {
+                        AppIconButton(onClick = onDelete, contentDescription = "Supprimer la fiche") {
                             AppIcon(
-                                imageVector = Icons.Filled.Delete,
-                                contentDescription = "Supprimer la fiche",
+                                imageVector = AppIcons.Delete,
+                                contentDescription = null,
                                 tint = AppTheme.colors.danger,
                             )
                         }

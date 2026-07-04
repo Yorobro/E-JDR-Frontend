@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Person
+import eu.ejdr.presentation.shared.icons.AppIcons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -113,13 +111,17 @@ fun MyCharacterSheetsPage(
                 PageHeader(
                     title = "Mes fiches",
                     subtitle = "${sheets.size} ${if (sheets.size > 1) "fiches" else "fiche"}",
-                    action = {
-                        AppButton(
-                            label = "Nouvelle fiche",
-                            onClick = { showCreate = true },
-                            leadingIcon = Icons.Default.Add,
-                        )
-                    },
+                    // Un seul bouton de création à la fois : header si la liste n'est pas vide,
+                    // sinon c'est l'EmptyState qui porte le call-to-action.
+                    action = if (sheets.isNotEmpty()) {
+                        {
+                            AppButton(
+                                label = "Nouvelle fiche",
+                                onClick = { showCreate = true },
+                                leadingIcon = AppIcons.Add,
+                            )
+                        }
+                    } else null,
                 )
                 FormError(message = error)
                 CharacterSheetGrid(
@@ -225,7 +227,7 @@ private fun CharacterSheetGrid(
 
             sheets.isEmpty() ->
                 EmptyState(
-                    icon = Icons.Default.Person,
+                    icon = AppIcons.Person,
                     title = "Aucune fiche pour l'instant",
                     message = "Crée ton premier personnage pour ce groupe.",
                     actionLabel = "Créer une fiche",

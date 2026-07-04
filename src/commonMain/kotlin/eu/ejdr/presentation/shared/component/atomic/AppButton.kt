@@ -1,20 +1,15 @@
 package eu.ejdr.presentation.shared.component.atomic
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,11 +18,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import eu.ejdr.presentation.shared.component.base.AppSpinner
+import eu.ejdr.presentation.shared.component.base.AppSurface
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.theme.AppTreatment
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -45,8 +43,8 @@ enum class ButtonVariant { Primary, Secondary, Text, Danger, Ghost }
  * un indicateur remplace le contenu et le bouton est désactivé. La largeur se règle
  * via [modifier] (ex. `Modifier.fillMaxWidth()`).
  *
- * Inclut un retour visuel au press (léger scale animé via [AppTheme.motion]) et un
- * mécanisme anti double-clic (ignore les clics distants de moins de 400 ms).
+ * Inclut un retour visuel au press (léger scale animé via [AppTheme.motion], géré par
+ * [AppSurface]) et un mécanisme anti double-clic (ignore les clics distants de moins de 400 ms).
  *
  * @param label Texte du bouton.
  * @param onClick Callback déclenché au clic.
@@ -55,6 +53,9 @@ enum class ButtonVariant { Primary, Secondary, Text, Danger, Ghost }
  * @param enabled Active ou désactive le bouton.
  * @param loading Si vrai, affiche un indicateur de chargement et désactive le bouton.
  * @param leadingIcon Icône optionnelle affichée avant le libellé.
+ * @param fillWidth Si vrai, le bouton occupe toute la largeur disponible (contenu centré) ;
+ *   sinon (défaut) il s'ajuste à son contenu (texte + padding). À activer pour les boutons
+ *   pleine largeur (formulaires, cartes) ; à laisser `false` dans une Row d'actions.
  */
 @Composable
 fun AppButton(
@@ -65,21 +66,16 @@ fun AppButton(
     enabled: Boolean = true,
     loading: Boolean = false,
     leadingIcon: ImageVector? = null,
+    fillWidth: Boolean = false,
 ) {
     val colors = AppTheme.colors
-    val shape = RoundedCornerShape(AppTheme.dimens.radiusMd)
+    val dimens = AppTheme.dimens
+    val shape = RoundedCornerShape(dimens.radiusMd)
     val isEnabled = enabled && !loading
+    val isRich = AppTheme.treatment == AppTreatment.Rich
 
-    // Press animation
+    // Press-feedback is delegated to AppSurface (via appPressFeedback) — no manual graphicsLayer here.
     val interactionSource = remember { MutableInteractionSource() }
-    val pressed by interactionSource.collectIsPressedAsState()
-    val motion = AppTheme.motion
-    val scale by animateFloatAsState(
-        targetValue = if (pressed && motion.enabled) motion.pressScale else 1f,
-        animationSpec = tween(motion.effectiveDuration(motion.durationFast), easing = motion.easeStandard),
-        label = "buttonPressScale",
-    )
-    val scaledModifier = modifier.graphicsLayer { scaleX = scale; scaleY = scale }
 
     // Anti double-clic
     var clickable by remember { mutableStateOf(true) }
@@ -95,71 +91,111 @@ fun AppButton(
         }
     }
 
-    @Composable
-    fun content(contentColor: Color) {
-        if (loading) {
-            CircularProgressIndicator(modifier = Modifier.size(18.dp), color = contentColor)
-        } else {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
-                if (leadingIcon != null) {
-                    Icon(leadingIcon, contentDescription = null, tint = contentColor, modifier = Modifier.size(AppTheme.dimens.iconSize))
-                }
-                AppText(text = label, style = AppTextStyle.Label, color = contentColor)
+    val padding = PaddingValues(horizontal = dimens.lg, vertical = dimens.sm)
+
+    // Determine per-variant surface properties
+    val surfaceColor: Color
+    val contentColor: Color
+    val border: BorderStroke?
+    val useGradient: Boolean
+
+    when (variant) {
+        ButtonVariant.Primary -> {
+            useGradient = isRich && isEnabled
+            // Désactivé : fond `beige` (visible) + bordure, PAS `border` en aplat (se confondait
+            // avec la surface de la modale → bouton quasi invisible). Le bouton reste reconnaissable.
+            surfaceColor = when {
+                useGradient -> Color.Transparent
+                isEnabled -> colors.primary
+                else -> colors.beige
             }
+            contentColor = if (isEnabled) colors.onPrimary else colors.muted
+            border = when {
+                useGradient -> BorderStroke(dimens.borderWidth, colors.ornament)
+                isEnabled -> null
+                else -> BorderStroke(dimens.borderWidth, colors.border)
+            }
+        }
+        ButtonVariant.Secondary -> {
+            useGradient = false
+            surfaceColor = if (isEnabled) colors.surface else colors.border
+            contentColor = if (isEnabled) colors.text else colors.muted
+            border = BorderStroke(dimens.borderWidth, if (isEnabled) colors.border else colors.muted)
+        }
+        ButtonVariant.Text -> {
+            useGradient = false
+            surfaceColor = Color.Transparent
+            contentColor = if (isEnabled) colors.primary else colors.muted
+            border = null
+        }
+        ButtonVariant.Danger -> {
+            useGradient = false
+            // Désactivé : même traitement que Primary (fond `beige` + bordure, pas `border` en aplat).
+            surfaceColor = if (isEnabled) colors.danger else colors.beige
+            contentColor = if (isEnabled) colors.onDanger else colors.muted
+            border = if (isEnabled) null else BorderStroke(dimens.borderWidth, colors.border)
+        }
+        ButtonVariant.Ghost -> {
+            useGradient = false
+            surfaceColor = Color.Transparent
+            contentColor = if (isEnabled) colors.textSecondary else colors.muted
+            border = BorderStroke(dimens.borderWidth, if (isEnabled) colors.border else colors.muted)
         }
     }
 
-    when (variant) {
-        ButtonVariant.Primary -> Button(
-            onClick = guardedClick, enabled = isEnabled, shape = shape, modifier = scaledModifier,
-            interactionSource = interactionSource,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.primary,
-                contentColor = colors.onPrimary,
-                disabledContainerColor = colors.border,
-                disabledContentColor = colors.muted,
-            ),
-        ) { content(if (isEnabled) colors.onPrimary else colors.muted) }
+    AppSurface(
+        modifier = modifier,
+        shape = shape,
+        color = surfaceColor,
+        contentColor = contentColor,
+        border = border,
+        onClick = if (isEnabled) guardedClick else null,
+        interactionSource = interactionSource,
+    ) {
+        // Largeur : par défaut le contenu s'ajuste (wrapContent) ; `fillWidth` l'étire à toute
+        // la largeur (contenu centré). Ne PAS forcer fillMaxWidth inconditionnellement, sinon un
+        // bouton dans une Row prendrait toute la place et éjecterait ses voisins.
+        val widthModifier = if (fillWidth) Modifier.fillMaxWidth() else Modifier
+        if (useGradient) {
+            // Rich Primary: paint gradient inside, then layer the content on top
+            val gradient = Brush.verticalGradient(
+                listOf(colors.accentGradientTop, colors.accentGradientBottom),
+            )
+            Box(
+                modifier = widthModifier.background(gradient).padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                ButtonContent(loading = loading, leadingIcon = leadingIcon, label = label, contentColor = contentColor)
+            }
+        } else {
+            Box(
+                modifier = widthModifier.padding(padding),
+                contentAlignment = Alignment.Center,
+            ) {
+                ButtonContent(loading = loading, leadingIcon = leadingIcon, label = label, contentColor = contentColor)
+            }
+        }
+    }
+}
 
-        ButtonVariant.Danger -> Button(
-            onClick = guardedClick, enabled = isEnabled, shape = shape, modifier = scaledModifier,
-            interactionSource = interactionSource,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.danger,
-                contentColor = colors.onDanger,
-                disabledContainerColor = colors.border,
-                disabledContentColor = colors.muted,
-            ),
-        ) { content(if (isEnabled) colors.onDanger else colors.muted) }
-
-        ButtonVariant.Secondary -> OutlinedButton(
-            onClick = guardedClick, enabled = isEnabled, shape = shape, modifier = scaledModifier,
-            interactionSource = interactionSource,
-            border = BorderStroke(AppTheme.dimens.borderWidth, if (isEnabled) colors.primary else colors.muted),
-            colors = ButtonDefaults.outlinedButtonColors(
-                contentColor = colors.primary,
-                disabledContentColor = colors.muted,
-            ),
-        ) { content(if (isEnabled) colors.primary else colors.muted) }
-
-        ButtonVariant.Text -> TextButton(
-            onClick = guardedClick, enabled = isEnabled, shape = shape, modifier = scaledModifier,
-            interactionSource = interactionSource,
-            colors = ButtonDefaults.textButtonColors(
-                contentColor = colors.primary,
-                disabledContentColor = colors.muted,
-            ),
-        ) { content(if (isEnabled) colors.primary else colors.muted) }
-
-        ButtonVariant.Ghost -> Button(
-            onClick = guardedClick, enabled = isEnabled, shape = shape, modifier = scaledModifier,
-            interactionSource = interactionSource,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = colors.beige,
-                contentColor = colors.text,
-                disabledContainerColor = colors.border,
-                disabledContentColor = colors.muted,
-            ),
-        ) { content(if (isEnabled) colors.text else colors.muted) }
+@Composable
+private fun ButtonContent(
+    loading: Boolean,
+    leadingIcon: ImageVector?,
+    label: String,
+    contentColor: Color,
+) {
+    if (loading) {
+        AppSpinner(size = 18.dp)
+    } else {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
+        ) {
+            if (leadingIcon != null) {
+                AppIcon(imageVector = leadingIcon, contentDescription = null, tint = contentColor)
+            }
+            AppText(text = label, style = AppTextStyle.Label, color = contentColor)
+        }
     }
 }

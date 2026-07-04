@@ -1,5 +1,6 @@
 package eu.ejdr.presentation.features.auth.component
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,17 +13,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Email
-import androidx.compose.material.icons.outlined.Lock
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import eu.ejdr.presentation.shared.component.atomic.AppDivider
+import eu.ejdr.presentation.shared.component.base.AppSurface
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppPasswordField
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -31,6 +29,8 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.theme.AppTreatment
+import eu.ejdr.presentation.shared.theme.ProvideTreatment
 
 /**
  * Organisme de formulaire d'authentification (connexion ou inscription).
@@ -75,52 +75,57 @@ fun AuthForm(
     secondaryActionLabel: String,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize().background(AppTheme.colors.background),
-        contentAlignment = Alignment.Center,
-    ) {
-        Surface(
-            modifier = Modifier.width(360.dp),
-            shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
-            color = AppTheme.colors.surface,
-            shadowElevation = 2.dp,
-            tonalElevation = 0.dp,
+    // Écran vitrine : traitement « grimoire assumé » (reliefs/bordures dorés gérés par
+    // AppSurface/AppButton lorsqu'ils lisent AppTreatment.Rich). Couvre desktop ET android,
+    // AuthForm étant l'organisme commun rendu par AuthPage (desktop) et AuthScreen (android).
+    ProvideTreatment(AppTreatment.Rich) {
+        Box(
+            modifier = modifier.fillMaxSize().background(AppTheme.colors.background),
+            contentAlignment = Alignment.Center,
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(AppTheme.dimens.xl),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            AppSurface(
+                modifier = Modifier.width(360.dp),
+                shape = RoundedCornerShape(AppTheme.dimens.radiusLg),
+                color = AppTheme.colors.surface,
+                border = BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border),
+                elevation = AppTheme.dimens.elevationMd,
             ) {
-                AuthFormHeader(subtitle = subtitle)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(AppTheme.dimens.xl),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    AuthFormHeader(subtitle = subtitle)
 
-                Spacer(Modifier.height(AppTheme.dimens.lg))
+                    Spacer(Modifier.height(AppTheme.dimens.lg))
 
-                AuthFormFields(
-                    email = email,
-                    password = password,
-                    pseudo = pseudo,
-                    showPseudo = showPseudo,
-                    errorMessage = errorMessage,
-                    loading = loading,
-                    onEmailChange = onEmailChange,
-                    onPasswordChange = onPasswordChange,
-                    onPseudoChange = onPseudoChange,
-                )
+                    AuthFormFields(
+                        email = email,
+                        password = password,
+                        pseudo = pseudo,
+                        showPseudo = showPseudo,
+                        errorMessage = errorMessage,
+                        loading = loading,
+                        onEmailChange = onEmailChange,
+                        onPasswordChange = onPasswordChange,
+                        onPseudoChange = onPseudoChange,
+                    )
 
-                AppButton(
-                    label = submitLabel,
-                    onClick = onSubmit,
-                    loading = loading,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                    AppButton(
+                        label = submitLabel,
+                        onClick = onSubmit,
+                        loading = loading,
+                        fillWidth = true,
+                    )
 
-                AuthFormFooter(
-                    secondaryText = secondaryText,
-                    secondaryActionLabel = secondaryActionLabel,
-                    loading = loading,
-                    onSecondaryAction = onSecondaryAction,
-                )
+                    AuthFormFooter(
+                        secondaryText = secondaryText,
+                        secondaryActionLabel = secondaryActionLabel,
+                        loading = loading,
+                        onSecondaryAction = onSecondaryAction,
+                    )
+                }
             }
         }
     }
@@ -162,7 +167,7 @@ private fun AuthFormFields(
             onValueChange = onPseudoChange,
             label = "Pseudo",
             enabled = !loading,
-            leadingIcon = Icons.Outlined.Person,
+            leadingIcon = AppIcons.PersonOutline,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(AppTheme.dimens.sm))
@@ -172,7 +177,7 @@ private fun AuthFormFields(
         onValueChange = onEmailChange,
         label = "Email",
         enabled = !loading,
-        leadingIcon = Icons.Outlined.Email,
+        leadingIcon = AppIcons.Email,
         modifier = Modifier.fillMaxWidth(),
     )
     Spacer(Modifier.height(AppTheme.dimens.sm))
@@ -181,7 +186,7 @@ private fun AuthFormFields(
         onValueChange = onPasswordChange,
         label = "Mot de passe",
         enabled = !loading,
-        leadingIcon = Icons.Outlined.Lock,
+        leadingIcon = AppIcons.Lock,
         modifier = Modifier.fillMaxWidth(),
     )
 
@@ -199,7 +204,7 @@ private fun AuthFormFooter(
     onSecondaryAction: () -> Unit,
 ) {
     Spacer(Modifier.height(AppTheme.dimens.md))
-    HorizontalDivider(color = AppTheme.colors.border)
+    AppDivider()
     Spacer(Modifier.height(AppTheme.dimens.xs))
 
     Row(

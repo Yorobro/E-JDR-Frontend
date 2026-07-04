@@ -1,12 +1,14 @@
 package eu.ejdr.presentation.shared.component.atomic
 
-import androidx.compose.material3.Text
+import androidx.compose.foundation.text.BasicText
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.theme.LocalContentColor
 
 /** Styles sémantiques disponibles pour [AppText]. */
 enum class AppTextStyle { Display, Title, Subtitle, Body, Label, Caption, Mono }
@@ -20,7 +22,7 @@ enum class AppTextStyle { Display, Title, Subtitle, Body, Label, Caption, Mono }
  * @param text Texte à afficher.
  * @param modifier Modifier Compose appliqué au texte.
  * @param style Style typographique sémantique (défaut [AppTextStyle.Body]).
- * @param color Couleur explicite ; si `null`, utilise la couleur de texte du thème.
+ * @param color Couleur explicite ; si `null`, utilise la couleur de contenu courante.
  * @param maxLines Nombre maximal de lignes.
  * @param textAlign Alignement horizontal du texte.
  */
@@ -34,7 +36,7 @@ fun AppText(
     textAlign: TextAlign? = null,
 ) {
     val typo = AppTheme.typography
-    val resolved: TextStyle = when (style) {
+    val resolvedStyle: TextStyle = when (style) {
         AppTextStyle.Display -> typo.display
         AppTextStyle.Title -> typo.title
         AppTextStyle.Subtitle -> typo.subtitle
@@ -43,12 +45,17 @@ fun AppText(
         AppTextStyle.Caption -> typo.caption
         AppTextStyle.Mono -> typo.mono
     }
-    Text(
+    val resolvedColor = color ?: LocalContentColor.current
+    val mergeStyle = if (textAlign != null) {
+        TextStyle(color = resolvedColor, textAlign = textAlign)
+    } else {
+        TextStyle(color = resolvedColor)
+    }
+    BasicText(
         text = text,
         modifier = modifier,
-        style = resolved,
-        color = color ?: AppTheme.colors.text,
+        style = resolvedStyle.merge(mergeStyle),
         maxLines = maxLines,
-        textAlign = textAlign,
+        overflow = TextOverflow.Ellipsis,
     )
 }

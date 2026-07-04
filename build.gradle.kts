@@ -94,9 +94,11 @@ kotlin {
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.materialIconsExtended)
                 implementation(compose.components.resources)
+
+                // Icônes Lucide (Compose Multiplatform) — jeu d'icônes du design system, mappé
+                // sous les mêmes noms dans AppIcons. Seules les icônes référencées sont conservées.
+                implementation("com.composables:icons-lucide-cmp:2.2.1")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
