@@ -1,3 +1,11 @@
+## [1.27.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.26.0...v1.27.0) (2026-07-04)
+
+
+### Features
+
+* **friend-groups:** groupes d'amis, invitations et temps réel complet ([d27bd45](https://github.com/Yorobro/E-JDR-Frontend/commit/d27bd45b53314f360397674b5bc282b3abdd21fd))
+* **realtime:** souscriptions WebSocket et réactivité des ViewModels ([2f29fc2](https://github.com/Yorobro/E-JDR-Frontend/commit/2f29fc2284adae0a4b00e79c86b25d685890d439))
+
 ## [1.26.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.25.0...v1.26.0) (2026-07-02)
 
 
