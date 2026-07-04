@@ -6,16 +6,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.AccountCircle
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Group
-import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,6 +14,8 @@ import androidx.compose.ui.unit.dp
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.base.AppIconButton
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -71,10 +63,11 @@ fun AppTopBar(
             horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
         ) {
             if (onBack != null) {
-                IconButton(onClick = onBack) {
+                AppIconButton(onClick = onBack, contentDescription = "Retour") {
                     AppIcon(
-                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "Retour",
+                        imageVector = AppIcons.ArrowBack,
+                        contentDescription = null,
+                        tint = AppTheme.colors.text,
                     )
                 }
             }
@@ -82,13 +75,13 @@ fun AppTopBar(
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TopBarAction(onCampaigns, Icons.AutoMirrored.Filled.List, "Campagnes")
-            TopBarAction(onCharacterSheets, Icons.Default.Person, "Mes fiches")
-            TopBarAction(onReferences, Icons.Default.Category, "Mes éléments")
-            TopBarAction(onGroups, Icons.Default.Group, "Mes groupes")
-            TopBarAction(onInvitations, Icons.Default.MailOutline, "Invitations")
-            TopBarAction(onSettings, Icons.Default.Settings, "Paramètres")
-            TopBarAction(onProfile, Icons.Default.AccountCircle, "Mon profil", active = profileActive)
+            TopBarAction(onCampaigns, AppIcons.List, "Campagnes")
+            TopBarAction(onCharacterSheets, AppIcons.Person, "Mes fiches")
+            TopBarAction(onReferences, AppIcons.Category, "Mes éléments")
+            TopBarAction(onGroups, AppIcons.Group, "Mes groupes")
+            TopBarAction(onInvitations, AppIcons.Mail, "Invitations")
+            TopBarAction(onSettings, AppIcons.Settings, "Paramètres")
+            TopBarAction(onProfile, AppIcons.AccountCircle, "Mon profil", active = profileActive)
         }
     }
 }
@@ -110,10 +103,10 @@ private fun TopBarAction(
     active: Boolean = false,
 ) {
     if (onClick != null) {
-        IconButton(onClick = onClick) {
+        AppIconButton(onClick = onClick, contentDescription = contentDescription) {
             AppIcon(
                 imageVector = icon,
-                contentDescription = contentDescription,
+                contentDescription = null,
                 tint = if (active) AppTheme.colors.primary else AppTheme.colors.text,
             )
         }
