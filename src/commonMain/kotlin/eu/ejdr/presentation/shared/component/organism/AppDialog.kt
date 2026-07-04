@@ -67,7 +67,7 @@ fun AppDialog(
                     .padding(dimens.lg),
                 verticalArrangement = Arrangement.spacedBy(dimens.md),
             ) {
-                AppText(title, style = AppTextStyle.Title)
+                AppText(title, style = AppTextStyle.Subtitle)
                 content()
                 Row(
                     modifier = Modifier.fillMaxWidth(),

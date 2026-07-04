@@ -107,7 +107,7 @@ private fun TopBarAction(
             AppIcon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = if (active) AppTheme.colors.primary else AppTheme.colors.text,
+                tint = if (active) AppTheme.colors.primary else AppTheme.colors.textSecondary,
             )
         }
     }
