@@ -1,9 +1,15 @@
 package eu.ejdr.presentation.shared.component.base
 
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
@@ -14,6 +20,11 @@ import androidx.compose.ui.window.PopupProperties
  *
  * [anchor] reçoit un Modifier à poser sur le champ cliquable. Quand [expanded] est vrai, le
  * [content] (les items) s'affiche dans un [Popup] positionné juste sous l'ancre.
+ *
+ * Le popup **cale sa largeur sur celle de l'ancre** (comme l'ancien `ExposedDropdownMenuBox`) :
+ * la largeur du champ est mesurée via `onSizeChanged` sur le Modifier de l'ancre, puis appliquée
+ * au contenu. Sans ça, un `fillMaxWidth()` dans un `Popup` se mesurerait contre la fenêtre entière
+ * et le menu déborderait.
  */
 @Composable
 fun AppDropdownCore(
@@ -22,14 +33,16 @@ fun AppDropdownCore(
     anchor: @Composable (Modifier) -> Unit,
     content: @Composable () -> Unit,
 ) {
-    anchor(Modifier)
+    var anchorWidthPx by remember { mutableStateOf(0) }
+    anchor(Modifier.onSizeChanged { anchorWidthPx = it.width })
     if (expanded) {
+        val anchorWidth = with(LocalDensity.current) { anchorWidthPx.toDp() }
         Popup(
             popupPositionProvider = BelowAnchorPositionProvider,
             onDismissRequest = onDismissRequest,
             properties = PopupProperties(focusable = true),
         ) {
-            Column(Modifier.fillMaxWidth()) { content() }
+            Column(Modifier.width(anchorWidth)) { content() }
         }
     }
 }

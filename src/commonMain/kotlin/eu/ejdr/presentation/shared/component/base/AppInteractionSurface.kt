@@ -23,7 +23,9 @@ fun Modifier.appPressFeedback(
 ): Modifier {
     val pressed by interactionSource.collectIsPressedAsState()
     val motion = AppTheme.motion
-    val target = if (enabled && pressed) motion.pressScale else 1f
+    // `motion.enabled` inclus : en reduced-motion l'élément ne doit pas « sauter » au scale cible
+    // (aligné sur InteractiveCard). Sans lui, effectiveDuration=0 figerait l'échelle à pressScale.
+    val target = if (enabled && pressed && motion.enabled) motion.pressScale else 1f
     val scale by animateFloatAsState(
         targetValue = target,
         animationSpec = tween(motion.effectiveDuration(motion.durationFast), easing = motion.easeStandard),
