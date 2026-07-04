@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Category
+import eu.ejdr.presentation.shared.icons.AppIcons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -108,7 +106,7 @@ fun ReferenceListPage(
                             AppButton(
                                 label = "Ajouter",
                                 onClick = { showCreate = true },
-                                leadingIcon = Icons.Default.Add,
+                                leadingIcon = AppIcons.Add,
                             )
                         }
                     } else null,
@@ -213,7 +211,7 @@ private fun ReferenceGrid(
 
             items.isEmpty() ->
                 EmptyState(
-                    icon = Icons.Default.Category,
+                    icon = AppIcons.Category,
                     title = "Aucun élément",
                     message = "Ajoute ton premier élément de référence.",
                     actionLabel = if (canEdit) "Ajouter" else null,

@@ -7,10 +7,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,9 +27,10 @@ import eu.ejdr.presentation.features.reference.referenceEntries
 import eu.ejdr.presentation.features.session.sessionEntries
 import eu.ejdr.presentation.features.settings.settingsEntries
 import eu.ejdr.presentation.features.user.userEntries
-import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
+import eu.ejdr.presentation.shared.component.base.AppSpinner
+import eu.ejdr.presentation.shared.component.organism.AppBottomBar
 import eu.ejdr.presentation.shared.theme.AppTheme
 import kotlinx.coroutines.flow.StateFlow
 
@@ -94,21 +91,15 @@ fun AppNavDisplay(
         }
 
         if (status == SessionStatus.Authenticated && visibleItems.isNotEmpty()) {
-            NavigationBar(Modifier.fillMaxWidth()) {
-                visibleItems.forEach { item ->
-                    NavigationBarItem(
-                        selected = currentRoute?.let { it::class == item.route::class } ?: false,
-                        onClick = {
-                            if (currentRoute?.let { it::class != item.route::class } != false) {
-                                backStack.add(item.route)
-                            }
-                        },
-                        icon = { AppIcon(item.icon, contentDescription = item.label) },
-                        // Pas de label : barre plus compacte avec 6 onglets ; le libellé reste
-                        // exposé via contentDescription (accessibilité).
-                    )
-                }
-            }
+            AppBottomBar(
+                items = visibleItems,
+                currentRoute = currentRoute,
+                onSelect = { route ->
+                    if (currentRoute?.let { it::class != route::class } != false) {
+                        backStack.add(route)
+                    }
+                },
+            )
         }
     }
 }
@@ -119,7 +110,7 @@ private fun SplashScreen() {
     Box(
         Modifier.fillMaxSize().background(AppTheme.colors.background),
         Alignment.Center,
-    ) { CircularProgressIndicator(color = AppTheme.colors.primary) }
+    ) { AppSpinner() }
 }
 
 /** Placeholder temporaire pour une destination dont la page Android n'est pas encore écrite. */

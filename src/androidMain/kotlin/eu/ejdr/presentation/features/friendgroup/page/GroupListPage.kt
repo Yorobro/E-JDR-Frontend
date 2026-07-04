@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Group
+import eu.ejdr.presentation.shared.icons.AppIcons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -83,7 +81,7 @@ fun GroupListPage(
                     AppButton(
                         label = "Nouveau groupe",
                         onClick = { showCreate = true },
-                        leadingIcon = Icons.Default.Add,
+                        leadingIcon = AppIcons.Add,
                     )
                 },
             )
@@ -102,7 +100,7 @@ fun GroupListPage(
                 groups.isEmpty() ->
                     Box(modifier = Modifier.fillMaxSize()) {
                         EmptyState(
-                            icon = Icons.Default.Group,
+                            icon = AppIcons.Group,
                             title = "Aucun groupe",
                             message = "Crée un groupe pour jouer avec tes amis.",
                             actionLabel = "Créer un groupe",

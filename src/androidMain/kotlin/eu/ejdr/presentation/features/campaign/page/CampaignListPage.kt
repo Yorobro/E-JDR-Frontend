@@ -9,9 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Add
+import eu.ejdr.presentation.shared.icons.AppIcons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -92,7 +90,7 @@ fun CampaignListPage(
                             AppButton(
                                 label = "Nouvelle campagne",
                                 onClick = { showCreate = true },
-                                leadingIcon = Icons.Default.Add,
+                                leadingIcon = AppIcons.Add,
                             )
                         }
                     } else null,
@@ -148,7 +146,7 @@ private fun CampaignGrid(
 
             campaigns.isEmpty() ->
                 EmptyState(
-                    icon = Icons.AutoMirrored.Filled.List,
+                    icon = AppIcons.List,
                     title = "Aucune campagne",
                     message = "Lance ta première campagne.",
                     actionLabel = if (canEdit) "Créer une campagne" else null,
