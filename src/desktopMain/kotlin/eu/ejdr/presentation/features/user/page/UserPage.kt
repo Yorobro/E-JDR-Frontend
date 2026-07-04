@@ -163,8 +163,8 @@ private fun ProfileActions(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
     ) {
-        AppButton(label = "Changer d'email", onClick = onChangeEmail, modifier = Modifier.fillMaxWidth(), variant = ButtonVariant.Secondary)
-        AppButton(label = "Changer le mot de passe", onClick = onChangePassword, modifier = Modifier.fillMaxWidth(), variant = ButtonVariant.Secondary)
-        AppButton(label = "Déconnexion", onClick = onLogout, modifier = Modifier.fillMaxWidth(), variant = ButtonVariant.Danger)
+        AppButton(label = "Changer d'email", onClick = onChangeEmail, fillWidth = true, variant = ButtonVariant.Secondary)
+        AppButton(label = "Changer le mot de passe", onClick = onChangePassword, fillWidth = true, variant = ButtonVariant.Secondary)
+        AppButton(label = "Déconnexion", onClick = onLogout, fillWidth = true, variant = ButtonVariant.Danger)
     }
 }

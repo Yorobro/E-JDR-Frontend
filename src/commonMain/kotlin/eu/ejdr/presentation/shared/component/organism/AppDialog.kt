@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -59,7 +59,11 @@ fun AppDialog(
             color = AppTheme.colors.surface,
             shape = RoundedCornerShape(dimens.radiusMd),
             elevation = dimens.elevationLg,
-            modifier = Modifier.widthIn(max = 420.dp),
+            // Largeur FIXE (et non widthIn max) : dans le Popup, sans contrainte de largeur
+            // parente, un simple `widthIn(max=…)` laissait la Column/Row se mesurer à leur
+            // largeur intrinsèque et la Row des boutons (fillMaxWidth) s'effondrait → boutons
+            // invisibles. Une largeur définie donne aux boutons une zone réelle.
+            modifier = Modifier.width(360.dp),
         ) {
             Column(
                 modifier = Modifier
@@ -69,6 +73,7 @@ fun AppDialog(
             ) {
                 AppText(title, style = AppTextStyle.Subtitle)
                 content()
+                // Boutons ajustés à leur contenu (fillWidth par défaut = false), alignés à droite.
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(dimens.sm, Alignment.End),

@@ -70,13 +70,17 @@ fun GroupListPage(
             PageHeader(
                 title = "Groupes",
                 subtitle = "${groups.size} ${if (groups.size > 1) "groupes" else "groupe"}",
-                action = {
-                    AppButton(
-                        label = "Nouveau groupe",
-                        onClick = { showCreate = true },
-                        leadingIcon = AppIcons.Add,
-                    )
-                },
+                // Un seul bouton de création à la fois : le header ne l'affiche que si la liste
+                // n'est pas vide ; sinon c'est l'EmptyState qui porte le call-to-action.
+                action = if (groups.isNotEmpty()) {
+                    {
+                        AppButton(
+                            label = "Nouveau groupe",
+                            onClick = { showCreate = true },
+                            leadingIcon = AppIcons.Add,
+                        )
+                    }
+                } else null,
             )
             FormError(message = error)
 

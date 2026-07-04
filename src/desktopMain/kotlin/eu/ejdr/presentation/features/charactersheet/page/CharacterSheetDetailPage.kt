@@ -223,25 +223,26 @@ private fun DetailActionBar(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
         if (canModify && isEditing) {
-            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary)
+            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary, fillWidth = true)
             AppButton(
                 label = "Enregistrer",
                 onClick = onSave,
                 enabled = canSave,
                 loading = isSaving,
-                modifier = Modifier.fillMaxWidth(),
+                fillWidth = true,
             )
         }
         // Hors édition : « Modifier » (si autorisé) et « Exporter » (toujours, c'est une lecture).
         if (!isEditing) {
             if (canModify) {
-                AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
+                AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary, fillWidth = true)
             }
             AppButton(
                 label = "Exporter",
                 onClick = onExport,
                 variant = ButtonVariant.Secondary,
                 loading = isExporting,
+                fillWidth = true,
             )
         }
     }

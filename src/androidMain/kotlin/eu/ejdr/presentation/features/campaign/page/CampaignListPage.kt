@@ -85,7 +85,9 @@ fun CampaignListPage(
                 PageHeader(
                     title = "Campagnes",
                     subtitle = "${campaigns.size} ${if (campaigns.size > 1) "campagnes" else "campagne"}",
-                    action = if (canEdit) {
+                    // Un seul bouton de création à la fois : header si la liste n'est pas vide,
+                    // sinon c'est l'EmptyState qui porte le call-to-action.
+                    action = if (canEdit && campaigns.isNotEmpty()) {
                         {
                             AppButton(
                                 label = "Nouvelle campagne",

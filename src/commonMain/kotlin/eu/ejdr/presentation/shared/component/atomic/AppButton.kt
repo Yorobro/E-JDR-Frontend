@@ -53,6 +53,9 @@ enum class ButtonVariant { Primary, Secondary, Text, Danger, Ghost }
  * @param enabled Active ou désactive le bouton.
  * @param loading Si vrai, affiche un indicateur de chargement et désactive le bouton.
  * @param leadingIcon Icône optionnelle affichée avant le libellé.
+ * @param fillWidth Si vrai, le bouton occupe toute la largeur disponible (contenu centré) ;
+ *   sinon (défaut) il s'ajuste à son contenu (texte + padding). À activer pour les boutons
+ *   pleine largeur (formulaires, cartes) ; à laisser `false` dans une Row d'actions.
  */
 @Composable
 fun AppButton(
@@ -63,6 +66,7 @@ fun AppButton(
     enabled: Boolean = true,
     loading: Boolean = false,
     leadingIcon: ImageVector? = null,
+    fillWidth: Boolean = false,
 ) {
     val colors = AppTheme.colors
     val dimens = AppTheme.dimens
@@ -98,9 +102,19 @@ fun AppButton(
     when (variant) {
         ButtonVariant.Primary -> {
             useGradient = isRich && isEnabled
-            surfaceColor = if (useGradient) Color.Transparent else if (isEnabled) colors.primary else colors.border
+            // Désactivé : fond `beige` (visible) + bordure, PAS `border` en aplat (se confondait
+            // avec la surface de la modale → bouton quasi invisible). Le bouton reste reconnaissable.
+            surfaceColor = when {
+                useGradient -> Color.Transparent
+                isEnabled -> colors.primary
+                else -> colors.beige
+            }
             contentColor = if (isEnabled) colors.onPrimary else colors.muted
-            border = if (useGradient) BorderStroke(dimens.borderWidth, colors.ornament) else null
+            border = when {
+                useGradient -> BorderStroke(dimens.borderWidth, colors.ornament)
+                isEnabled -> null
+                else -> BorderStroke(dimens.borderWidth, colors.border)
+            }
         }
         ButtonVariant.Secondary -> {
             useGradient = false
@@ -116,9 +130,10 @@ fun AppButton(
         }
         ButtonVariant.Danger -> {
             useGradient = false
-            surfaceColor = if (isEnabled) colors.danger else colors.border
+            // Désactivé : même traitement que Primary (fond `beige` + bordure, pas `border` en aplat).
+            surfaceColor = if (isEnabled) colors.danger else colors.beige
             contentColor = if (isEnabled) colors.onDanger else colors.muted
-            border = null
+            border = if (isEnabled) null else BorderStroke(dimens.borderWidth, colors.border)
         }
         ButtonVariant.Ghost -> {
             useGradient = false
@@ -137,20 +152,24 @@ fun AppButton(
         onClick = if (isEnabled) guardedClick else null,
         interactionSource = interactionSource,
     ) {
+        // Largeur : par défaut le contenu s'ajuste (wrapContent) ; `fillWidth` l'étire à toute
+        // la largeur (contenu centré). Ne PAS forcer fillMaxWidth inconditionnellement, sinon un
+        // bouton dans une Row prendrait toute la place et éjecterait ses voisins.
+        val widthModifier = if (fillWidth) Modifier.fillMaxWidth() else Modifier
         if (useGradient) {
             // Rich Primary: paint gradient inside, then layer the content on top
             val gradient = Brush.verticalGradient(
                 listOf(colors.accentGradientTop, colors.accentGradientBottom),
             )
             Box(
-                modifier = Modifier.fillMaxWidth().background(gradient).padding(padding),
+                modifier = widthModifier.background(gradient).padding(padding),
                 contentAlignment = Alignment.Center,
             ) {
                 ButtonContent(loading = loading, leadingIcon = leadingIcon, label = label, contentColor = contentColor)
             }
         } else {
             Box(
-                modifier = Modifier.fillMaxWidth().padding(padding),
+                modifier = widthModifier.padding(padding),
                 contentAlignment = Alignment.Center,
             ) {
                 ButtonContent(loading = loading, leadingIcon = leadingIcon, label = label, contentColor = contentColor)

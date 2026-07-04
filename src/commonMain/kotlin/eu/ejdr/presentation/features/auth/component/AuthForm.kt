@@ -116,7 +116,7 @@ fun AuthForm(
                         label = submitLabel,
                         onClick = onSubmit,
                         loading = loading,
-                        modifier = Modifier.fillMaxWidth(),
+                        fillWidth = true,
                     )
 
                     AuthFormFooter(

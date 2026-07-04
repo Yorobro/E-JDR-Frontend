@@ -111,13 +111,17 @@ fun MyCharacterSheetsPage(
                 PageHeader(
                     title = "Mes fiches",
                     subtitle = "${sheets.size} ${if (sheets.size > 1) "fiches" else "fiche"}",
-                    action = {
-                        AppButton(
-                            label = "Nouvelle fiche",
-                            onClick = { showCreate = true },
-                            leadingIcon = AppIcons.Add,
-                        )
-                    },
+                    // Un seul bouton de création à la fois : header si la liste n'est pas vide,
+                    // sinon c'est l'EmptyState qui porte le call-to-action.
+                    action = if (sheets.isNotEmpty()) {
+                        {
+                            AppButton(
+                                label = "Nouvelle fiche",
+                                onClick = { showCreate = true },
+                                leadingIcon = AppIcons.Add,
+                            )
+                        }
+                    } else null,
                 )
                 FormError(message = error)
                 CharacterSheetGrid(

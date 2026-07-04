@@ -201,18 +201,18 @@ private fun DetailActionBar(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
         if (canModify && isEditing) {
-            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary)
+            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary, fillWidth = true)
             AppButton(
                 label = "Enregistrer",
                 onClick = onSave,
                 enabled = canSave,
                 loading = isSaving,
-                modifier = Modifier.fillMaxWidth(),
+                fillWidth = true,
             )
         }
         // Pas d'export PDF sur mobile : réservé au desktop (« Enregistrer sous »).
         if (!isEditing && canModify) {
-            AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
+            AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary, fillWidth = true)
         }
     }
 }

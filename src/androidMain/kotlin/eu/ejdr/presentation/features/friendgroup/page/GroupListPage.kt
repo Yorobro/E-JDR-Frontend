@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -77,19 +76,23 @@ fun GroupListPage(
             PageHeader(
                 title = "Mes groupes",
                 subtitle = "${groups.size} ${if (groups.size > 1) "groupes" else "groupe"}",
-                action = {
-                    AppButton(
-                        label = "Nouveau groupe",
-                        onClick = { showCreate = true },
-                        leadingIcon = AppIcons.Add,
-                    )
-                },
+                // Un seul bouton de création à la fois : header si la liste n'est pas vide,
+                // sinon c'est l'EmptyState qui porte le call-to-action.
+                action = if (groups.isNotEmpty()) {
+                    {
+                        AppButton(
+                            label = "Nouveau groupe",
+                            onClick = { showCreate = true },
+                            leadingIcon = AppIcons.Add,
+                        )
+                    }
+                } else null,
             )
             AppButton(
                 label = "Invitations reçues",
                 onClick = onNavigateToInvitations,
                 variant = ButtonVariant.Secondary,
-                modifier = Modifier.fillMaxWidth(),
+                fillWidth = true,
             )
             FormError(message = error)
 
