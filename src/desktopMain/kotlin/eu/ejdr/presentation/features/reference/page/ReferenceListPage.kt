@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Category
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +39,7 @@ import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
 import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
@@ -109,7 +107,7 @@ fun ReferenceListPage(
                             AppButton(
                                 label = "Ajouter",
                                 onClick = { showCreate = true },
-                                leadingIcon = Icons.Default.Add,
+                                leadingIcon = AppIcons.Add,
                             )
                         }
                     } else null,
@@ -214,7 +212,7 @@ private fun ReferenceGrid(
 
             items.isEmpty() ->
                 EmptyState(
-                    icon = Icons.Default.Category,
+                    icon = AppIcons.Category,
                     title = "Aucun élément",
                     message = "Ajoute ton premier élément de référence.",
                     actionLabel = if (canEdit) "Ajouter" else null,

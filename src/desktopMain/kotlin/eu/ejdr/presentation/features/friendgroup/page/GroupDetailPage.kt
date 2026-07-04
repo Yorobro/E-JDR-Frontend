@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import eu.ejdr.presentation.shared.component.base.AppSpinner
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -74,10 +74,7 @@ fun GroupDetailPage(
             when {
                 isLoading && detail == null ->
                     Box(modifier = Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = AppTheme.colors.primary,
-                        )
+                        AppSpinner(modifier = Modifier.align(Alignment.Center))
                     }
 
                 detail != null -> {

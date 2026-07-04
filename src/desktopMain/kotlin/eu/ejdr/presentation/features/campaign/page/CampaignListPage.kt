@@ -9,9 +9,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -40,6 +37,7 @@ import eu.ejdr.presentation.shared.component.modifier.appItemAppearSpec
 import eu.ejdr.presentation.shared.component.molecule.SkeletonGrid
 import eu.ejdr.presentation.shared.component.organism.PageHeader
 import eu.ejdr.presentation.shared.di.koinViewModel
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
@@ -105,7 +103,7 @@ fun CampaignListPage(
                             AppButton(
                                 label = "Nouvelle campagne",
                                 onClick = { showCreate = true },
-                                leadingIcon = Icons.Default.Add,
+                                leadingIcon = AppIcons.Add,
                             )
                         }
                     } else null,
@@ -174,7 +172,7 @@ private fun CampaignGrid(
 
             campaigns.isEmpty() ->
                 EmptyState(
-                    icon = Icons.AutoMirrored.Filled.List,
+                    icon = AppIcons.List,
                     title = "Aucune campagne",
                     message = "Lance ta première campagne.",
                     actionLabel = if (canEdit) "Créer une campagne" else null,

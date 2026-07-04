@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,11 +26,15 @@ import eu.ejdr.presentation.features.user.UserViewModel
 import eu.ejdr.presentation.features.user.component.ChangeEmailDialog
 import eu.ejdr.presentation.features.user.component.ChangePasswordDialog
 import eu.ejdr.presentation.shared.component.atomic.AppButton
+import eu.ejdr.presentation.shared.component.atomic.AppDivider
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
+import eu.ejdr.presentation.shared.component.base.AppSurface
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.theme.AppTreatment
+import eu.ejdr.presentation.shared.theme.ProvideTreatment
 
 /**
  * Page profil affichée une fois l'utilisateur connecté (composant intelligent).
@@ -57,19 +59,21 @@ fun UserPage(
         viewModel.sessionExpired.collect { onSessionExpired() }
     }
 
-    ProfileDialogs(
-        editState = editState,
-        onEmailConfirm = viewModel::changeEmail,
-        onPasswordConfirm = viewModel::changePassword,
-        onResetEditState = viewModel::resetEditState,
-    ) { onChangeEmail, onChangePassword ->
-        ProfileCard(
-            profile = profile,
-            onChangeEmail = onChangeEmail,
-            onChangePassword = onChangePassword,
-            onLogout = onLogout,
-            modifier = modifier,
-        )
+    ProvideTreatment(AppTreatment.Rich) {
+        ProfileDialogs(
+            editState = editState,
+            onEmailConfirm = viewModel::changeEmail,
+            onPasswordConfirm = viewModel::changePassword,
+            onResetEditState = viewModel::resetEditState,
+        ) { onChangeEmail, onChangePassword ->
+            ProfileCard(
+                profile = profile,
+                onChangeEmail = onChangeEmail,
+                onChangePassword = onChangePassword,
+                onLogout = onLogout,
+                modifier = modifier,
+            )
+        }
     }
 }
 
@@ -126,12 +130,11 @@ private fun ProfileCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier.width(360.dp),
             shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
             color = AppTheme.colors.surface,
-            shadowElevation = 2.dp,
-            tonalElevation = 0.dp,
+            elevation = 2.dp,
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(AppTheme.dimens.xl),
@@ -143,7 +146,7 @@ private fun ProfileCard(
                     AppText(text = current.pseudo, style = AppTextStyle.Subtitle)
                     AppText(text = current.email, style = AppTextStyle.Body, color = AppTheme.colors.textSecondary)
                 }
-                HorizontalDivider(modifier = Modifier.padding(vertical = AppTheme.dimens.xs), color = AppTheme.colors.border)
+                AppDivider(modifier = Modifier.padding(vertical = AppTheme.dimens.xs))
                 ProfileActions(onChangeEmail = onChangeEmail, onChangePassword = onChangePassword, onLogout = onLogout)
             }
         }
