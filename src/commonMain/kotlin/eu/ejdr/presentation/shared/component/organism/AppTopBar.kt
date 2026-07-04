@@ -34,6 +34,9 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param onSettings Callback pour ouvrir les paramètres ; si `null`, l'icône est masquée.
  * @param onInvitations Callback pour ouvrir les invitations reçues ; si `null`, l'icône est masquée.
  * @param onBack Callback pour revenir en arrière ; si `null`, le bouton est masqué.
+ * @param wrapAction Décorateur optionnel appliqué autour de chaque action-icône, recevant son
+ *   libellé et son rendu. Défaut : rendu direct (transparent). Le desktop y branche un tooltip
+ *   au survol (icône seule nommée) ; Android / cibles sobres ne passent rien.
  */
 @Composable
 fun AppTopBar(
@@ -48,6 +51,8 @@ fun AppTopBar(
     onInvitations: (() -> Unit)? = null,
     onSettings: (() -> Unit)? = null,
     onBack: (() -> Unit)? = null,
+    wrapAction: @Composable (label: String, content: @Composable () -> Unit) -> Unit =
+        { _, content -> content() },
 ) {
     Row(
         modifier = modifier
@@ -63,25 +68,30 @@ fun AppTopBar(
             horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.xs),
         ) {
             if (onBack != null) {
-                AppIconButton(onClick = onBack, contentDescription = "Retour") {
-                    AppIcon(
-                        imageVector = AppIcons.ArrowBack,
-                        contentDescription = null,
-                        tint = AppTheme.colors.text,
-                    )
+                wrapAction("Retour") {
+                    AppIconButton(onClick = onBack, contentDescription = "Retour") {
+                        AppIcon(
+                            imageVector = AppIcons.ArrowBack,
+                            contentDescription = null,
+                            tint = AppTheme.colors.text,
+                        )
+                    }
                 }
             }
             AppText(text = title, style = AppTextStyle.Title)
         }
 
         Row(verticalAlignment = Alignment.CenterVertically) {
-            TopBarAction(onCampaigns, AppIcons.List, "Campagnes")
-            TopBarAction(onCharacterSheets, AppIcons.Person, "Mes fiches")
-            TopBarAction(onReferences, AppIcons.Category, "Mes éléments")
-            TopBarAction(onGroups, AppIcons.Group, "Mes groupes")
-            TopBarAction(onInvitations, AppIcons.Mail, "Invitations")
-            TopBarAction(onSettings, AppIcons.Settings, "Paramètres")
-            TopBarAction(onProfile, AppIcons.AccountCircle, "Mon profil", active = profileActive)
+            TopBarAction(onCampaigns, AppIcons.List, "Campagnes", wrapAction = wrapAction)
+            TopBarAction(onCharacterSheets, AppIcons.Person, "Mes fiches", wrapAction = wrapAction)
+            TopBarAction(onReferences, AppIcons.Category, "Mes éléments", wrapAction = wrapAction)
+            TopBarAction(onGroups, AppIcons.Group, "Mes groupes", wrapAction = wrapAction)
+            TopBarAction(onInvitations, AppIcons.Mail, "Invitations", wrapAction = wrapAction)
+            TopBarAction(onSettings, AppIcons.Settings, "Paramètres", wrapAction = wrapAction)
+            TopBarAction(
+                onProfile, AppIcons.AccountCircle, "Mon profil",
+                active = profileActive, wrapAction = wrapAction,
+            )
         }
     }
 }
@@ -89,11 +99,14 @@ fun AppTopBar(
 /**
  * Action-icône de la top bar : rendue seulement si [onClick] est fourni.
  *
- * Factorise le motif « bouton-icône optionnel » répété pour chaque destination.
+ * Factorise le motif « bouton-icône optionnel » répété pour chaque destination. Le rendu passe
+ * par [wrapAction] (défaut transparent) afin que le desktop puisse le décorer d'un tooltip.
  *
  * @param onClick Callback du clic ; si `null`, rien n'est affiché.
  * @param icon Icône du bouton.
- * @param contentDescription Description d'accessibilité.
+ * @param contentDescription Description d'accessibilité (et libellé du tooltip desktop).
+ * @param active Si vrai, teinte l'icône en couleur d'accent (onglet courant).
+ * @param wrapAction Décorateur appliqué autour du bouton (tooltip desktop, no-op ailleurs).
  */
 @Composable
 private fun TopBarAction(
@@ -101,14 +114,18 @@ private fun TopBarAction(
     icon: ImageVector,
     contentDescription: String,
     active: Boolean = false,
+    wrapAction: @Composable (label: String, content: @Composable () -> Unit) -> Unit =
+        { _, content -> content() },
 ) {
     if (onClick != null) {
-        AppIconButton(onClick = onClick, contentDescription = contentDescription) {
-            AppIcon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = if (active) AppTheme.colors.primary else AppTheme.colors.textSecondary,
-            )
+        wrapAction(contentDescription) {
+            AppIconButton(onClick = onClick, contentDescription = contentDescription) {
+                AppIcon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = if (active) AppTheme.colors.primary else AppTheme.colors.textSecondary,
+                )
+            }
         }
     }
 }
