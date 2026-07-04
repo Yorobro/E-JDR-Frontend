@@ -42,6 +42,8 @@ import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.RemoteChangeBanner
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.theme.AppTreatment
+import eu.ejdr.presentation.shared.theme.ProvideTreatment
 import org.koin.compose.koinInject
 
 private val TabTitles = listOf("Identité", "Combat", "Inventaire")
@@ -99,30 +101,33 @@ fun CharacterSheetDetailPage(
         onUnlink = viewModel::unlinkRef,
     )
 
-    Column(
-        modifier = modifier.fillMaxSize().padding(AppTheme.dimens.md),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
-    ) {
-        AppText(text = sheetTitle(name, sheet), style = AppTextStyle.Title)
-        FormError(message = error)
-        if (sheetChangedRemotely) {
-            RemoteChangeBanner(
-                onReload = viewModel::reloadFromRemote,
-                onDismiss = viewModel::dismissRemoteChange,
-            )
-        }
+    // Écran vitrine : traitement « grimoire assumé » (reliefs/bordures dorés côté AppSurface/AppButton).
+    ProvideTreatment(AppTreatment.Rich) {
+        Column(
+            modifier = modifier.fillMaxSize().padding(AppTheme.dimens.md),
+            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
+        ) {
+            AppText(text = sheetTitle(name, sheet), style = AppTextStyle.Title)
+            FormError(message = error)
+            if (sheetChangedRemotely) {
+                RemoteChangeBanner(
+                    onReload = viewModel::reloadFromRemote,
+                    onDismiss = viewModel::dismissRemoteChange,
+                )
+            }
 
-        sheet?.let { loaded ->
-            CharacterSheetDetailContent(
-                sheet = loaded,
-                refs = refs,
-                isEditing = isEditing,
-                isSaving = isLoading,
-                canModify = canEdit || isOwner,
-                onStartEdit = viewModel::startEdit,
-                onCancelEdit = viewModel::cancelEdit,
-                onSave = viewModel::save,
-            )
+            sheet?.let { loaded ->
+                CharacterSheetDetailContent(
+                    sheet = loaded,
+                    refs = refs,
+                    isEditing = isEditing,
+                    isSaving = isLoading,
+                    canModify = canEdit || isOwner,
+                    onStartEdit = viewModel::startEdit,
+                    onCancelEdit = viewModel::cancelEdit,
+                    onSave = viewModel::save,
+                )
+            }
         }
     }
 }

@@ -29,6 +29,8 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.theme.AppTreatment
+import eu.ejdr.presentation.shared.theme.ProvideTreatment
 
 /**
  * Organisme de formulaire d'authentification (connexion ou inscription).
@@ -73,52 +75,57 @@ fun AuthForm(
     secondaryActionLabel: String,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier = modifier.fillMaxSize().background(AppTheme.colors.background),
-        contentAlignment = Alignment.Center,
-    ) {
-        AppSurface(
-            modifier = Modifier.width(360.dp),
-            shape = RoundedCornerShape(AppTheme.dimens.radiusLg),
-            color = AppTheme.colors.surface,
-            border = BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border),
-            elevation = AppTheme.dimens.elevationMd,
+    // Écran vitrine : traitement « grimoire assumé » (reliefs/bordures dorés gérés par
+    // AppSurface/AppButton lorsqu'ils lisent AppTreatment.Rich). Couvre desktop ET android,
+    // AuthForm étant l'organisme commun rendu par AuthPage (desktop) et AuthScreen (android).
+    ProvideTreatment(AppTreatment.Rich) {
+        Box(
+            modifier = modifier.fillMaxSize().background(AppTheme.colors.background),
+            contentAlignment = Alignment.Center,
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(AppTheme.dimens.xl),
-                horizontalAlignment = Alignment.CenterHorizontally,
+            AppSurface(
+                modifier = Modifier.width(360.dp),
+                shape = RoundedCornerShape(AppTheme.dimens.radiusLg),
+                color = AppTheme.colors.surface,
+                border = BorderStroke(AppTheme.dimens.borderWidth, AppTheme.colors.border),
+                elevation = AppTheme.dimens.elevationMd,
             ) {
-                AuthFormHeader(subtitle = subtitle)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(AppTheme.dimens.xl),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    AuthFormHeader(subtitle = subtitle)
 
-                Spacer(Modifier.height(AppTheme.dimens.lg))
+                    Spacer(Modifier.height(AppTheme.dimens.lg))
 
-                AuthFormFields(
-                    email = email,
-                    password = password,
-                    pseudo = pseudo,
-                    showPseudo = showPseudo,
-                    errorMessage = errorMessage,
-                    loading = loading,
-                    onEmailChange = onEmailChange,
-                    onPasswordChange = onPasswordChange,
-                    onPseudoChange = onPseudoChange,
-                )
+                    AuthFormFields(
+                        email = email,
+                        password = password,
+                        pseudo = pseudo,
+                        showPseudo = showPseudo,
+                        errorMessage = errorMessage,
+                        loading = loading,
+                        onEmailChange = onEmailChange,
+                        onPasswordChange = onPasswordChange,
+                        onPseudoChange = onPseudoChange,
+                    )
 
-                AppButton(
-                    label = submitLabel,
-                    onClick = onSubmit,
-                    loading = loading,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                    AppButton(
+                        label = submitLabel,
+                        onClick = onSubmit,
+                        loading = loading,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
 
-                AuthFormFooter(
-                    secondaryText = secondaryText,
-                    secondaryActionLabel = secondaryActionLabel,
-                    loading = loading,
-                    onSecondaryAction = onSecondaryAction,
-                )
+                    AuthFormFooter(
+                        secondaryText = secondaryText,
+                        secondaryActionLabel = secondaryActionLabel,
+                        loading = loading,
+                        onSecondaryAction = onSecondaryAction,
+                    )
+                }
             }
         }
     }
