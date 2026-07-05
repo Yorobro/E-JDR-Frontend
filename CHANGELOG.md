@@ -1,3 +1,27 @@
+## [1.28.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.27.0...v1.28.0) (2026-07-05)
+
+
+### Features
+
+* **component:** appdialogcore — animation fade+scale a l ouverture ([34dd33c](https://github.com/Yorobro/E-JDR-Frontend/commit/34dd33c570a5a61583a5960d824d6c3b7b9d5015))
+* **component:** apptextfieldcore sur basictextfield (sans material) ([dcb9e52](https://github.com/Yorobro/E-JDR-Frontend/commit/dcb9e521af14d48e712bf6d2381b438198e0c305))
+* **component:** socle base — appsurface + feedback tactile maison ([97fd6a6](https://github.com/Yorobro/E-JDR-Frontend/commit/97fd6a66d9f8f7a63ac719a78b94644f0a423fb7))
+* **component:** socle base — dialog/dropdown/progress/icon-button (sans material) ([1bc4bb7](https://github.com/Yorobro/E-JDR-Frontend/commit/1bc4bb7570b366b7045c173b9d2f8fb647c75107))
+* **icons:** adosse AppIcons a lucide (icons-lucide-cmp) au lieu des svg maison ([1a77d35](https://github.com/Yorobro/E-JDR-Frontend/commit/1a77d359aceef6832bcbbb7d7c6688d5167f16ff))
+* **icons:** jeu d icones maison AppIcons (23 glyphes, sans Material) ([d8fe530](https://github.com/Yorobro/E-JDR-Frontend/commit/d8fe5304cc127235537918c8c5ae43785dc2d3c0))
+* **nav:** tooltip au survol sur la top bar desktop (icone seule nommee) ([7a880c5](https://github.com/Yorobro/E-JDR-Frontend/commit/7a880c5708a065d3d4911dbd832facb830cbe61b))
+* **theme:** tokens ornement/gradient/elevation + apptreatment ([294f1d0](https://github.com/Yorobro/E-JDR-Frontend/commit/294f1d0949f6b3883bae95eaeaea367fc14ce0b3))
+* **ui:** traitement riche (rich) sur auth et fiche de perso ([c289c69](https://github.com/Yorobro/E-JDR-Frontend/commit/c289c698b8f2bd294dd4dccfb1aa6aedf8aaf4fb))
+
+
+### Bug Fixes
+
+* **ci:** remove duplicate android_build job from release workflow ([6e081cf](https://github.com/Yorobro/E-JDR-Frontend/commit/6e081cff544fd6d0771d7dc5d9080dace31e5bf9))
+* **component:** appdialog titre subtitle + apptopbar tint inactif textsecondary ([2d6b16b](https://github.com/Yorobro/E-JDR-Frontend/commit/2d6b16bfbad8cd2dcbbbbfbe8594bf3c5b221636))
+* **component:** apptextfieldcore — espacement reel des slots (width au lieu de padding) ([5fe9d37](https://github.com/Yorobro/E-JDR-Frontend/commit/5fe9d37ea561f07b241bbf5560fb602ef249f9e1))
+* **ui:** boutons a la taille du contenu + un seul bouton de creation par hub ([213f3b0](https://github.com/Yorobro/E-JDR-Frontend/commit/213f3b0b8d580cd6d5e248bd0343c94030d5e974))
+* **ui:** dropdown a la largeur du champ + reduced-motion + flourish sobre ([4e097b7](https://github.com/Yorobro/E-JDR-Frontend/commit/4e097b7651d9863649c8c51bbc5dcfabd8a6f57a))
+
 ## [1.27.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.26.0...v1.27.0) (2026-07-04)
 
 
