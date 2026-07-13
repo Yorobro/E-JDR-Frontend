@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.features.auth.authEntries
@@ -73,7 +74,13 @@ fun AppNavDisplay(
     NavDisplay(
         backStack = backStack,
         onBack = { backStack.removeLastOrNull() },
-        entryDecorators = listOf(rememberEjdrViewModelStoreNavEntryDecorator()),
+        // `entryDecorators` REMPLACE la liste par défaut de NavDisplay : ne passer que le
+        // décorateur maison faisait perdre `rememberSaveable` et les positions de défilement.
+        // Le premier de la liste est le plus externe.
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+            rememberEjdrViewModelStoreNavEntryDecorator(),
+        ),
         transitionSpec = { fadeTransition },
         popTransitionSpec = { fadeTransition },
         entryProvider = entryProvider {

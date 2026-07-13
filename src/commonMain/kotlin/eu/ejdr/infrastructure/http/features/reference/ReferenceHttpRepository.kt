@@ -1,5 +1,6 @@
 package eu.ejdr.infrastructure.http.features.reference
 
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
 import eu.ejdr.application.features.reference.abstraction.repository.ReferenceRepository
 import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.runCatchingCancellable
@@ -12,6 +13,7 @@ import eu.ejdr.infrastructure.http.features.reference.dto.CreateReferenceRequest
 import eu.ejdr.infrastructure.http.features.reference.dto.LinkReferenceRequestDto
 import eu.ejdr.infrastructure.http.features.reference.dto.ReferenceItemDto
 import eu.ejdr.infrastructure.http.features.reference.dto.ReferenceListResponseDto
+import eu.ejdr.infrastructure.http.features.reference.dto.StatBonusDto
 import eu.ejdr.infrastructure.http.features.reference.dto.UpdateReferenceRequestDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -59,26 +61,22 @@ class ReferenceHttpRepository(
 
     override suspend fun create(
         type: ReferenceType,
-        name: String,
         groupId: String,
-        stat: String?,
-        bonus: Int?,
-        competenceIds: List<String>,
-        protectionPoints: Int?,
-        description: String?,
+        form: ReferenceItemForm,
     ): Result<ReferenceItem, ReferenceError> =
         runCatchingCancellable {
             val response = client.post("${config.baseUrl}/reference/${type.slug}") {
                 contentType(ContentType.Application.Json)
                 setBody(
                     CreateReferenceRequestDto(
-                        name = name,
+                        name = form.name,
                         groupId = groupId,
-                        stat = stat,
-                        bonus = bonus,
-                        competenceIds = competenceIds.ifEmpty { null },
-                        protectionPoints = protectionPoints,
-                        description = description,
+                        stat = form.stat,
+                        bonus = form.bonus,
+                        statBonuses = form.toStatBonusDtos(),
+                        competenceIds = form.competenceIds.ifEmpty { null },
+                        protectionPoints = form.protectionPoints,
+                        description = form.description,
                     ),
                 )
             }
@@ -92,26 +90,22 @@ class ReferenceHttpRepository(
     override suspend fun update(
         type: ReferenceType,
         itemId: String,
-        name: String,
         groupId: String,
-        stat: String?,
-        bonus: Int?,
-        competenceIds: List<String>,
-        protectionPoints: Int?,
-        description: String?,
+        form: ReferenceItemForm,
     ): Result<ReferenceItem, ReferenceError> =
         runCatchingCancellable {
             val response = client.put("${config.baseUrl}/reference/${type.slug}/$itemId") {
                 contentType(ContentType.Application.Json)
                 setBody(
                     UpdateReferenceRequestDto(
-                        name = name,
+                        name = form.name,
                         groupId = groupId,
-                        stat = stat,
-                        bonus = bonus,
-                        competenceIds = competenceIds.ifEmpty { null },
-                        protectionPoints = protectionPoints,
-                        description = description,
+                        stat = form.stat,
+                        bonus = form.bonus,
+                        statBonuses = form.toStatBonusDtos(),
+                        competenceIds = form.competenceIds.ifEmpty { null },
+                        protectionPoints = form.protectionPoints,
+                        description = form.description,
                     ),
                 )
             }
@@ -121,6 +115,14 @@ class ReferenceHttpRepository(
                 failure(response)
             }
         }.getOrElse { Result.Failure(ReferenceError.Network) }
+
+    /**
+     * Bonus du peuple en DTO, ou `null` s'il n'y en a aucun — même convention que `competenceIds` :
+     * un champ absent plutôt qu'un tableau vide, pour ne pas envoyer de bruit sur les types qui ne
+     * portent pas de bonus multiples.
+     */
+    private fun ReferenceItemForm.toStatBonusDtos(): List<StatBonusDto>? =
+        statBonuses.map { StatBonusDto(it.stat, it.bonus) }.ifEmpty { null }
 
     override suspend fun delete(
         type: ReferenceType,
