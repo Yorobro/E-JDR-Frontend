@@ -1,5 +1,6 @@
 package eu.ejdr.application.features.reference.abstraction.repository
 
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
@@ -22,19 +23,13 @@ interface ReferenceRepository {
     /**
      * Crée un élément dans le catalogue du type donné, pour le groupe actif (admin requis).
      *
-     * [stat]/[bonus]/[competenceIds] ne concernent que les formations/peuples (et les compétences
-     * pour la seule formation) ; [protectionPoints] ne concerne que les armures ; [description] ne
-     * concerne que les sorts/miracles ; les autres types passent `null`/`emptyList`.
+     * Les champs du [form] ne concernent qu'une partie des types (cf. [ReferenceItemForm]) ; les
+     * autres sont ignorés par le serveur.
      */
     suspend fun create(
         type: ReferenceType,
-        name: String,
         groupId: String,
-        stat: String? = null,
-        bonus: Int? = null,
-        competenceIds: List<String> = emptyList(),
-        protectionPoints: Int? = null,
-        description: String? = null,
+        form: ReferenceItemForm,
     ): Result<ReferenceItem, ReferenceError>
 
     /**
@@ -44,13 +39,8 @@ interface ReferenceRepository {
     suspend fun update(
         type: ReferenceType,
         itemId: String,
-        name: String,
         groupId: String,
-        stat: String? = null,
-        bonus: Int? = null,
-        competenceIds: List<String> = emptyList(),
-        protectionPoints: Int? = null,
-        description: String? = null,
+        form: ReferenceItemForm,
     ): Result<ReferenceItem, ReferenceError>
 
     /** Supprime un élément du catalogue. */
