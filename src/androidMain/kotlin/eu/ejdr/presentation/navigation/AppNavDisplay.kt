@@ -16,6 +16,7 @@ import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.SessionStatus
@@ -63,15 +64,21 @@ fun AppNavDisplay(
 
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.weight(1f)) {
-            // Décorateurs : on garde le défaut de NavDisplay
-            // (rememberSaveableStateHolderNavEntryDecorator). La rétention des ViewModels
-            // par destination (trio Saveable + SavedState + ViewModelStore) sera finalisée
-            // plus tard ; sans elle, koinViewModel résout contre le ViewModelStore de
-            // l'Activity (partagé) — suffisant pour un écran auth à la fois.
             // Changement de page instantané : aucune transition (pas de fondu ni de glissement).
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
+                // `entryDecorators` REMPLACE la liste par défaut de NavDisplay : il faut donc
+                // réinjecter le SaveableStateHolder, sinon on perd `rememberSaveable` et les
+                // positions de défilement. Le premier de la liste est le plus externe.
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    // Sans lui, tous les ViewModels partagent le ViewModelStore de l'Activity et
+                    // sont mis en cache par CLASSE : ReferenceListViewModel devenait un singleton
+                    // de fait et le premier type ouvert gagnait pour toute la session (titre
+                    // « Armures », contenu « Armes »). Idem campagne/fiche/groupe/session.
+                    rememberEjdrViewModelStoreNavEntryDecorator(),
+                ),
                 transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
                 popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
                 // fallback : toute destination encore sans rendu Android affiche ComingSoon
