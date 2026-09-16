@@ -1,11 +1,6 @@
 package eu.ejdr.presentation.shared.component.atomic
 
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,6 +11,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import eu.ejdr.presentation.shared.component.base.AppIconButton
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -31,6 +28,7 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * @param modifier Modifier Compose appliqué au champ.
  * @param errorMessage Message d'erreur ; non nul met le champ en état d'erreur.
  * @param enabled Active ou désactive la saisie.
+ * @param leadingIcon Icône optionnelle au début du champ.
  */
 @Composable
 fun AppPasswordField(
@@ -54,10 +52,14 @@ fun AppPasswordField(
         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
         trailingContent = {
-            IconButton(onClick = { visible = !visible }, enabled = enabled) {
-                Icon(
-                    imageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                    contentDescription = if (visible) "Masquer le mot de passe" else "Afficher le mot de passe",
+            AppIconButton(
+                onClick = { visible = !visible },
+                contentDescription = if (visible) "Masquer le mot de passe" else "Afficher le mot de passe",
+                enabled = enabled,
+            ) {
+                AppIcon(
+                    imageVector = if (visible) AppIcons.VisibilityOff else AppIcons.Visibility,
+                    contentDescription = null,
                     tint = AppTheme.colors.muted,
                 )
             }

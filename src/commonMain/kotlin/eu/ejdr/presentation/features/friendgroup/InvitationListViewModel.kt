@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.AcceptInvitationUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeclineInvitationUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyInvitationsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.friendgroup.entities.GroupInvitation
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,6 +17,7 @@ class InvitationListViewModel(
     private val listMyInvitations: ListMyInvitationsUseCase,
     private val acceptInvitation: AcceptInvitationUseCase,
     private val declineInvitation: DeclineInvitationUseCase,
+    private val invalidationBus: InvalidationBus,
 ) : ViewModel() {
 
     private val _invitations = MutableStateFlow<List<GroupInvitation>>(emptyList())
@@ -29,6 +31,11 @@ class InvitationListViewModel(
 
     init {
         load()
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                if (invalidation.resource == "invitations") load()
+            }
+        }
     }
 
     fun load() {

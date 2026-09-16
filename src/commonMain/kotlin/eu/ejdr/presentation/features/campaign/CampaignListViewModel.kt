@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.campaign.entities.Campaign
@@ -33,6 +35,8 @@ class CampaignListViewModel(
     private val createCampaign: CreateCampaignUseCase,
     private val deleteCampaign: DeleteCampaignUseCase,
     private val uiMessageBus: UiMessageBus,
+    private val invalidationBus: InvalidationBus,
+    private val subscriptions: RealtimeSubscriptions,
 ) : ViewModel() {
 
     private val _campaigns = MutableStateFlow<List<Campaign>>(emptyList())
@@ -48,10 +52,26 @@ class CampaignListViewModel(
     private val _needsGroup = MutableStateFlow(false)
     val needsGroup: StateFlow<Boolean> = _needsGroup.asStateFlow()
 
+    private var currentGroupChannel: String? = null
+
     init {
         viewModelScope.launch {
-            activeGroupId.collect { groupId -> reload(groupId) }
+            activeGroupId.collect { groupId ->
+                currentGroupChannel?.let { subscriptions.unsubscribe(it) }
+                currentGroupChannel = groupId?.let { "group:$it" }?.also { subscriptions.subscribe(it) }
+                reload(groupId)
+            }
         }
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                if (invalidation.resource == "campaigns") load()
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        currentGroupChannel?.let { subscriptions.unsubscribe(it) }
     }
 
     /** Recharge la liste des campagnes du groupe actif (ou vide + onboarding si aucun groupe). */

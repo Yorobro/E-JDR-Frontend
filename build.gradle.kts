@@ -34,6 +34,13 @@ fun loadAppConfig(): Properties {
     return props
 }
 
+fun computeVersionCode(version: String): Int {
+    val parts = version.split(".").map { it.toIntOrNull() ?: 0 }
+    return parts.getOrElse(0) { 0 } * 10000 +
+        parts.getOrElse(1) { 0 } * 100 +
+        parts.getOrElse(2) { 0 }
+}
+
 val generateBuildConfig by tasks.registering {
     val appVersion = project.version.toString()
     val appConfig = loadAppConfig()
@@ -87,9 +94,11 @@ kotlin {
             dependencies {
                 implementation(compose.runtime)
                 implementation(compose.foundation)
-                implementation(compose.material3)
-                implementation(compose.materialIconsExtended)
                 implementation(compose.components.resources)
+
+                // Icônes Lucide (Compose Multiplatform) — jeu d'icônes du design system, mappé
+                // sous les mêmes noms dans AppIcons. Seules les icônes référencées sont conservées.
+                implementation("com.composables:icons-lucide-cmp:2.2.1")
 
                 implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
                 implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
@@ -160,13 +169,28 @@ android {
         applicationId = "eu.ejdr"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
+        versionCode = computeVersionCode(project.version.toString())
         versionName = project.version.toString()
+    }
+
+    signingConfigs {
+        create("release") {
+            val keystorePath = System.getenv("KEYSTORE_PATH")
+            if (!keystorePath.isNullOrEmpty()) {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (!System.getenv("KEYSTORE_PATH").isNullOrEmpty()) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

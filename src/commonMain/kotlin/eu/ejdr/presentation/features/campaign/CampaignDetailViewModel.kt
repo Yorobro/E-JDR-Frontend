@@ -8,6 +8,8 @@ import eu.ejdr.application.features.charactersheet.abstraction.usecase.AcceptCha
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCharacterUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.shared.Result
@@ -56,6 +58,8 @@ class CampaignDetailViewModel(
     private val listCampaigns: ListCampaignsUseCase,
     private val getCurrentUser: GetCurrentUserUseCase,
     private val uiMessageBus: UiMessageBus,
+    private val invalidationBus: InvalidationBus,
+    private val subscriptions: RealtimeSubscriptions,
 ) : ViewModel() {
 
     private val _characters = MutableStateFlow<List<CharacterSheet>>(emptyList())
@@ -77,6 +81,20 @@ class CampaignDetailViewModel(
     init {
         load()
         resolveGameMaster()
+        activeGroupId.value?.let { subscriptions.subscribe("group:$it") }
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                when (invalidation.resource) {
+                    "campaign-pending-characters" -> loadPending()
+                    "sessions" -> loadSessions()
+                }
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        activeGroupId.value?.let { subscriptions.unsubscribe("group:$it") }
     }
 
     /** Recharge les fiches acceptées, les demandes en attente et les sessions. */

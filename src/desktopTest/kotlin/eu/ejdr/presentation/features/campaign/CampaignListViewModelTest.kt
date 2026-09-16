@@ -3,7 +3,9 @@ package eu.ejdr.presentation.features.campaign
 import eu.ejdr.application.features.campaign.abstraction.usecase.CreateCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.DeleteCampaignUseCase
 import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.shared.feedback.UiMessageBus
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import eu.ejdr.application.shared.feedback.UiMessageTone
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.campaign.entities.Campaign
@@ -51,6 +53,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -71,6 +79,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -90,6 +104,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
         assertEquals("c-g-1", vm.campaigns.value.first().id)
@@ -108,6 +128,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -129,6 +155,12 @@ class CampaignListViewModelTest {
             },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -148,6 +180,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Failure(CampaignError.InvalidName) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -170,6 +208,12 @@ class CampaignListViewModelTest {
                 Result.Success(Unit)
             },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -189,6 +233,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("x")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Failure(CampaignError.AccessDenied) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -205,6 +255,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Success(campaign("c-2")) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 
@@ -222,6 +278,12 @@ class CampaignListViewModelTest {
             createCampaign = CreateCampaignUseCase { _, _ -> Result.Failure(CampaignError.InvalidName) },
             deleteCampaign = DeleteCampaignUseCase { Result.Success(Unit) },
             uiMessageBus = uiMessageBus,
+            invalidationBus = InMemoryInvalidationBus(),
+            subscriptions = object : RealtimeSubscriptions {
+                override fun subscribe(channel: String) = Unit
+                override fun unsubscribe(channel: String) = Unit
+                override suspend fun resubscribeAll() = Unit
+            },
         )
         advanceUntilIdle()
 

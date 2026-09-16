@@ -1,16 +1,12 @@
 package eu.ejdr.presentation.shared.component.atomic
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Text
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.foundation.text.KeyboardOptions
+import eu.ejdr.presentation.shared.component.base.AppTextFieldCore
+import eu.ejdr.presentation.shared.component.molecule.LabeledField
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -19,6 +15,9 @@ import eu.ejdr.presentation.shared.theme.AppTheme
  * Brique de base de tous les champs (texte, mot de passe, nombre). Composant bête :
  * affiche une valeur, remonte chaque modification, et gère visuellement les états
  * focus, erreur et désactivé via les couleurs du thème.
+ *
+ * Le libellé est rendu au-dessus du champ et le message d'erreur en dessous via
+ * [LabeledField] ; le champ lui-même ([AppTextFieldCore]) ne duplique pas ces éléments.
  *
  * @param value Valeur courante du champ.
  * @param onValueChange Callback déclenché à chaque modification.
@@ -48,41 +47,20 @@ fun AppTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
 ) {
-    val colors = AppTheme.colors
-    val isError = errorMessage != null
-    Column(modifier = modifier) {
-        OutlinedTextField(
+    LabeledField(label = label, modifier = modifier, errorMessage = errorMessage) {
+        AppTextFieldCore(
             value = value,
             onValueChange = onValueChange,
-            label = { Text(label) },
-            placeholder = placeholder?.let { { Text(it) } },
-            isError = isError,
+            placeholder = placeholder,
             enabled = enabled,
+            isError = errorMessage != null,
             singleLine = singleLine,
-            leadingIcon = leadingIcon?.let { { Icon(it, contentDescription = null) } },
-            trailingIcon = trailingContent,
+            leadingContent = leadingIcon?.let { icon ->
+                { AppIcon(icon, contentDescription = null, tint = AppTheme.colors.muted) }
+            },
+            trailingContent = trailingContent,
             visualTransformation = visualTransformation,
             keyboardOptions = keyboardOptions,
-            shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
-            colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = colors.primary,
-                unfocusedBorderColor = colors.border,
-                disabledBorderColor = colors.beige,
-                errorBorderColor = colors.danger,
-                focusedLabelColor = colors.primary,
-                unfocusedLabelColor = colors.textSecondary,
-                cursorColor = colors.primary,
-                focusedTextColor = colors.text,
-                unfocusedTextColor = colors.text,
-                disabledTextColor = colors.muted,
-            ),
         )
-        if (isError) {
-            AppText(
-                text = errorMessage!!,
-                style = AppTextStyle.Caption,
-                color = colors.danger,
-            )
-        }
     }
 }

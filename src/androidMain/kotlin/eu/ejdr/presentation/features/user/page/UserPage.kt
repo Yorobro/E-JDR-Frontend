@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.presentation.shared.component.atomic.AppDivider
+import eu.ejdr.presentation.shared.component.base.AppSurface
+import eu.ejdr.presentation.shared.theme.AppTreatment
+import eu.ejdr.presentation.shared.theme.ProvideTreatment
 import eu.ejdr.application.features.auth.abstraction.usecase.ChangeEmailUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.ChangePasswordUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
@@ -58,19 +60,21 @@ fun UserPage(
         viewModel.sessionExpired.collect { onSessionExpired() }
     }
 
-    ProfileDialogs(
-        editState = editState,
-        onEmailConfirm = viewModel::changeEmail,
-        onPasswordConfirm = viewModel::changePassword,
-        onResetEditState = viewModel::resetEditState,
-    ) { onChangeEmail, onChangePassword ->
-        ProfileCard(
-            profile = profile,
-            onChangeEmail = onChangeEmail,
-            onChangePassword = onChangePassword,
-            onLogout = onLogout,
-            modifier = modifier,
-        )
+    ProvideTreatment(AppTreatment.Rich) {
+        ProfileDialogs(
+            editState = editState,
+            onEmailConfirm = viewModel::changeEmail,
+            onPasswordConfirm = viewModel::changePassword,
+            onResetEditState = viewModel::resetEditState,
+        ) { onChangeEmail, onChangePassword ->
+            ProfileCard(
+                profile = profile,
+                onChangeEmail = onChangeEmail,
+                onChangePassword = onChangePassword,
+                onLogout = onLogout,
+                modifier = modifier,
+            )
+        }
     }
 }
 
@@ -127,12 +131,11 @@ private fun ProfileCard(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Surface(
+        AppSurface(
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
             color = AppTheme.colors.surface,
-            shadowElevation = 2.dp,
-            tonalElevation = 0.dp,
+            elevation = 2.dp,
         ) {
             Column(
                 modifier = Modifier.fillMaxWidth().padding(AppTheme.dimens.xl),
@@ -144,7 +147,7 @@ private fun ProfileCard(
                     AppText(text = current.pseudo, style = AppTextStyle.Subtitle)
                     AppText(text = current.email, style = AppTextStyle.Body, color = AppTheme.colors.textSecondary)
                 }
-                HorizontalDivider(modifier = Modifier.padding(vertical = AppTheme.dimens.xs), color = AppTheme.colors.border)
+                AppDivider(modifier = Modifier.padding(vertical = AppTheme.dimens.xs))
                 ProfileActions(onChangeEmail = onChangeEmail, onChangePassword = onChangePassword, onLogout = onLogout)
             }
         }
@@ -161,8 +164,8 @@ private fun ProfileActions(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
     ) {
-        AppButton(label = "Changer d'email", onClick = onChangeEmail, modifier = Modifier.fillMaxWidth(), variant = ButtonVariant.Secondary)
-        AppButton(label = "Changer le mot de passe", onClick = onChangePassword, modifier = Modifier.fillMaxWidth(), variant = ButtonVariant.Secondary)
-        AppButton(label = "Déconnexion", onClick = onLogout, modifier = Modifier.fillMaxWidth(), variant = ButtonVariant.Danger)
+        AppButton(label = "Changer d'email", onClick = onChangeEmail, fillWidth = true, variant = ButtonVariant.Secondary)
+        AppButton(label = "Changer le mot de passe", onClick = onChangePassword, fillWidth = true, variant = ButtonVariant.Secondary)
+        AppButton(label = "Déconnexion", onClick = onLogout, fillWidth = true, variant = ButtonVariant.Danger)
     }
 }

@@ -5,11 +5,13 @@ import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMember
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.InviteMemberUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.RemoveMemberUseCase
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.auth.entities.User
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroupDetail
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
 import eu.ejdr.domain.features.friendgroup.error.FriendGroupError
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -58,6 +60,12 @@ class GroupDetailViewModelTest {
         removeMember,
         changeMemberRole,
         getCurrentUser,
+        InMemoryInvalidationBus(),
+        object : RealtimeSubscriptions {
+            override fun subscribe(channel: String) = Unit
+            override fun unsubscribe(channel: String) = Unit
+            override suspend fun resubscribeAll() = Unit
+        },
     )
 
     @Test

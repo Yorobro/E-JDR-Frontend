@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import eu.ejdr.presentation.shared.component.base.AppSpinner
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -16,6 +16,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.AcceptInvitationUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeclineInvitationUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyInvitationsUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.presentation.features.friendgroup.InvitationListViewModel
 import eu.ejdr.presentation.features.friendgroup.component.InvitationCard
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -31,6 +32,7 @@ fun InvitationsPage(modifier: Modifier = Modifier) {
             get<ListMyInvitationsUseCase>(),
             get<AcceptInvitationUseCase>(),
             get<DeclineInvitationUseCase>(),
+            get<InvalidationBus>(),
         )
     }
 
@@ -47,10 +49,7 @@ fun InvitationsPage(modifier: Modifier = Modifier) {
         when {
             isLoading && invitations.isEmpty() ->
                 Box(modifier = Modifier.fillMaxSize()) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center),
-                        color = AppTheme.colors.primary,
-                    )
+                    AppSpinner(modifier = Modifier.align(Alignment.Center))
                 }
 
             invitations.isEmpty() ->

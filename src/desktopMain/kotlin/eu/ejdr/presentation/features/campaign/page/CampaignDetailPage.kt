@@ -8,8 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
+import eu.ejdr.presentation.shared.icons.AppIcons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +26,8 @@ import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListCampaignCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ListPendingCharactersUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.RefuseCharacterUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.presentation.features.campaign.CampaignDetailViewModel
@@ -77,6 +78,8 @@ fun CampaignDetailPage(
             listCampaigns = get<ListCampaignsUseCase>(),
             getCurrentUser = get<GetCurrentUserUseCase>(),
             uiMessageBus = get<UiMessageBus>(),
+            invalidationBus = get<InvalidationBus>(),
+            subscriptions = get<RealtimeSubscriptions>(),
         )
     }
     val characters by viewModel.characters.collectAsStateWithLifecycle()
@@ -219,7 +222,7 @@ private fun SessionsSection(
         AppButton(
             label = "Ajouter une session",
             onClick = onAddRequest,
-            leadingIcon = Icons.Filled.Add,
+            leadingIcon = AppIcons.Add,
         )
     }
     if (sessions.isEmpty()) {

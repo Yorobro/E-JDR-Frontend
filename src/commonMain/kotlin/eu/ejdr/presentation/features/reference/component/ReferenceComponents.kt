@@ -11,10 +11,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -30,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.presentation.features.charactersheet.component.StatKeys
+import eu.ejdr.presentation.shared.component.base.AppIconButton
 import eu.ejdr.presentation.shared.component.atomic.AppCheckbox
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
@@ -39,6 +36,7 @@ import eu.ejdr.presentation.shared.component.atomic.AppTextField
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.ButtonVariant
 import eu.ejdr.presentation.shared.component.molecule.FormError
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.component.organism.AppDialog
 import eu.ejdr.presentation.shared.theme.AppTheme
@@ -118,19 +116,27 @@ fun ReferenceCard(
                 ReferenceCardDetails(item = item, type = type, competenceNames = competenceNames)
             }
             if (onEdit != null) {
-                IconButton(onClick = onEdit, modifier = Modifier.align(Alignment.TopStart)) {
+                AppIconButton(
+                    onClick = onEdit,
+                    contentDescription = "Modifier",
+                    modifier = Modifier.align(Alignment.TopStart),
+                ) {
                     AppIcon(
-                        imageVector = Icons.Filled.Edit,
-                        contentDescription = "Modifier",
+                        imageVector = AppIcons.Edit,
+                        contentDescription = null,
                         tint = AppTheme.colors.primary,
                     )
                 }
             }
             if (onDelete != null) {
-                IconButton(onClick = onDelete, modifier = Modifier.align(Alignment.TopEnd)) {
+                AppIconButton(
+                    onClick = onDelete,
+                    contentDescription = "Supprimer",
+                    modifier = Modifier.align(Alignment.TopEnd),
+                ) {
                     AppIcon(
-                        imageVector = Icons.Filled.Delete,
-                        contentDescription = "Supprimer",
+                        imageVector = AppIcons.Delete,
+                        contentDescription = null,
                         tint = AppTheme.colors.danger,
                     )
                 }

@@ -9,7 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.CircularProgressIndicator
+import eu.ejdr.presentation.shared.component.base.AppSpinner
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -103,7 +103,7 @@ private fun SplashScreen() {
         ) {
             AppBrandMark()
             AppText(text = "E-JDR", style = AppTextStyle.Display)
-            CircularProgressIndicator(color = AppTheme.colors.primary)
+            AppSpinner()
         }
     }
 }

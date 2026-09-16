@@ -7,6 +7,8 @@ import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMember
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.InviteMemberUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.RemoveMemberUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroupDetail
@@ -22,6 +24,8 @@ class GroupDetailViewModel(
     private val removeMember: RemoveMemberUseCase,
     private val changeMemberRole: ChangeMemberRoleUseCase,
     private val getCurrentUser: GetCurrentUserUseCase,
+    private val invalidationBus: InvalidationBus,
+    private val subscriptions: RealtimeSubscriptions,
 ) : ViewModel() {
 
     private val _detail = MutableStateFlow<FriendGroupDetail?>(null)
@@ -48,6 +52,17 @@ class GroupDetailViewModel(
                 is Result.Failure -> Unit
             }
         }
+        subscriptions.subscribe("group:$groupId")
+        viewModelScope.launch {
+            invalidationBus.events.collect { invalidation ->
+                if (invalidation.resource == "group-members" && invalidation.scopeId == groupId) load()
+            }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        subscriptions.unsubscribe("group:$groupId")
     }
 
     fun load() {

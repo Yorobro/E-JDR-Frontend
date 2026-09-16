@@ -1,10 +1,15 @@
 package eu.ejdr.presentation.shared.component.atomic
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import eu.ejdr.presentation.shared.component.base.AppSurface
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.theme.AppTheme
 
 /**
@@ -23,15 +28,23 @@ fun AppFab(
     contentDescription: String,
     modifier: Modifier = Modifier,
 ) {
-    FloatingActionButton(
-        onClick = onClick,
-        modifier = modifier,
-        containerColor = AppTheme.colors.primary,
+    AppSurface(
+        modifier = modifier.size(56.dp),
+        shape = CircleShape,
+        color = AppTheme.colors.primary,
         contentColor = AppTheme.colors.onPrimary,
+        elevation = AppTheme.dimens.elevationLg,
+        onClick = onClick,
     ) {
-        AppIcon(
-            imageVector = Icons.Filled.Add,
-            contentDescription = contentDescription,
-        )
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center,
+        ) {
+            AppIcon(
+                imageVector = AppIcons.Add,
+                contentDescription = contentDescription,
+                tint = AppTheme.colors.onPrimary,
+            )
+        }
     }
 }

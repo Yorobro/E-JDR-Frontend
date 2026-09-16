@@ -13,11 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
+import eu.ejdr.presentation.shared.component.base.AppIconButton
+import eu.ejdr.presentation.shared.component.organism.AppDialog
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
@@ -134,7 +132,7 @@ fun LinkedReferenceSection(
                 label = "Ajouter une ${type.singularLabel}",
                 onClick = { showPicker = true },
                 variant = ButtonVariant.Secondary,
-                leadingIcon = Icons.Filled.Add,
+                leadingIcon = AppIcons.Add,
             )
         }
     }
@@ -218,10 +216,10 @@ private fun LinkedReferenceCard(name: String, onRemove: (() -> Unit)?) {
     ) {
         AppText(text = name, style = AppTextStyle.Body)
         if (onRemove != null) {
-            IconButton(onClick = onRemove) {
+            AppIconButton(onClick = onRemove, contentDescription = "Retirer") {
                 AppIcon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "Retirer",
+                    imageVector = AppIcons.Close,
+                    contentDescription = null,
                     tint = AppTheme.colors.danger,
                 )
             }
@@ -244,33 +242,31 @@ fun ReferencePickerDialog(
     onSelect: (String) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { AppText("Ajouter une ${type.singularLabel}", style = AppTextStyle.Title) },
-        text = {
-            if (options.isEmpty()) {
-                AppText(
-                    text = "Aucun élément disponible. Créez-en dans « Mes éléments ».",
-                    color = AppTheme.colors.muted,
-                )
-            } else {
-                LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
-                    items(options, key = { it.id }) { item ->
-                        AppText(
-                            text = item.name,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onSelect(item.id) }
-                                .padding(AppTheme.dimens.sm),
-                        )
-                    }
+    AppDialog(
+        title = "Ajouter une ${type.singularLabel}",
+        onDismiss = onDismiss,
+        confirmLabel = "Fermer",
+        onConfirm = onDismiss,
+        confirmVariant = ButtonVariant.Ghost,
+        dismissLabel = null,
+    ) {
+        if (options.isEmpty()) {
+            AppText(
+                text = "Aucun élément disponible. Créez-en dans « Mes éléments ».",
+                color = AppTheme.colors.muted,
+            )
+        } else {
+            LazyColumn(modifier = Modifier.heightIn(max = 320.dp)) {
+                items(options, key = { it.id }) { item ->
+                    AppText(
+                        text = item.name,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(item.id) }
+                            .padding(AppTheme.dimens.sm),
+                    )
                 }
             }
-        },
-        confirmButton = {
-            AppButton(label = "Fermer", onClick = onDismiss, variant = ButtonVariant.Ghost)
-        },
-        containerColor = AppTheme.colors.surface,
-        shape = RoundedCornerShape(AppTheme.dimens.radiusMd),
-    )
+        }
+    }
 }

@@ -6,6 +6,7 @@ import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyGroups
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.friendgroup.entities.FriendGroup
 import eu.ejdr.domain.features.friendgroup.error.FriendGroupError
+import eu.ejdr.infrastructure.realtime.InMemoryInvalidationBus
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
@@ -37,6 +38,7 @@ class GroupListViewModelTest {
             createGroup = CreateGroupUseCase { Result.Success(group("g2")) },
             deleteGroup = DeleteGroupUseCase { Result.Success(Unit) },
             uiMessageBus = io.mockk.mockk(relaxed = true),
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 
@@ -55,6 +57,7 @@ class GroupListViewModelTest {
             },
             deleteGroup = DeleteGroupUseCase { Result.Success(Unit) },
             uiMessageBus = io.mockk.mockk(relaxed = true),
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 
@@ -73,6 +76,7 @@ class GroupListViewModelTest {
             createGroup = CreateGroupUseCase { Result.Failure(FriendGroupError.InvalidGroupName) },
             deleteGroup = DeleteGroupUseCase { Result.Success(Unit) },
             uiMessageBus = io.mockk.mockk(relaxed = true),
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 
@@ -93,6 +97,7 @@ class GroupListViewModelTest {
                 Result.Success(Unit)
             },
             uiMessageBus = io.mockk.mockk(relaxed = true),
+            invalidationBus = InMemoryInvalidationBus(),
         )
         advanceUntilIdle()
 

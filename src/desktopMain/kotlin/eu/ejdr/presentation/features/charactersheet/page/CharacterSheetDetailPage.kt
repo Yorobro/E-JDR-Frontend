@@ -42,6 +42,8 @@ import eu.ejdr.presentation.shared.component.molecule.FormError
 import eu.ejdr.presentation.shared.component.molecule.RemoteChangeBanner
 import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.theme.AppTheme
+import eu.ejdr.presentation.shared.theme.AppTreatment
+import eu.ejdr.presentation.shared.theme.ProvideTreatment
 import org.koin.compose.koinInject
 
 private val TabTitles = listOf("Identité", "Combat", "Inventaire")
@@ -106,32 +108,35 @@ fun CharacterSheetDetailPage(
         onUnlink = viewModel::unlinkRef,
     )
 
-    Column(
-        modifier = modifier.fillMaxSize().padding(AppTheme.dimens.xl),
-        verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
-    ) {
-        AppText(text = sheetTitle(name, sheet), style = AppTextStyle.Display)
-        FormError(message = error)
-        if (sheetChangedRemotely) {
-            RemoteChangeBanner(
-                onReload = viewModel::reloadFromRemote,
-                onDismiss = viewModel::dismissRemoteChange,
-            )
-        }
+    // Écran vitrine : traitement « grimoire assumé » (reliefs/bordures dorés côté AppSurface/AppButton).
+    ProvideTreatment(AppTreatment.Rich) {
+        Column(
+            modifier = modifier.fillMaxSize().padding(AppTheme.dimens.xl),
+            verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.lg),
+        ) {
+            AppText(text = sheetTitle(name, sheet), style = AppTextStyle.Display)
+            FormError(message = error)
+            if (sheetChangedRemotely) {
+                RemoteChangeBanner(
+                    onReload = viewModel::reloadFromRemote,
+                    onDismiss = viewModel::dismissRemoteChange,
+                )
+            }
 
-        sheet?.let { loaded ->
-            CharacterSheetDetailContent(
-                sheet = loaded,
-                refs = refs,
-                isEditing = isEditing,
-                isSaving = isLoading,
-                isExporting = isExporting,
-                canModify = canEdit || isOwner,
-                onStartEdit = viewModel::startEdit,
-                onCancelEdit = viewModel::cancelEdit,
-                onSave = viewModel::save,
-                onExport = viewModel::export,
-            )
+            sheet?.let { loaded ->
+                CharacterSheetDetailContent(
+                    sheet = loaded,
+                    refs = refs,
+                    isEditing = isEditing,
+                    isSaving = isLoading,
+                    isExporting = isExporting,
+                    canModify = canEdit || isOwner,
+                    onStartEdit = viewModel::startEdit,
+                    onCancelEdit = viewModel::cancelEdit,
+                    onSave = viewModel::save,
+                    onExport = viewModel::export,
+                )
+            }
         }
     }
 }
@@ -218,25 +223,26 @@ private fun DetailActionBar(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
         if (canModify && isEditing) {
-            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary)
+            AppButton(label = "Annuler", onClick = onCancelEdit, variant = ButtonVariant.Secondary, fillWidth = true)
             AppButton(
                 label = "Enregistrer",
                 onClick = onSave,
                 enabled = canSave,
                 loading = isSaving,
-                modifier = Modifier.fillMaxWidth(),
+                fillWidth = true,
             )
         }
         // Hors édition : « Modifier » (si autorisé) et « Exporter » (toujours, c'est une lecture).
         if (!isEditing) {
             if (canModify) {
-                AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary)
+                AppButton(label = "Modifier", onClick = onStartEdit, variant = ButtonVariant.Secondary, fillWidth = true)
             }
             AppButton(
                 label = "Exporter",
                 onClick = onExport,
                 variant = ButtonVariant.Secondary,
                 loading = isExporting,
+                fillWidth = true,
             )
         }
     }

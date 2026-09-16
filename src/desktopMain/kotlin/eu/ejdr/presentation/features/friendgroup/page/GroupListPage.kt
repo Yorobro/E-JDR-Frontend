@@ -8,9 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Group
+import eu.ejdr.presentation.shared.icons.AppIcons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.CreateGroupUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.DeleteGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.ListMyGroupsUseCase
@@ -53,6 +52,7 @@ fun GroupListPage(
             get<CreateGroupUseCase>(),
             get<DeleteGroupUseCase>(),
             get<UiMessageBus>(),
+            get<InvalidationBus>(),
         )
     }
     val activeGroupState = koinInject<ActiveGroupState>()
@@ -72,13 +72,17 @@ fun GroupListPage(
             PageHeader(
                 title = "Groupes",
                 subtitle = "${groups.size} ${if (groups.size > 1) "groupes" else "groupe"}",
-                action = {
-                    AppButton(
-                        label = "Nouveau groupe",
-                        onClick = { showCreate = true },
-                        leadingIcon = Icons.Default.Add,
-                    )
-                },
+                // Un seul bouton de création à la fois : le header ne l'affiche que si la liste
+                // n'est pas vide ; sinon c'est l'EmptyState qui porte le call-to-action.
+                action = if (groups.isNotEmpty()) {
+                    {
+                        AppButton(
+                            label = "Nouveau groupe",
+                            onClick = { showCreate = true },
+                            leadingIcon = AppIcons.Add,
+                        )
+                    }
+                } else null,
             )
             FormError(message = error)
 
@@ -89,7 +93,7 @@ fun GroupListPage(
                 groups.isEmpty() ->
                     Box(modifier = Modifier.fillMaxSize()) {
                         EmptyState(
-                            icon = Icons.Default.Group,
+                            icon = AppIcons.Group,
                             title = "Aucun groupe",
                             message = "Crée un groupe pour jouer avec tes amis.",
                             actionLabel = "Créer un groupe",

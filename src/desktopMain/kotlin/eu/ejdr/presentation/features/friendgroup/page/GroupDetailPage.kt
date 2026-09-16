@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import eu.ejdr.presentation.shared.component.base.AppSpinner
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,6 +24,8 @@ import eu.ejdr.application.features.friendgroup.abstraction.usecase.ChangeMember
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.InviteMemberUseCase
 import eu.ejdr.application.features.friendgroup.abstraction.usecase.RemoveMemberUseCase
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.presentation.features.friendgroup.GroupDetailViewModel
 import eu.ejdr.presentation.features.friendgroup.component.InviteMemberDialog
 import eu.ejdr.presentation.features.friendgroup.component.MemberCard
@@ -49,6 +51,8 @@ fun GroupDetailPage(
             get<RemoveMemberUseCase>(),
             get<ChangeMemberRoleUseCase>(),
             get<GetCurrentUserUseCase>(),
+            get<InvalidationBus>(),
+            get<RealtimeSubscriptions>(),
         )
     }
 
@@ -74,10 +78,7 @@ fun GroupDetailPage(
             when {
                 isLoading && detail == null ->
                     Box(modifier = Modifier.fillMaxSize()) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                            color = AppTheme.colors.primary,
-                        )
+                        AppSpinner(modifier = Modifier.align(Alignment.Center))
                     }
 
                 detail != null -> {

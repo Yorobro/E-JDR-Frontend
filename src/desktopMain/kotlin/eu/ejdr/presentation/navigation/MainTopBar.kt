@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
+import eu.ejdr.presentation.shared.component.organism.AppTooltip
 import eu.ejdr.presentation.shared.component.organism.AppTopBar
 import org.koin.compose.koinInject
 
@@ -35,5 +36,7 @@ fun MainTopBar(title: String, currentRoute: Route, actions: NavActions) {
         onGroups = { actions.resetTo(Route.Groups) },
         onInvitations = { actions.resetTo(Route.Invitations) },
         onSettings = { actions.resetTo(Route.Settings) },
+        // Desktop : chaque icône seule est nommée par une bulle au survol.
+        wrapAction = { label, content -> AppTooltip(label) { content() } },
     )
 }

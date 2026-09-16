@@ -19,6 +19,10 @@ import androidx.compose.ui.graphics.Color
  * @property onPrimary Couleur du contenu posé sur [primary].
  * @property danger Couleur des erreurs et actions destructives.
  * @property onDanger Couleur du contenu posé sur [danger].
+ * @property accentGradientTop Sommet du dégradé d'accent (plus clair, donne le relief).
+ * @property accentGradientBottom Base du dégradé d'accent (teinte principale).
+ * @property ornament Couleur d'ornement (filets dorés, initiales, reliefs décoratifs).
+ * @property hairline Couleur des filets fins de séparation.
  * @property isDark Vrai si cette palette est sombre : sert de base au [ColorScheme] Material3
  * (darkColorScheme vs lightColorScheme) pour que les composants Material bruts (Surface,
  * NavigationBar, dialogs…) suivent eux aussi le thème.
@@ -35,6 +39,10 @@ data class AppColors(
     val onPrimary: Color,
     val danger: Color,
     val onDanger: Color,
+    val accentGradientTop: Color,
+    val accentGradientBottom: Color,
+    val ornament: Color,
+    val hairline: Color,
     val isDark: Boolean,
 )
 
@@ -51,6 +59,10 @@ fun parchmentColors(): AppColors = AppColors(
     onPrimary = ParchmentPalette.onAccent,
     danger = ParchmentPalette.rust,
     onDanger = ParchmentPalette.onAccent,
+    accentGradientTop = ParchmentPalette.boleHi,
+    accentGradientBottom = ParchmentPalette.bole,
+    ornament = ParchmentPalette.gold,
+    hairline = ParchmentPalette.oak,
     isDark = false,
 )
 
@@ -67,6 +79,10 @@ fun taupeColors(): AppColors = AppColors(
     onPrimary = TaupePalette.onAccent,
     danger = TaupePalette.rust,
     onDanger = TaupePalette.onAccent,
+    accentGradientTop = TaupePalette.taupeHi,
+    accentGradientBottom = TaupePalette.taupe,
+    ornament = TaupePalette.taupe,
+    hairline = TaupePalette.border,
     isDark = false,
 )
 
@@ -83,6 +99,10 @@ fun grimoireColors(): AppColors = AppColors(
     onPrimary = GrimoirePalette.onAccent,
     danger = GrimoirePalette.ember,
     onDanger = GrimoirePalette.onDanger,
+    accentGradientTop = GrimoirePalette.brassHi,
+    accentGradientBottom = GrimoirePalette.brass,
+    ornament = GrimoirePalette.brass,
+    hairline = GrimoirePalette.border,
     isDark = true,
 )
 
