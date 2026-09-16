@@ -9,6 +9,7 @@ import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCas
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListMySessionInvitationsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.RespondToInvitationUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.session.entities.Session
@@ -85,6 +86,13 @@ class ListMySessionInvitationsUseCaseImpl(
 ) : ListMySessionInvitationsUseCase {
     override suspend fun invoke(): Result<List<SessionInvitation>, SessionError> =
         repository.listMyInvitations()
+}
+
+class StartSessionUseCaseImpl(
+    private val repository: SessionRepository,
+) : StartSessionUseCase {
+    override suspend fun invoke(sessionId: String): Result<Unit, SessionError> =
+        repository.start(sessionId)
 }
 
 class GetSessionLobbyUseCaseImpl(

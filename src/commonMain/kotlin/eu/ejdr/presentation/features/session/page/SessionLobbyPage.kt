@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -19,6 +20,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
 import eu.ejdr.domain.features.session.entities.LobbyParticipant
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
@@ -65,21 +68,34 @@ fun SessionLobbyPage(
 ) {
     val lobbyState = koinInject<SessionLobbyState>()
     val activeGroupState = koinInject<ActiveGroupState>()
-    // Rend le lobby réactif : abonnement au groupe + rechargement sur `session-participants`.
-    koinViewModel {
+    // Rend le lobby réactif : abonnement au groupe + rechargement sur `session-participants` /
+    // `session-status`, et pilote le démarrage réel de la session (MJ).
+    val viewModel = koinViewModel {
         SessionLobbyViewModel(
             sessionId = sessionId,
             activeGroupId = activeGroupState.activeGroupId,
             getSessionLobby = get<GetSessionLobbyUseCase>(),
+            startSession = get<StartSessionUseCase>(),
             lobbyState = get<SessionLobbyState>(),
             invalidationBus = get<InvalidationBus>(),
             subscriptions = get<RealtimeSubscriptions>(),
+            uiMessageBus = get<UiMessageBus>(),
         )
     }
     val lobby by lobbyState.lobby.collectAsStateWithLifecycle()
     val members by lobbyState.members.collectAsStateWithLifecycle()
     // MJ : commandes visibles (inviter, démarrer). Joueur convié : vue en lecture seule.
     val canManage by lobbyState.canManage.collectAsStateWithLifecycle()
+
+    // Quand la session démarre (ACTIVE) — que ce soit par action du MJ ou par bascule temps réel
+    // côté joueur —, on navigue vers l'écran de jeu puis on acquitte.
+    val sessionStarted by viewModel.sessionStarted.collectAsStateWithLifecycle()
+    LaunchedEffect(sessionStarted) {
+        if (sessionStarted) {
+            onStarted()
+            viewModel.consumeNavigation()
+        }
+    }
 
     val currentLobby = lobby
     if (currentLobby == null) {
@@ -129,10 +145,7 @@ fun SessionLobbyPage(
 
             AppButton(
                 label = "Commencer la session",
-                onClick = {
-                    lobbyState.startSession()
-                    onStarted()
-                },
+                onClick = { viewModel.start() },
                 leadingIcon = AppIcons.Play,
                 modifier = Modifier.fillMaxWidth(),
             )

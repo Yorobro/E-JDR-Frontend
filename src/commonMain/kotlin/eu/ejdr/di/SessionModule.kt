@@ -9,6 +9,7 @@ import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCas
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListMySessionInvitationsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.RespondToInvitationUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
 import eu.ejdr.application.features.session.usecase.CreateLobbyUseCaseImpl
 import eu.ejdr.application.features.session.usecase.CreateSessionUseCaseImpl
@@ -18,6 +19,7 @@ import eu.ejdr.application.features.session.usecase.GetSessionUseCaseImpl
 import eu.ejdr.application.features.session.usecase.ListCampaignSessionsUseCaseImpl
 import eu.ejdr.application.features.session.usecase.ListMySessionInvitationsUseCaseImpl
 import eu.ejdr.application.features.session.usecase.RespondToInvitationUseCaseImpl
+import eu.ejdr.application.features.session.usecase.StartSessionUseCaseImpl
 import eu.ejdr.application.features.session.usecase.UpdateSessionUseCaseImpl
 import eu.ejdr.infrastructure.http.features.session.SessionHttpRepository
 import eu.ejdr.presentation.features.session.SessionLobbyState
@@ -37,6 +39,7 @@ val sessionModule = module {
     single<UpdateSessionUseCase> { UpdateSessionUseCaseImpl(get()) }
     single<DeleteSessionUseCase> { DeleteSessionUseCaseImpl(get()) }
     single<RespondToInvitationUseCase> { RespondToInvitationUseCaseImpl(get()) }
+    single<StartSessionUseCase> { StartSessionUseCaseImpl(get()) }
     single<ListMySessionInvitationsUseCase> { ListMySessionInvitationsUseCaseImpl(get()) }
     single<GetSessionLobbyUseCase> { GetSessionLobbyUseCaseImpl(get()) }
     // État partagé du lobby : hand-off détail → lobby (et futur point d'entrée temps réel).

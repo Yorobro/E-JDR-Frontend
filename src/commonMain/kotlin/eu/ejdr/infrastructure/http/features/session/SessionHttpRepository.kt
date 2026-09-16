@@ -164,6 +164,16 @@ class SessionHttpRepository(
             }
         }.getOrElse { Result.Failure(SessionError.Network) }
 
+    override suspend fun start(sessionId: String): Result<Unit, SessionError> =
+        runCatchingCancellable {
+            val response = client.post("${config.baseUrl}/sessions/$sessionId/start")
+            if (response.status.isSuccess()) {
+                Result.Success(Unit)
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(SessionError.Network) }
+
     /**
      * Lit le corps d'erreur (best-effort) et le traduit en [SessionError] via le mapper.
      *

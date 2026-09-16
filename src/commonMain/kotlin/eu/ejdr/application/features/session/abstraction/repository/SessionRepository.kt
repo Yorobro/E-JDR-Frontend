@@ -104,4 +104,12 @@ interface SessionRepository {
      * @return le [SessionLobby], ou une [SessionError].
      */
     suspend fun getLobby(sessionId: String): Result<SessionLobby, SessionError>
+
+    /**
+     * Démarre réellement la session (transition `LOBBY → ACTIVE`, réservé au MJ côté backend).
+     *
+     * @param sessionId identifiant de la session à démarrer.
+     * @return [Unit] en cas de succès, ou une [SessionError].
+     */
+    suspend fun start(sessionId: String): Result<Unit, SessionError>
 }

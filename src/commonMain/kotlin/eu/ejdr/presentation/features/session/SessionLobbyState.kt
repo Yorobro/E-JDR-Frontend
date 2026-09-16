@@ -100,15 +100,6 @@ class SessionLobbyState(
         uiMessageBus.emit(UiMessage.success("Invitation envoyée"))
     }
 
-    /**
-     * Démarre réellement la session (transition `LOBBY` → `ACTIVE`), une fois tous les joueurs
-     * présents. Le démarrage effectif (endpoint dédié + écran de jeu avec canvas) arrivera dans
-     * une prochaine étape ; pour l'instant on informe l'utilisateur.
-     */
-    fun startSession() {
-        uiMessageBus.emit(UiMessage.success("Le démarrage de la session arrivera dans une prochaine étape."))
-    }
-
     /** Réinitialise le lobby (retour arrière hors du lobby, déconnexion). */
     fun clear() {
         _lobby.value = null

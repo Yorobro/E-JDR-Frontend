@@ -2,6 +2,7 @@ package eu.ejdr.presentation.features.session
 
 import androidx.navigation3.runtime.EntryProviderScope
 import eu.ejdr.presentation.features.session.page.SessionDetailPage
+import eu.ejdr.presentation.features.session.page.SessionGamePage
 import eu.ejdr.presentation.features.session.page.SessionLobbyPage
 import eu.ejdr.presentation.navigation.NavActions
 import eu.ejdr.presentation.navigation.Route
@@ -39,9 +40,24 @@ fun EntryProviderScope<Any>.sessionEntries(actions: NavActions) {
             SessionLobbyPage(
                 sessionId = key.id,
                 title = key.title,
-                // Navigation vers l'écran de jeu (canvas) à câbler dans une prochaine étape.
-                onStarted = {},
+                // Session démarrée : on remplace le lobby par l'écran de jeu dans la pile.
+                onStarted = {
+                    actions.backStack.removeLastOrNull()
+                    actions.backStack.add(Route.SessionGame(key.id, key.title))
+                },
             )
+        }
+    }
+    entry<Route.SessionGame> { key ->
+        AppScaffold(
+            topBar = {
+                AppTopBar(
+                    title = key.title,
+                    onBack = { actions.backStack.removeLastOrNull() },
+                )
+            },
+        ) {
+            SessionGamePage(sessionId = key.id, title = key.title)
         }
     }
 }
