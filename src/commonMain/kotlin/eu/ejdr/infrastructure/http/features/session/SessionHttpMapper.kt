@@ -2,10 +2,12 @@ package eu.ejdr.infrastructure.http.features.session
 
 import eu.ejdr.domain.features.session.entities.LobbyParticipant
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.entities.SessionInvitation
 import eu.ejdr.domain.features.session.entities.SessionLobby
 import eu.ejdr.domain.features.session.error.SessionError
 import eu.ejdr.infrastructure.http.features.session.dto.CreateLobbyResponseDto
 import eu.ejdr.infrastructure.http.features.session.dto.SessionDto
+import eu.ejdr.infrastructure.http.features.session.dto.SessionInvitationDto
 import io.ktor.http.HttpStatusCode
 
 /**
@@ -51,6 +53,22 @@ object SessionHttpMapper {
         )
 
     /**
+     * Convertit une invitation de session reçue de l'API en entité domaine.
+     *
+     * @param dto Invitation JSON désérialisée.
+     * @return La [SessionInvitation] correspondante.
+     */
+    fun toInvitation(dto: SessionInvitationDto): SessionInvitation =
+        SessionInvitation(
+            sessionId = dto.sessionId,
+            title = dto.title,
+            date = dto.date,
+            campaignId = dto.campaignId,
+            campaignName = dto.campaignName,
+            groupId = dto.groupId,
+        )
+
+    /**
      * Traduit un échec HTTP en erreur métier session.
      *
      * Le **code applicatif** prime quand il est présent (contrat partagé avec le backend) ;
@@ -67,11 +85,12 @@ object SessionHttpMapper {
             "INVALID_SESSION_DATE" -> SessionError.InvalidDate
             "SESSION_NOT_FOUND" -> SessionError.NotFound
             "CAMPAIGN_NOT_FOUND" -> SessionError.NotFound
+            "PARTICIPANT_NOT_FOUND" -> SessionError.NotFound
             "CAMPAIGN_ACCESS_DENIED" -> SessionError.AccessDenied
             "NOT_GROUP_EDITOR", "NOT_GROUP_MEMBER" -> SessionError.AccessDenied
             "EMPTY_PARTICIPANT_SELECTION" -> SessionError.EmptyParticipantSelection
             "PARTICIPANT_NOT_IN_GROUP" -> SessionError.ParticipantNotInGroup
-            "SESSION_NOT_LAUNCHABLE" -> SessionError.SessionNotLaunchable
+            "SESSION_NOT_LAUNCHABLE", "SESSION_NOT_JOINABLE" -> SessionError.SessionNotLaunchable
             else -> when (status) {
                 HttpStatusCode.NotFound -> SessionError.NotFound
                 HttpStatusCode.Forbidden -> SessionError.AccessDenied

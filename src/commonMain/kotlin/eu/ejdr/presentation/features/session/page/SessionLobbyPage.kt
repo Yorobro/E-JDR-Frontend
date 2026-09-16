@@ -16,9 +16,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
+import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
 import eu.ejdr.domain.features.session.entities.LobbyParticipant
+import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.session.SessionLobbyState
+import eu.ejdr.presentation.features.session.SessionLobbyViewModel
 import eu.ejdr.presentation.shared.component.atomic.AppBadge
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
@@ -28,34 +33,53 @@ import eu.ejdr.presentation.shared.component.atomic.BadgeTone
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.component.organism.PageHeader
+import eu.ejdr.presentation.shared.di.koinViewModel
 import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
 /**
- * Salon d'attente (lobby) d'une session — écran INTELLIGENT réservé au MJ.
+ * Salon d'attente (lobby) d'une session — écran INTELLIGENT, partagé MJ et joueurs.
  *
- * Observe le [SessionLobbyState] partagé (alimenté par le détail de session au moment du
- * `launch`) : liste les joueurs conviés et l'état de leur invitation, permet d'en convier
- * d'autres (refus « accidentel » ou oubli), puis de démarrer réellement la session.
+ * Observe le [SessionLobbyState] partagé (alimenté par le détail de session au `launch` côté MJ,
+ * ou par l'acceptation d'une invitation côté joueur) : liste les joueurs conviés et l'état de
+ * leur invitation. Le MJ (canManage) peut en convier d'autres et démarrer la session ; un joueur
+ * convié voit le même salon en lecture seule.
  *
- * Les réponses aux invitations arriveront à terme en temps réel (WebSocket) via le même
- * [SessionLobbyState] ; l'écran se recomposera alors sans changement. Si l'état est vide
+ * Les réponses des joueurs arrivent **en temps réel** : [SessionLobbyViewModel] s'abonne au canal
+ * du groupe et recharge le lobby à chaque invalidation `session-participants`, mettant à jour
+ * l'état partagé — l'écran se recompose alors sans action de l'utilisateur. Si l'état est vide
  * (ex. lobby non ouvert, reprise à froid), un état vide invite à repasser par le détail.
  *
+ * @param sessionId Identifiant de la session (pour le rechargement temps réel du lobby).
  * @param title Titre de la session (affiché en en-tête).
  * @param onStarted Callback déclenché quand le MJ démarre la session (câblage de l'écran de jeu à venir).
  * @param modifier Modifier Compose appliqué à la page.
  */
 @Composable
 fun SessionLobbyPage(
+    sessionId: String,
     title: String,
     onStarted: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val lobbyState = koinInject<SessionLobbyState>()
+    val activeGroupState = koinInject<ActiveGroupState>()
+    // Rend le lobby réactif : abonnement au groupe + rechargement sur `session-participants`.
+    koinViewModel {
+        SessionLobbyViewModel(
+            sessionId = sessionId,
+            activeGroupId = activeGroupState.activeGroupId,
+            getSessionLobby = get<GetSessionLobbyUseCase>(),
+            lobbyState = get<SessionLobbyState>(),
+            invalidationBus = get<InvalidationBus>(),
+            subscriptions = get<RealtimeSubscriptions>(),
+        )
+    }
     val lobby by lobbyState.lobby.collectAsStateWithLifecycle()
     val members by lobbyState.members.collectAsStateWithLifecycle()
+    // MJ : commandes visibles (inviter, démarrer). Joueur convié : vue en lecture seule.
+    val canManage by lobbyState.canManage.collectAsStateWithLifecycle()
 
     val currentLobby = lobby
     if (currentLobby == null) {
@@ -95,20 +119,24 @@ fun SessionLobbyPage(
             }
         }
 
-        InviteMoreSection(
-            invitable = invitable,
-            onInvite = { userId -> lobbyState.invite(userId) },
-        )
+        // Commandes réservées au MJ : convier d'autres joueurs et démarrer la session.
+        // Un joueur convié voit le même salon d'attente, sans ces actions.
+        if (canManage) {
+            InviteMoreSection(
+                invitable = invitable,
+                onInvite = { userId -> lobbyState.invite(userId) },
+            )
 
-        AppButton(
-            label = "Commencer la session",
-            onClick = {
-                lobbyState.startSession()
-                onStarted()
-            },
-            leadingIcon = AppIcons.Play,
-            modifier = Modifier.fillMaxWidth(),
-        )
+            AppButton(
+                label = "Commencer la session",
+                onClick = {
+                    lobbyState.startSession()
+                    onStarted()
+                },
+                leadingIcon = AppIcons.Play,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
     }
 }
 

@@ -89,3 +89,39 @@ data class CreateLobbyResponseDto(
     val status: String,
     val participants: List<LobbyParticipantDto>,
 )
+
+/**
+ * Corps de requête de réponse à une invitation (`POST /sessions/{id}/respond`).
+ *
+ * @property accept `true` pour accepter (rejoindre le lobby), `false` pour refuser.
+ */
+@Serializable
+data class RespondToInvitationRequestDto(val accept: Boolean)
+
+/**
+ * Représentation JSON d'une invitation de session en attente (`GET /sessions/invitations`).
+ *
+ * @property sessionId Identifiant de la session.
+ * @property title Titre de la session.
+ * @property date Date au format `YYYY-MM-DD`.
+ * @property campaignId Identifiant de la campagne parente.
+ * @property campaignName Nom de la campagne parente.
+ * @property groupId Identifiant du groupe de la campagne (à activer à l'acceptation).
+ */
+@Serializable
+data class SessionInvitationDto(
+    val sessionId: String,
+    val title: String,
+    val date: String,
+    val campaignId: String,
+    val campaignName: String,
+    val groupId: String,
+)
+
+/**
+ * Corps de réponse de `GET /sessions/invitations` : l'API enveloppe la liste sous `invitations`.
+ *
+ * @property invitations Invitations de session en attente du joueur courant.
+ */
+@Serializable
+data class SessionInvitationListResponseDto(val invitations: List<SessionInvitationDto>)

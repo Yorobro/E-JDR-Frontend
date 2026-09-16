@@ -2,6 +2,7 @@ package eu.ejdr.application.features.session.abstraction.repository
 
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.entities.SessionInvitation
 import eu.ejdr.domain.features.session.entities.SessionLobby
 import eu.ejdr.domain.features.session.error.SessionError
 
@@ -79,4 +80,28 @@ interface SessionRepository {
      * @return [Unit] si la suppression réussit, ou une [SessionError].
      */
     suspend fun delete(sessionId: String): Result<Unit, SessionError>
+
+    /**
+     * Répond à une invitation de session (côté joueur convié).
+     *
+     * @param sessionId identifiant de la session.
+     * @param accept `true` pour accepter, `false` pour refuser.
+     * @return [Unit] en cas de succès, ou une [SessionError].
+     */
+    suspend fun respondToInvitation(sessionId: String, accept: Boolean): Result<Unit, SessionError>
+
+    /**
+     * Liste les invitations de session en attente du joueur courant.
+     *
+     * @return les invitations en attente, ou une [SessionError].
+     */
+    suspend fun listMyInvitations(): Result<List<SessionInvitation>, SessionError>
+
+    /**
+     * Charge le lobby d'une session (statut + participants).
+     *
+     * @param sessionId identifiant de la session.
+     * @return le [SessionLobby], ou une [SessionError].
+     */
+    suspend fun getLobby(sessionId: String): Result<SessionLobby, SessionError>
 }

@@ -4,6 +4,7 @@ import eu.ejdr.application.features.session.abstraction.repository.SessionReposi
 import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.runCatchingCancellable
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.entities.SessionInvitation
 import eu.ejdr.domain.features.session.entities.SessionLobby
 import eu.ejdr.domain.features.session.error.SessionError
 import eu.ejdr.infrastructure.config.AppConfig
@@ -11,7 +12,9 @@ import eu.ejdr.infrastructure.http.features.auth.dto.ApiErrorDto
 import eu.ejdr.infrastructure.http.features.session.dto.CreateLobbyRequestDto
 import eu.ejdr.infrastructure.http.features.session.dto.CreateLobbyResponseDto
 import eu.ejdr.infrastructure.http.features.session.dto.CreateSessionRequestDto
+import eu.ejdr.infrastructure.http.features.session.dto.RespondToInvitationRequestDto
 import eu.ejdr.infrastructure.http.features.session.dto.SessionDto
+import eu.ejdr.infrastructure.http.features.session.dto.SessionInvitationListResponseDto
 import eu.ejdr.infrastructure.http.features.session.dto.SessionListResponseDto
 import eu.ejdr.infrastructure.http.features.session.dto.UpdateSessionRequestDto
 import io.ktor.client.HttpClient
@@ -119,6 +122,43 @@ class SessionHttpRepository(
             val response = client.delete("${config.baseUrl}/sessions/$sessionId")
             if (response.status.isSuccess()) {
                 Result.Success(Unit)
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(SessionError.Network) }
+
+    override suspend fun respondToInvitation(
+        sessionId: String,
+        accept: Boolean,
+    ): Result<Unit, SessionError> =
+        runCatchingCancellable {
+            val response = client.post("${config.baseUrl}/sessions/$sessionId/respond") {
+                contentType(ContentType.Application.Json)
+                setBody(RespondToInvitationRequestDto(accept))
+            }
+            if (response.status.isSuccess()) {
+                Result.Success(Unit)
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(SessionError.Network) }
+
+    override suspend fun listMyInvitations(): Result<List<SessionInvitation>, SessionError> =
+        runCatchingCancellable {
+            val response = client.get("${config.baseUrl}/sessions/invitations")
+            if (response.status.isSuccess()) {
+                val body = response.body<SessionInvitationListResponseDto>()
+                Result.Success(body.invitations.map(SessionHttpMapper::toInvitation))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(SessionError.Network) }
+
+    override suspend fun getLobby(sessionId: String): Result<SessionLobby, SessionError> =
+        runCatchingCancellable {
+            val response = client.get("${config.baseUrl}/sessions/$sessionId/lobby")
+            if (response.status.isSuccess()) {
+                Result.Success(SessionHttpMapper.toLobby(response.body<CreateLobbyResponseDto>()))
             } else {
                 failure(response)
             }

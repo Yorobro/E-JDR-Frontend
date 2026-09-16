@@ -203,7 +203,7 @@ class SessionDetailViewModel(
                     _error.value = null
                     // Dépose le lobby (+ membres conviables) dans l'état partagé, à destination de
                     // l'écran de lobby vers lequel la page va naviguer.
-                    lobbyState.open(lobby, _selectableMembers.value)
+                    lobbyState.open(lobby, _selectableMembers.value, canManage = true)
                     uiMessageBus.emit(UiMessage.success("Lobby ouvert"))
                     _lobbyOpened.value = true
                     load()

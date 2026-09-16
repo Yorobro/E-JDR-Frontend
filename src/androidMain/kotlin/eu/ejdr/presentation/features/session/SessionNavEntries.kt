@@ -28,6 +28,7 @@ fun EntryProviderScope<Any>.sessionEntries(actions: NavActions) {
         Column(Modifier.fillMaxSize()) {
             AppTopBar(title = key.title, onBack = { actions.backStack.removeLastOrNull() })
             SessionLobbyPage(
+                sessionId = key.id,
                 title = key.title,
                 // Navigation vers l'écran de jeu (canvas) à câbler dans une prochaine étape.
                 onStarted = {},

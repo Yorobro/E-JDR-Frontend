@@ -45,16 +45,40 @@ class SessionLobbyState(
      */
     val members: StateFlow<List<GroupMember>> = _members.asStateFlow()
 
+    private val _canManage = MutableStateFlow(false)
+
+    /**
+     * `true` si l'occupant courant du lobby est le **MJ** (peut convier d'autres joueurs et
+     * démarrer la session), `false` pour un **joueur** convié (vue en lecture seule). Pilote
+     * l'affichage des commandes dans l'écran de lobby.
+     */
+    val canManage: StateFlow<Boolean> = _canManage.asStateFlow()
+
     /**
      * Ouvre (ou remplace) le lobby courant. Appelé par le détail de session juste après un
-     * `launch` réussi, avant de naviguer vers l'écran de lobby.
+     * `launch` réussi (MJ), ou par l'acceptation d'une invitation (joueur), avant de naviguer
+     * vers l'écran de lobby.
      *
-     * @param lobby Lobby renvoyé par le serveur (session passée en `LOBBY` + invitations).
-     * @param members Membres conviables du groupe actif (hors MJ), pour l'affichage et l'invitation.
+     * @param lobby Lobby renvoyé par le serveur (session en `LOBBY` + participants).
+     * @param members Membres du groupe (hors MJ), pour résoudre les pseudos et l'invitation.
+     * @param canManage `true` pour le MJ (commandes visibles), `false` pour un joueur convié.
      */
-    fun open(lobby: SessionLobby, members: List<GroupMember>) {
+    fun open(lobby: SessionLobby, members: List<GroupMember>, canManage: Boolean) {
         _lobby.value = lobby
         _members.value = members
+        _canManage.value = canManage
+    }
+
+    /**
+     * Rafraîchit **uniquement** le lobby courant (statut + participants) suite à une mise à jour
+     * temps réel (une réponse de joueur), en conservant les membres et le rôle déjà en place.
+     * Sans effet si aucun lobby n'est ouvert.
+     *
+     * @param lobby Lobby rechargé depuis le serveur.
+     */
+    fun updateLobby(lobby: SessionLobby) {
+        if (_lobby.value == null) return
+        _lobby.value = lobby
     }
 
     /**
@@ -89,5 +113,6 @@ class SessionLobbyState(
     fun clear() {
         _lobby.value = null
         _members.value = emptyList()
+        _canManage.value = false
     }
 }

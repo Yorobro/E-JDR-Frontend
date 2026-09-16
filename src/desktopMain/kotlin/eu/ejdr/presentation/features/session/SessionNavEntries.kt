@@ -37,6 +37,7 @@ fun EntryProviderScope<Any>.sessionEntries(actions: NavActions) {
             },
         ) {
             SessionLobbyPage(
+                sessionId = key.id,
                 title = key.title,
                 // Navigation vers l'écran de jeu (canvas) à câbler dans une prochaine étape.
                 onStarted = {},
