@@ -8,10 +8,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Groups
-import androidx.compose.material.icons.filled.PersonAdd
-import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +28,7 @@ import eu.ejdr.presentation.shared.component.atomic.BadgeTone
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.component.organism.PageHeader
+import eu.ejdr.presentation.shared.icons.AppIcons
 import eu.ejdr.presentation.shared.theme.AppTheme
 import org.koin.compose.koinInject
 
@@ -63,7 +60,7 @@ fun SessionLobbyPage(
     val currentLobby = lobby
     if (currentLobby == null) {
         EmptyState(
-            icon = Icons.Filled.Groups,
+            icon = AppIcons.Groups,
             title = "Aucun lobby ouvert",
             message = "Revenez au détail de la session pour lancer le salon d'attente.",
             modifier = modifier.fillMaxSize(),
@@ -109,7 +106,7 @@ fun SessionLobbyPage(
                 lobbyState.startSession()
                 onStarted()
             },
-            leadingIcon = Icons.Filled.PlayArrow,
+            leadingIcon = AppIcons.Play,
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -166,7 +163,7 @@ private fun InviteMoreSection(
                 selectedMember?.let { onInvite(it.userId) }
                 selectedPseudo = null
             },
-            leadingIcon = Icons.Filled.PersonAdd,
+            leadingIcon = AppIcons.PersonAdd,
             enabled = selectedMember != null,
         )
     }
