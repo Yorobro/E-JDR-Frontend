@@ -1,6 +1,7 @@
 package eu.ejdr.presentation.features.session.page
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
@@ -178,9 +180,15 @@ private fun LobbyParticipantRow(
     }
 }
 
+/** En dessous de cette largeur (téléphone), le sélecteur et son bouton s'empilent. */
+private val InviteFoldThreshold = 420.dp
+
 /**
  * Sélecteur d'invitation d'un joueur supplémentaire : liste déroulante des membres pas (ou
  * plus) dans le salon + bouton « Inviter ». Absent quand tout le monde est déjà convié.
+ *
+ * Responsive comme le reste de l'app (cf. `ResponsiveColumns` de la fiche) : côte à côte au
+ * large, empilés sous [InviteFoldThreshold] pour rester utilisables sur téléphone.
  */
 @Composable
 private fun InviteMoreSection(
@@ -193,27 +201,48 @@ private fun InviteMoreSection(
     val selectedMember = invitable.firstOrNull { it.pseudo == selectedPseudo }
 
     AppText(text = "Inviter un autre joueur", style = AppTextStyle.Subtitle)
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        AppDropdown(
-            value = selectedPseudo,
-            options = invitable.map { it.pseudo },
-            onSelect = { selectedPseudo = it },
-            label = "Joueur",
-            modifier = Modifier.weight(1f),
-        )
-        AppButton(
-            label = "Inviter",
-            onClick = {
-                selectedMember?.let { onInvite(it.userId) }
-                selectedPseudo = null
-            },
-            leadingIcon = AppIcons.PersonAdd,
-            enabled = selectedMember != null,
-        )
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+        val stacked = maxWidth < InviteFoldThreshold
+        val dropdown: @Composable (Modifier) -> Unit = { modifier ->
+            AppDropdown(
+                value = selectedPseudo,
+                options = invitable.map { it.pseudo },
+                onSelect = { selectedPseudo = it },
+                label = "Joueur",
+                modifier = modifier,
+            )
+        }
+        val button: @Composable (Modifier) -> Unit = { modifier ->
+            AppButton(
+                label = "Inviter",
+                onClick = {
+                    selectedMember?.let { onInvite(it.userId) }
+                    selectedPseudo = null
+                },
+                leadingIcon = AppIcons.PersonAdd,
+                enabled = selectedMember != null,
+                modifier = modifier,
+            )
+        }
+
+        if (stacked) {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+            ) {
+                dropdown(Modifier.fillMaxWidth())
+                button(Modifier.fillMaxWidth())
+            }
+        } else {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.md),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                dropdown(Modifier.weight(1f))
+                button(Modifier)
+            }
+        }
     }
 }
 
