@@ -37,8 +37,8 @@ private const val SESSION_STATUS_ACTIVE = "ACTIVE"
  * jeu passe ensuite par le même chemin temps réel que pour les joueurs (rechargement + détection
  * `ACTIVE`), plus un rechargement immédiat en secours si la notification n'était pas reçue.
  *
- * Cycle de vie aligné sur les autres écrans temps réel : abonnement à l'init, désabonnement dans
- * [onCleared].
+ * Cycle de vie aligné sur les autres écrans temps réel : abonnement dès qu'un groupe est actif
+ * (suivi en continu, pas lu une seule fois à l'init), désabonnement dans [onCleared].
  *
  * @param sessionId Identifiant de la session dont on suit le lobby.
  * @param activeGroupId Groupe actif (canal temps réel à suivre).
@@ -52,7 +52,7 @@ private const val SESSION_STATUS_ACTIVE = "ACTIVE"
  */
 class SessionLobbyViewModel(
     private val sessionId: String,
-    activeGroupId: StateFlow<String?>,
+    private val activeGroupId: StateFlow<String?>,
     private val getSessionLobby: GetSessionLobbyUseCase,
     private val inviteToLobby: InviteToLobbyUseCase,
     private val startSession: StartSessionUseCase,
@@ -62,14 +62,21 @@ class SessionLobbyViewModel(
     private val uiMessageBus: UiMessageBus,
 ) : ViewModel() {
 
-    private val groupChannel: String? = activeGroupId.value?.let { "group:$it" }
+    /** Canal du groupe réellement abonné, ou `null` tant qu'aucun groupe n'est actif. */
+    private var groupChannel: String? = null
 
     /** Passe à `true` quand la session est démarrée (`ACTIVE`) : la page navigue vers le jeu. */
     private val _sessionStarted = MutableStateFlow(false)
     val sessionStarted: StateFlow<Boolean> = _sessionStarted.asStateFlow()
 
     init {
-        groupChannel?.let { subscriptions.subscribe(it) }
+        // On **observe** le groupe actif au lieu de lire sa valeur une fois : un joueur qui rejoint
+        // depuis une invitation voit `ActiveGroupState.select()` publier son groupe de façon
+        // asynchrone, souvent après la construction de ce ViewModel. Lire `.value` à l'init
+        // laissait alors le salon sans abonnement — donc sans bascule vers l'écran de jeu.
+        viewModelScope.launch {
+            activeGroupId.collect { id -> switchChannel(id?.let { "group:$it" }) }
+        }
         viewModelScope.launch {
             invalidationBus.events.collect { invalidation ->
                 if (invalidation.resource == "session-participants" ||
@@ -78,6 +85,23 @@ class SessionLobbyViewModel(
                     reload()
                 }
             }
+        }
+    }
+
+    /**
+     * Bascule l'abonnement temps réel vers [next] (sans effet si c'est déjà le canal courant) et
+     * recharge le lobby dans la foulée : un démarrage survenu **avant** l'abonnement (fenêtre entre
+     * la navigation et l'arrivée du groupe actif) est ainsi rattrapé.
+     *
+     * @param next Canal à suivre, ou `null` pour n'en suivre aucun.
+     */
+    private fun switchChannel(next: String?) {
+        if (next == groupChannel) return
+        groupChannel?.let { subscriptions.unsubscribe(it) }
+        groupChannel = next
+        next?.let {
+            subscriptions.subscribe(it)
+            reload()
         }
     }
 
