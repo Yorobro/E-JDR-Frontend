@@ -6,6 +6,7 @@ import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUse
 import eu.ejdr.application.features.session.abstraction.usecase.DeleteSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListMySessionInvitationsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.RespondToInvitationUseCase
@@ -16,6 +17,7 @@ import eu.ejdr.application.features.session.usecase.CreateSessionUseCaseImpl
 import eu.ejdr.application.features.session.usecase.DeleteSessionUseCaseImpl
 import eu.ejdr.application.features.session.usecase.GetSessionLobbyUseCaseImpl
 import eu.ejdr.application.features.session.usecase.GetSessionUseCaseImpl
+import eu.ejdr.application.features.session.usecase.InviteToLobbyUseCaseImpl
 import eu.ejdr.application.features.session.usecase.ListCampaignSessionsUseCaseImpl
 import eu.ejdr.application.features.session.usecase.ListMySessionInvitationsUseCaseImpl
 import eu.ejdr.application.features.session.usecase.RespondToInvitationUseCaseImpl
@@ -35,6 +37,7 @@ val sessionModule = module {
     single<ListCampaignSessionsUseCase> { ListCampaignSessionsUseCaseImpl(get()) }
     single<CreateSessionUseCase> { CreateSessionUseCaseImpl(get()) }
     single<CreateLobbyUseCase> { CreateLobbyUseCaseImpl(get()) }
+    single<InviteToLobbyUseCase> { InviteToLobbyUseCaseImpl(get()) }
     single<GetSessionUseCase> { GetSessionUseCaseImpl(get()) }
     single<UpdateSessionUseCase> { UpdateSessionUseCaseImpl(get()) }
     single<DeleteSessionUseCase> { DeleteSessionUseCaseImpl(get()) }
@@ -43,5 +46,5 @@ val sessionModule = module {
     single<ListMySessionInvitationsUseCase> { ListMySessionInvitationsUseCaseImpl(get()) }
     single<GetSessionLobbyUseCase> { GetSessionLobbyUseCaseImpl(get()) }
     // État partagé du lobby : hand-off détail → lobby (et futur point d'entrée temps réel).
-    single { SessionLobbyState(get()) }
+    single { SessionLobbyState() }
 }

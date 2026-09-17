@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
@@ -47,7 +48,8 @@ import org.koin.compose.koinInject
  * Observe le [SessionLobbyState] partagé (alimenté par le détail de session au `launch` côté MJ,
  * ou par l'acceptation d'une invitation côté joueur) : liste les joueurs conviés et l'état de
  * leur invitation. Le MJ (canManage) peut en convier d'autres et démarrer la session ; un joueur
- * convié voit le même salon en lecture seule.
+ * convié voit le même salon en lecture seule. Le MJ peut aussi **reconvier** un joueur ayant
+ * refusé : celui-ci reste proposé dans le sélecteur et repasse « En attente » côté serveur.
  *
  * Les réponses des joueurs arrivent **en temps réel** : [SessionLobbyViewModel] s'abonne au canal
  * du groupe et recharge le lobby à chaque invalidation `session-participants`, mettant à jour
@@ -75,6 +77,7 @@ fun SessionLobbyPage(
             sessionId = sessionId,
             activeGroupId = activeGroupState.activeGroupId,
             getSessionLobby = get<GetSessionLobbyUseCase>(),
+            inviteToLobby = get<InviteToLobbyUseCase>(),
             startSession = get<StartSessionUseCase>(),
             lobbyState = get<SessionLobbyState>(),
             invalidationBus = get<InvalidationBus>(),
@@ -108,9 +111,13 @@ fun SessionLobbyPage(
         return
     }
 
-    // Joueurs déjà conviés (résolus vers leur pseudo) et joueurs encore conviables.
-    val invitedIds = currentLobby.participants.map { it.userId }.toSet()
-    val invitable = members.filter { it.userId !in invitedIds }
+    // Joueurs déjà dans le salon (en attente ou présents) et joueurs encore conviables : un
+    // joueur ayant refusé reste proposé, pour le cas du refus accidentel.
+    val inLobbyIds = currentLobby.participants
+        .filterNot { it.status == LOBBY_STATUS_REFUSED }
+        .map { it.userId }
+        .toSet()
+    val invitable = members.filter { it.userId !in inLobbyIds }
     val pseudoOf: (String) -> String = { id -> members.firstOrNull { it.userId == id }?.pseudo?.ifBlank { id } ?: id }
 
     Column(
@@ -140,7 +147,7 @@ fun SessionLobbyPage(
         if (canManage) {
             InviteMoreSection(
                 invitable = invitable,
-                onInvite = { userId -> lobbyState.invite(userId) },
+                onInvite = { userId -> viewModel.invite(userId) },
             )
 
             AppButton(
@@ -172,8 +179,8 @@ private fun LobbyParticipantRow(
 }
 
 /**
- * Sélecteur d'invitation d'un joueur supplémentaire : liste déroulante des membres non conviés
- * + bouton « Inviter ». Absent quand tout le monde est déjà convié.
+ * Sélecteur d'invitation d'un joueur supplémentaire : liste déroulante des membres pas (ou
+ * plus) dans le salon + bouton « Inviter ». Absent quand tout le monde est déjà convié.
  */
 @Composable
 private fun InviteMoreSection(
@@ -210,17 +217,20 @@ private fun InviteMoreSection(
     }
 }
 
+/** Statut d'un joueur ayant décliné l'invitation : il reste reconviable depuis le salon. */
+private const val LOBBY_STATUS_REFUSED = "REFUSED"
+
 /** Libellé lisible de l'état d'invitation d'un participant. */
 private fun statusLabel(status: String): String = when (status) {
     "INVITED" -> "En attente"
     "ACCEPTED" -> "Présent"
-    "REFUSED" -> "A refusé"
+    LOBBY_STATUS_REFUSED -> "A refusé"
     else -> status
 }
 
 /** Tonalité de la pastille selon l'état d'invitation. */
 private fun statusTone(status: String): BadgeTone = when (status) {
     "ACCEPTED" -> BadgeTone.Accent
-    "REFUSED" -> BadgeTone.Danger
+    LOBBY_STATUS_REFUSED -> BadgeTone.Danger
     else -> BadgeTone.Neutral
 }

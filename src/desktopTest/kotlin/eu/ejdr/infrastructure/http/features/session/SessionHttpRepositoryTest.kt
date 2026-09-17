@@ -167,6 +167,30 @@ class SessionHttpRepositoryTest {
     }
 
     @Test
+    fun `inviteToLobby success maps the refreshed lobby`() = runTest {
+        val body =
+            """{"sessionId":"s-1","status":"LOBBY","participants":[{"userId":"u-present","status":"ACCEPTED","characterSheetId":null},{"userId":"u-refus","status":"INVITED","characterSheetId":null}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body))
+            .inviteToLobby("s-1", listOf("u-refus"))
+
+        assertIs<Result.Success<eu.ejdr.domain.features.session.entities.SessionLobby>>(result)
+        assertEquals("LOBBY", result.value.status)
+        // Le lobby renvoyé est complet : le joueur reconvié y est repassé « en attente ».
+        assertEquals(2, result.value.participants.size)
+        assertEquals("INVITED", result.value.participants.last().status)
+    }
+
+    @Test
+    fun `inviteToLobby 409 LOBBY_NOT_OPEN maps to LobbyNotOpen`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.Conflict, """{"code":"LOBBY_NOT_OPEN"}"""),
+        ).inviteToLobby("s-1", listOf("u-player"))
+
+        assertIs<Result.Failure<SessionError>>(result)
+        assertEquals(SessionError.LobbyNotOpen, result.error)
+    }
+
+    @Test
     fun `delete success on 204`() = runTest {
         val result = repository(clientReturning(HttpStatusCode.NoContent, "")).delete("s-1")
         assertIs<Result.Success<Unit>>(result)

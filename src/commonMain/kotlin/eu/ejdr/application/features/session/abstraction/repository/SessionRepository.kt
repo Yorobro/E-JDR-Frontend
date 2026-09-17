@@ -52,6 +52,23 @@ interface SessionRepository {
     ): Result<SessionLobby, SessionError>
 
     /**
+     * Convie des joueurs à un lobby **déjà ouvert** (réservé au MJ côté backend).
+     *
+     * Complète [createLobby], qui n'invite qu'à l'ouverture du salon : ici la session est déjà
+     * en `LOBBY`. Sert au joueur oublié comme au refus accidentel — un joueur ayant refusé est
+     * repassé en attente de réponse. Les joueurs déjà conviés sont ignorés côté serveur.
+     *
+     * @param sessionId identifiant de la session dont le lobby est ouvert.
+     * @param participantUserIds identifiants des joueurs à convier.
+     * @return le lobby complet à jour, ou une [SessionError] ([SessionError.LobbyNotOpen] si le
+     *         salon n'est plus ouvert).
+     */
+    suspend fun inviteToLobby(
+        sessionId: String,
+        participantUserIds: List<String>,
+    ): Result<SessionLobby, SessionError>
+
+    /**
      * Récupère le détail d'une session.
      *
      * @param sessionId identifiant de la session.

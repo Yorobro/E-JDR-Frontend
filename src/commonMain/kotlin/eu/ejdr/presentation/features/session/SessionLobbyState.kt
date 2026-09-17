@@ -1,16 +1,10 @@
 package eu.ejdr.presentation.features.session
 
-import eu.ejdr.application.shared.feedback.UiMessage
-import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
-import eu.ejdr.domain.features.session.entities.LobbyParticipant
 import eu.ejdr.domain.features.session.entities.SessionLobby
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-
-/** Statut d'invitation d'un participant tel que renvoyé par le serveur. */
-const val LOBBY_STATUS_INVITED = "INVITED"
 
 /**
  * État partagé du lobby de session courant.
@@ -21,17 +15,14 @@ const val LOBBY_STATUS_INVITED = "INVITED"
  * Navigation 3 ne transporte que des clés sérialisables légères ; l'état riche du lobby (liste
  * de participants + membres conviables) vit donc ici.
  *
- * C'est aussi le **point d'entrée prévu des mises à jour temps réel** : quand les invitations
- * passeront par WebSocket, les réponses des joueurs viendront muter [lobby] ici, et l'écran de
- * lobby se recomposera sans changement. En attendant, [invite] applique une mise à jour
- * optimiste locale.
+ * C'est aussi le **point d'entrée des mises à jour temps réel** : les réponses des joueurs et
+ * les invitations envoyées depuis le salon rechargent le lobby serveur puis le publient ici via
+ * [updateLobby], et l'écran de lobby se recompose sans changement.
  *
  * NE PAS en faire un ViewModel (pas de ViewModelStoreOwner à la racine) : sa durée de vie doit
  * survivre au passage détail → lobby.
  */
-class SessionLobbyState(
-    private val uiMessageBus: UiMessageBus,
-) {
+class SessionLobbyState {
     private val _lobby = MutableStateFlow<SessionLobby?>(null)
 
     /** Lobby courant, ou `null` si aucun lobby n'est ouvert (état initial / après [clear]). */
@@ -79,25 +70,6 @@ class SessionLobbyState(
     fun updateLobby(lobby: SessionLobby) {
         if (_lobby.value == null) return
         _lobby.value = lobby
-    }
-
-    /**
-     * Convie un joueur supplémentaire au lobby (cas d'un refus « accidentel » ou d'un oubli).
-     *
-     * Mise à jour **optimiste locale** : le participant est ajouté en `INVITED` immédiatement pour
-     * un retour visuel instantané. À terme, l'envoi réel passera par WebSocket et cette méthode
-     * relaiera la réponse du serveur plutôt que de simuler l'état. Sans effet si le joueur figure
-     * déjà dans le lobby.
-     *
-     * @param userId Identifiant du joueur à convier.
-     */
-    fun invite(userId: String) {
-        val current = _lobby.value ?: return
-        if (current.participants.any { it.userId == userId }) return
-        _lobby.value = current.copy(
-            participants = current.participants + LobbyParticipant(userId, LOBBY_STATUS_INVITED, characterSheetId = null),
-        )
-        uiMessageBus.emit(UiMessage.success("Invitation envoyée"))
     }
 
     /** Réinitialise le lobby (retour arrière hors du lobby, déconnexion). */

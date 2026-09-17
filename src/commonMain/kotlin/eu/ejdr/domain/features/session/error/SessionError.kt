@@ -35,6 +35,9 @@ sealed class SessionError(override val message: String) : DomainError {
     /** La session n'est pas dans un état permettant d'ouvrir un lobby (déjà lancée, etc.). */
     data object SessionNotLaunchable : SessionError("Cette session ne peut pas être lancée.")
 
+    /** Le salon d'attente n'est pas (ou plus) ouvert : impossible d'y convier un joueur. */
+    data object LobbyNotOpen : SessionError("Le salon d'attente n'est plus ouvert.")
+
     /**
      * Erreur non catégorisée.
      *

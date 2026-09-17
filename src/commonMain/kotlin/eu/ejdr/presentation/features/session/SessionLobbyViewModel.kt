@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.shared.feedback.UiMessage
 import eu.ejdr.application.shared.feedback.UiMessageBus
@@ -28,6 +29,10 @@ private const val SESSION_STATUS_ACTIVE = "ACTIVE"
  *   session est passée `ACTIVE`, signale [sessionStarted] pour faire basculer tout le monde vers
  *   l'écran de jeu.
  *
+ * [invite] convie un joueur supplémentaire (oubli, ou refus accidentel à réarmer) : l'appel
+ * serveur renvoie le lobby à jour, publié aussitôt dans l'état partagé ; les autres écrans du
+ * groupe, eux, le reçoivent par le chemin temps réel habituel.
+ *
  * [start] déclenche le démarrage réel côté MJ (`POST /sessions/{id}/start`) ; la bascule vers le
  * jeu passe ensuite par le même chemin temps réel que pour les joueurs (rechargement + détection
  * `ACTIVE`), plus un rechargement immédiat en secours si la notification n'était pas reçue.
@@ -38,6 +43,7 @@ private const val SESSION_STATUS_ACTIVE = "ACTIVE"
  * @param sessionId Identifiant de la session dont on suit le lobby.
  * @param activeGroupId Groupe actif (canal temps réel à suivre).
  * @property getSessionLobby Use case de rechargement du lobby.
+ * @property inviteToLobby Use case d'invitation d'un joueur dans le lobby ouvert (MJ).
  * @property startSession Use case de démarrage réel de la session (MJ).
  * @property lobbyState État partagé du lobby, mis à jour sur invalidation.
  * @property invalidationBus Bus d'invalidation temps réel.
@@ -48,6 +54,7 @@ class SessionLobbyViewModel(
     private val sessionId: String,
     activeGroupId: StateFlow<String?>,
     private val getSessionLobby: GetSessionLobbyUseCase,
+    private val inviteToLobby: InviteToLobbyUseCase,
     private val startSession: StartSessionUseCase,
     private val lobbyState: SessionLobbyState,
     private val invalidationBus: InvalidationBus,
@@ -71,6 +78,25 @@ class SessionLobbyViewModel(
                     reload()
                 }
             }
+        }
+    }
+
+    /**
+     * Convie un joueur supplémentaire au salon d'attente (MJ) : joueur oublié, ou joueur ayant
+     * refusé par erreur — le serveur le repasse alors « en attente ». Sur succès, le lobby
+     * renvoyé remplace l'état partagé ; sur échec, un toast d'erreur est émis.
+     *
+     * @param userId Identifiant du joueur à convier.
+     */
+    fun invite(userId: String) {
+        viewModelScope.launch {
+            inviteToLobby(sessionId, listOf(userId)).fold(
+                onSuccess = { lobby ->
+                    lobbyState.updateLobby(lobby)
+                    uiMessageBus.emit(UiMessage.success("Invitation envoyée"))
+                },
+                onFailure = { err -> uiMessageBus.emit(UiMessage.error(err.message)) },
+            )
         }
     }
 

@@ -91,6 +91,7 @@ object SessionHttpMapper {
             "EMPTY_PARTICIPANT_SELECTION" -> SessionError.EmptyParticipantSelection
             "PARTICIPANT_NOT_IN_GROUP" -> SessionError.ParticipantNotInGroup
             "SESSION_NOT_LAUNCHABLE", "SESSION_NOT_JOINABLE" -> SessionError.SessionNotLaunchable
+            "LOBBY_NOT_OPEN" -> SessionError.LobbyNotOpen
             else -> when (status) {
                 HttpStatusCode.NotFound -> SessionError.NotFound
                 HttpStatusCode.Forbidden -> SessionError.AccessDenied

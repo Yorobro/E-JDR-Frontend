@@ -63,6 +63,17 @@ data class SessionListResponseDto(val sessions: List<SessionDto>)
 data class CreateLobbyRequestDto(val participantUserIds: List<String>)
 
 /**
+ * Corps de requête d'invitation dans un lobby ouvert (`POST /sessions/{id}/invite`).
+ *
+ * Même forme que [CreateLobbyRequestDto], mais pour un salon **déjà ouvert** : on ajoute des
+ * joueurs (oubli, refus accidentel) sans changer le statut de la session.
+ *
+ * @property participantUserIds Identifiants des joueurs à convier.
+ */
+@Serializable
+data class InviteToLobbyRequestDto(val participantUserIds: List<String>)
+
+/**
  * Participant tel que renvoyé dans la réponse d'ouverture du lobby.
  *
  * @property userId Identifiant de l'utilisateur convié.
@@ -77,7 +88,8 @@ data class LobbyParticipantDto(
 )
 
 /**
- * Corps de réponse de `POST /sessions/{id}/launch` : la session passée en lobby + ses invitations.
+ * Corps de réponse des routes de lobby (`POST /sessions/{id}/launch`, `GET /sessions/{id}/lobby`,
+ * `POST /sessions/{id}/invite`) : la session en lobby + ses invitations.
  *
  * @property sessionId Identifiant de la session passée en statut `LOBBY`.
  * @property status Statut de la session après ouverture (normalement `LOBBY`).

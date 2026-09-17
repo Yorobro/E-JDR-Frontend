@@ -6,6 +6,7 @@ import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUse
 import eu.ejdr.application.features.session.abstraction.usecase.DeleteSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListMySessionInvitationsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.RespondToInvitationUseCase
@@ -55,6 +56,15 @@ class CreateLobbyUseCaseImpl(
         sessionId: String,
         participantUserIds: List<String>,
     ): Result<SessionLobby, SessionError> = repository.createLobby(sessionId, participantUserIds)
+}
+
+class InviteToLobbyUseCaseImpl(
+    private val repository: SessionRepository,
+) : InviteToLobbyUseCase {
+    override suspend fun invoke(
+        sessionId: String,
+        participantUserIds: List<String>,
+    ): Result<SessionLobby, SessionError> = repository.inviteToLobby(sessionId, participantUserIds)
 }
 
 class UpdateSessionUseCaseImpl(

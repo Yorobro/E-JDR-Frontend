@@ -88,7 +88,7 @@ class SessionDetailViewModelTest {
             Result.Success(listOf(Campaign("camp-1", "Campagne", gameMasterId = "u-mj", createdAt = "2026-06-13T10:00:00.000Z")))
         },
         activeGroupId: StateFlow<String?> = MutableStateFlow("g-1"),
-        lobbyState: SessionLobbyState = SessionLobbyState(io.mockk.mockk(relaxed = true)),
+        lobbyState: SessionLobbyState = SessionLobbyState(),
     ) = SessionDetailViewModel(
         sessionId = "s-1",
         activeGroupId = activeGroupId,
@@ -211,7 +211,7 @@ class SessionDetailViewModelTest {
 
     @Test
     fun `openLobby success stores the lobby in the shared state`() = runTest {
-        val lobbyState = SessionLobbyState(io.mockk.mockk(relaxed = true))
+        val lobbyState = SessionLobbyState()
         val vm = buildViewModel(
             createLobby = CreateLobbyUseCase { _, _ ->
                 Result.Success(
