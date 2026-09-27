@@ -69,6 +69,25 @@ interface SessionRepository {
     ): Result<SessionLobby, SessionError>
 
     /**
+     * Retire un joueur du salon d'attente (réservé au MJ côté backend).
+     *
+     * Contrepartie d'[inviteToLobby] : le joueur écarté (erreur de sélection, joueur absent)
+     * disparaît du salon et, s'il n'avait pas encore répondu, son invitation s'efface de son
+     * écran. La participation est réellement supprimée — le MJ peut le reconvier ensuite via
+     * [inviteToLobby].
+     *
+     * @param sessionId identifiant de la session dont le lobby est ouvert.
+     * @param userId identifiant du joueur à retirer.
+     * @return le lobby complet à jour, sans le joueur retiré, ou une [SessionError]
+     *         ([SessionError.LobbyNotOpen] si le salon n'est plus ouvert, [SessionError.NotFound]
+     *         si le joueur n'était pas convié).
+     */
+    suspend fun removeParticipant(
+        sessionId: String,
+        userId: String,
+    ): Result<SessionLobby, SessionError>
+
+    /**
      * Récupère le détail d'une session.
      *
      * @param sessionId identifiant de la session.

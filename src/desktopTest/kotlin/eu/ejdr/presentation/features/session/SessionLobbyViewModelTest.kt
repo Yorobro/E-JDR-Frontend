@@ -4,6 +4,7 @@ import eu.ejdr.application.features.realtime.abstraction.Invalidation
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.RemoveParticipantUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.application.shared.feedback.UiMessage
@@ -70,6 +71,7 @@ class SessionLobbyViewModelTest {
         activeGroupId = activeGroupId,
         getSessionLobby = GetSessionLobbyUseCase { Result.Success(lobby(lobbyStatus())) },
         inviteToLobby = InviteToLobbyUseCase { _, _ -> Result.Success(lobby("LOBBY")) },
+        removeParticipant = RemoveParticipantUseCase { _, _ -> Result.Success(lobby("LOBBY")) },
         startSession = StartSessionUseCase { Result.Success(Unit) },
         lobbyState = SessionLobbyState(),
         invalidationBus = bus,

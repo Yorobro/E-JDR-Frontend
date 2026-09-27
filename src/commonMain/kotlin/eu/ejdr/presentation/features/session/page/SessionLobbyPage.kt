@@ -23,6 +23,7 @@ import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.RemoveParticipantUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.domain.features.friendgroup.entities.GroupMember
@@ -30,12 +31,15 @@ import eu.ejdr.domain.features.session.entities.LobbyParticipant
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.session.SessionLobbyState
 import eu.ejdr.presentation.features.session.SessionLobbyViewModel
+import eu.ejdr.presentation.features.session.component.ConfirmRemoveParticipantDialog
 import eu.ejdr.presentation.shared.component.atomic.AppBadge
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
+import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextStyle
 import eu.ejdr.presentation.shared.component.atomic.BadgeTone
+import eu.ejdr.presentation.shared.component.base.AppIconButton
 import eu.ejdr.presentation.shared.component.molecule.EmptyState
 import eu.ejdr.presentation.shared.component.organism.AppCard
 import eu.ejdr.presentation.shared.component.organism.PageHeader
@@ -51,7 +55,9 @@ import org.koin.compose.koinInject
  * ou par l'acceptation d'une invitation côté joueur) : liste les joueurs conviés et l'état de
  * leur invitation. Le MJ (canManage) peut en convier d'autres et démarrer la session ; un joueur
  * convié voit le même salon en lecture seule. Le MJ peut aussi **reconvier** un joueur ayant
- * refusé : celui-ci reste proposé dans le sélecteur et repasse « En attente » côté serveur.
+ * refusé (celui-ci reste proposé dans le sélecteur et repasse « En attente » côté serveur) et
+ * **retirer** un joueur du salon, après confirmation : la participation est supprimée côté
+ * serveur, donc le joueur retiré redevient conviable.
  *
  * Les réponses des joueurs arrivent **en temps réel** : [SessionLobbyViewModel] s'abonne au canal
  * du groupe et recharge le lobby à chaque invalidation `session-participants`, mettant à jour
@@ -80,6 +86,7 @@ fun SessionLobbyPage(
             activeGroupId = activeGroupState.activeGroupId,
             getSessionLobby = get<GetSessionLobbyUseCase>(),
             inviteToLobby = get<InviteToLobbyUseCase>(),
+            removeParticipant = get<RemoveParticipantUseCase>(),
             startSession = get<StartSessionUseCase>(),
             lobbyState = get<SessionLobbyState>(),
             invalidationBus = get<InvalidationBus>(),
@@ -101,6 +108,9 @@ fun SessionLobbyPage(
             viewModel.consumeNavigation()
         }
     }
+
+    // Joueur dont le retrait attend confirmation (`null` = pas de dialogue ouvert).
+    var pendingRemoval by remember { mutableStateOf<LobbyParticipant?>(null) }
 
     val currentLobby = lobby
     if (currentLobby == null) {
@@ -131,18 +141,12 @@ fun SessionLobbyPage(
     ) {
         PageHeader(title = title, subtitle = "Salon d'attente")
 
-        AppText(text = "Joueurs conviés", style = AppTextStyle.Subtitle)
-        if (currentLobby.participants.isEmpty()) {
-            AppText(
-                text = "Aucun joueur convié pour le moment.",
-                style = AppTextStyle.Body,
-                color = AppTheme.colors.textSecondary,
-            )
-        } else {
-            currentLobby.participants.forEach { participant ->
-                LobbyParticipantRow(pseudo = pseudoOf(participant.userId), participant = participant)
-            }
-        }
+        LobbyParticipantList(
+            participants = currentLobby.participants,
+            pseudoOf = pseudoOf,
+            // Seul le MJ peut retirer : pour un joueur, la ligne n'affiche aucun bouton.
+            onRemove = if (canManage) ({ participant -> pendingRemoval = participant }) else null,
+        )
 
         // Commandes réservées au MJ : convier d'autres joueurs et démarrer la session.
         // Un joueur convié voit le même salon d'attente, sans ces actions.
@@ -160,22 +164,92 @@ fun SessionLobbyPage(
             )
         }
     }
+
+    // Retirer un joueur écarte quelqu'un de la partie : on confirme, comme pour la suppression
+    // d'une session. Le message rappelle que le joueur reste reconviable.
+    pendingRemoval?.let { target ->
+        ConfirmRemoveParticipantDialog(
+            pseudo = pseudoOf(target.userId),
+            onConfirm = {
+                viewModel.remove(target.userId)
+                pendingRemoval = null
+            },
+            onDismiss = { pendingRemoval = null },
+        )
+    }
 }
 
-/** Ligne d'un participant du lobby : pseudo à gauche, pastille d'état d'invitation à droite. */
+/**
+ * Section « Joueurs conviés » : un état vide textuel, ou une ligne par participant.
+ *
+ * @param participants Participants du lobby, dans l'ordre renvoyé par le serveur.
+ * @param pseudoOf Résolution d'un identifiant utilisateur en pseudo affichable.
+ * @param onRemove Demande de retrait d'un participant, ou `null` pour masquer le bouton (joueur).
+ */
+@Composable
+private fun LobbyParticipantList(
+    participants: List<LobbyParticipant>,
+    pseudoOf: (String) -> String,
+    onRemove: ((LobbyParticipant) -> Unit)?,
+) {
+    AppText(text = "Joueurs conviés", style = AppTextStyle.Subtitle)
+    if (participants.isEmpty()) {
+        AppText(
+            text = "Aucun joueur convié pour le moment.",
+            style = AppTextStyle.Body,
+            color = AppTheme.colors.textSecondary,
+        )
+        return
+    }
+    participants.forEach { participant ->
+        LobbyParticipantRow(
+            pseudo = pseudoOf(participant.userId),
+            participant = participant,
+            onRemove = onRemove?.let { remove -> { remove(participant) } },
+        )
+    }
+}
+
+/**
+ * Ligne d'un participant du lobby : pseudo à gauche, pastille d'état — et bouton de retrait pour
+ * le MJ — à droite. Composant bête : il ne connaît pas les rôles, il affiche ce qu'on lui donne
+ * ([onRemove] à `null` = pas de bouton), comme `CampaignCard` avec son `onDelete`.
+ *
+ * Le pseudo prend la place restante et s'ellipse sur une ligne : sur téléphone, un pseudo long ne
+ * doit repousser ni la pastille ni le bouton hors de la carte.
+ *
+ * @param pseudo Pseudo affiché du participant.
+ * @param participant Participation (statut d'invitation).
+ * @param onRemove Retrait demandé, ou `null` pour ne pas proposer l'action.
+ */
 @Composable
 private fun LobbyParticipantRow(
     pseudo: String,
     participant: LobbyParticipant,
+    onRemove: (() -> Unit)?,
 ) {
     AppCard {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
+            horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            AppText(text = pseudo, style = AppTextStyle.Body)
+            AppText(
+                text = pseudo,
+                style = AppTextStyle.Body,
+                maxLines = 1,
+                modifier = Modifier.weight(1f),
+            )
             AppBadge(text = statusLabel(participant.status), tone = statusTone(participant.status))
+            if (onRemove != null) {
+                AppIconButton(onClick = onRemove, contentDescription = "Retirer ce joueur") {
+                    AppIcon(
+                        imageVector = AppIcons.Delete,
+                        contentDescription = null,
+                        tint = AppTheme.colors.danger,
+                    )
+                }
+            }
         }
     }
 }

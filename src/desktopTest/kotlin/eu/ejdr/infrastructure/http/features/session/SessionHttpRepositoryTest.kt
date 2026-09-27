@@ -191,6 +191,30 @@ class SessionHttpRepositoryTest {
     }
 
     @Test
+    fun `removeParticipant success maps the lobby without the removed player`() = runTest {
+        val body =
+            """{"sessionId":"s-1","status":"LOBBY","participants":[{"userId":"u-present","status":"ACCEPTED","characterSheetId":null}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body))
+            .removeParticipant("s-1", "u-retire")
+
+        assertIs<Result.Success<eu.ejdr.domain.features.session.entities.SessionLobby>>(result)
+        assertEquals("LOBBY", result.value.status)
+        // Le serveur renvoie le lobby complet à jour : le joueur retiré n'y figure plus.
+        assertEquals(1, result.value.participants.size)
+        assertEquals("u-present", result.value.participants.single().userId)
+    }
+
+    @Test
+    fun `removeParticipant 409 LOBBY_NOT_OPEN maps to LobbyNotOpen`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.Conflict, """{"code":"LOBBY_NOT_OPEN"}"""),
+        ).removeParticipant("s-1", "u-player")
+
+        assertIs<Result.Failure<SessionError>>(result)
+        assertEquals(SessionError.LobbyNotOpen, result.error)
+    }
+
+    @Test
     fun `delete success on 204`() = runTest {
         val result = repository(clientReturning(HttpStatusCode.NoContent, "")).delete("s-1")
         assertIs<Result.Success<Unit>>(result)

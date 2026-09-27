@@ -6,6 +6,7 @@ import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.RemoveParticipantUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.shared.feedback.UiMessage
 import eu.ejdr.application.shared.feedback.UiMessageBus
@@ -29,9 +30,10 @@ private const val SESSION_STATUS_ACTIVE = "ACTIVE"
  *   session est passée `ACTIVE`, signale [sessionStarted] pour faire basculer tout le monde vers
  *   l'écran de jeu.
  *
- * [invite] convie un joueur supplémentaire (oubli, ou refus accidentel à réarmer) : l'appel
- * serveur renvoie le lobby à jour, publié aussitôt dans l'état partagé ; les autres écrans du
- * groupe, eux, le reçoivent par le chemin temps réel habituel.
+ * [invite] convie un joueur supplémentaire (oubli, ou refus accidentel à réarmer) et
+ * [removeParticipant] écarte un joueur du salon : dans les deux cas l'appel serveur renvoie le
+ * lobby à jour, publié aussitôt dans l'état partagé ; les autres écrans du groupe, eux, le
+ * reçoivent par le chemin temps réel habituel.
  *
  * [start] déclenche le démarrage réel côté MJ (`POST /sessions/{id}/start`) ; la bascule vers le
  * jeu passe ensuite par le même chemin temps réel que pour les joueurs (rechargement + détection
@@ -44,6 +46,7 @@ private const val SESSION_STATUS_ACTIVE = "ACTIVE"
  * @param activeGroupId Groupe actif (canal temps réel à suivre).
  * @property getSessionLobby Use case de rechargement du lobby.
  * @property inviteToLobby Use case d'invitation d'un joueur dans le lobby ouvert (MJ).
+ * @property removeParticipant Use case de retrait d'un joueur du lobby (MJ).
  * @property startSession Use case de démarrage réel de la session (MJ).
  * @property lobbyState État partagé du lobby, mis à jour sur invalidation.
  * @property invalidationBus Bus d'invalidation temps réel.
@@ -55,6 +58,7 @@ class SessionLobbyViewModel(
     private val activeGroupId: StateFlow<String?>,
     private val getSessionLobby: GetSessionLobbyUseCase,
     private val inviteToLobby: InviteToLobbyUseCase,
+    private val removeParticipant: RemoveParticipantUseCase,
     private val startSession: StartSessionUseCase,
     private val lobbyState: SessionLobbyState,
     private val invalidationBus: InvalidationBus,
@@ -118,6 +122,28 @@ class SessionLobbyViewModel(
                 onSuccess = { lobby ->
                     lobbyState.updateLobby(lobby)
                     uiMessageBus.emit(UiMessage.success("Invitation envoyée"))
+                },
+                onFailure = { err -> uiMessageBus.emit(UiMessage.error(err.message)) },
+            )
+        }
+    }
+
+    /**
+     * Retire un joueur du salon d'attente (MJ) : erreur de sélection, ou joueur qui ne sera
+     * finalement pas de la partie. Sur succès, le lobby renvoyé — sans le joueur — remplace
+     * l'état partagé d'un bloc ; sur échec, un toast d'erreur est émis.
+     *
+     * Le joueur retiré reste reconviable ensuite via [invite] : côté serveur la participation est
+     * supprimée, pas marquée.
+     *
+     * @param userId Identifiant du joueur à retirer.
+     */
+    fun remove(userId: String) {
+        viewModelScope.launch {
+            removeParticipant(sessionId, userId).fold(
+                onSuccess = { lobby ->
+                    lobbyState.updateLobby(lobby)
+                    uiMessageBus.emit(UiMessage.success("Joueur retiré"))
                 },
                 onFailure = { err -> uiMessageBus.emit(UiMessage.error(err.message)) },
             )

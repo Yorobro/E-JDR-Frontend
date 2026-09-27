@@ -9,6 +9,7 @@ import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCas
 import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListMySessionInvitationsUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.RemoveParticipantUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.RespondToInvitationUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
@@ -20,6 +21,7 @@ import eu.ejdr.application.features.session.usecase.GetSessionUseCaseImpl
 import eu.ejdr.application.features.session.usecase.InviteToLobbyUseCaseImpl
 import eu.ejdr.application.features.session.usecase.ListCampaignSessionsUseCaseImpl
 import eu.ejdr.application.features.session.usecase.ListMySessionInvitationsUseCaseImpl
+import eu.ejdr.application.features.session.usecase.RemoveParticipantUseCaseImpl
 import eu.ejdr.application.features.session.usecase.RespondToInvitationUseCaseImpl
 import eu.ejdr.application.features.session.usecase.StartSessionUseCaseImpl
 import eu.ejdr.application.features.session.usecase.UpdateSessionUseCaseImpl
@@ -38,6 +40,7 @@ val sessionModule = module {
     single<CreateSessionUseCase> { CreateSessionUseCaseImpl(get()) }
     single<CreateLobbyUseCase> { CreateLobbyUseCaseImpl(get()) }
     single<InviteToLobbyUseCase> { InviteToLobbyUseCaseImpl(get()) }
+    single<RemoveParticipantUseCase> { RemoveParticipantUseCaseImpl(get()) }
     single<GetSessionUseCase> { GetSessionUseCaseImpl(get()) }
     single<UpdateSessionUseCase> { UpdateSessionUseCaseImpl(get()) }
     single<DeleteSessionUseCase> { DeleteSessionUseCaseImpl(get()) }

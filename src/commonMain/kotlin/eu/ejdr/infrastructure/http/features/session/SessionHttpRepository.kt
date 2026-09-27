@@ -107,6 +107,20 @@ class SessionHttpRepository(
             }
         }.getOrElse { Result.Failure(SessionError.Network) }
 
+    override suspend fun removeParticipant(
+        sessionId: String,
+        userId: String,
+    ): Result<SessionLobby, SessionError> =
+        runCatchingCancellable {
+            val url = "${config.baseUrl}/sessions/$sessionId/participants/$userId"
+            val response = client.delete(url)
+            if (response.status.isSuccess()) {
+                Result.Success(SessionHttpMapper.toLobby(response.body<CreateLobbyResponseDto>()))
+            } else {
+                failure(response)
+            }
+        }.getOrElse { Result.Failure(SessionError.Network) }
+
     override suspend fun get(sessionId: String): Result<Session, SessionError> =
         runCatchingCancellable {
             val response = client.get("${config.baseUrl}/sessions/$sessionId")
