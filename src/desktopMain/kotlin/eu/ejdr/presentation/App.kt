@@ -16,13 +16,16 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
 import eu.ejdr.application.features.realtime.RealtimeCoordinator
+import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
 import eu.ejdr.application.features.update.dto.UpdateInfoDto
 import eu.ejdr.application.shared.getOrNull
+import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.features.update.UpdateController
+import eu.ejdr.presentation.features.session.SessionRemovalWatcher
 import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
@@ -65,6 +68,8 @@ fun App() {
         val downloadAndInstall = koinInject<DownloadAndInstallUpdateUseCase>()
 
         val backStack = rememberNavBackStack(appNavConfiguration, Route.Splash)
+        val invalidationBus = koinInject<InvalidationBus>()
+        val uiMessageBus = koinInject<UiMessageBus>()
         var updateInfo by remember { mutableStateOf<UpdateInfoDto?>(null) }
         val sessionStatus by rootState.sessionStatus.collectAsStateWithLifecycle()
 
@@ -84,11 +89,26 @@ fun App() {
 
         // Traduit le statut de session en navigation : remplace l'écran Splash par Home
         // (session restaurée) ou Login (échec). Tant que le statut est Unknown, on attend.
+        // Veille globale : un joueur retiré d'une session doit être averti même s'il n'a jamais
+        // ouvert le salon d'attente. D'où une écoute à la racine plutôt que dans l'écran du lobby.
+        val removalWatcher = remember { SessionRemovalWatcher(scope, invalidationBus, uiMessageBus) }
+
         LaunchedEffect(sessionStatus) {
             when (sessionStatus) {
                 SessionStatus.Authenticated -> resetTo(Route.Home)
                 SessionStatus.Unauthenticated -> resetTo(Route.Login)
                 SessionStatus.Unknown -> Unit
+            }
+        }
+
+        // Joueur retiré : le watcher a déjà affiché le message. S'il était encore dans le salon
+        // d'attente, on l'en sort — pile vidée plutôt que dépilée, pour qu'un retour arrière ne le
+        // ramène pas dans un lobby dont il ne fait plus partie.
+        val ejectedFromSession by removalWatcher.ejected.collectAsStateWithLifecycle()
+        LaunchedEffect(ejectedFromSession) {
+            if (ejectedFromSession) {
+                if (backStack.lastOrNull() is Route.SessionLobby) resetTo(Route.Home)
+                removalWatcher.consume()
             }
         }
 
@@ -103,7 +123,7 @@ fun App() {
                 onThemeChange = rootState::setTheme,
                 resetTo = ::resetTo,
             )
-            UiMessageHost(bus = koinInject())
+            UiMessageHost(bus = uiMessageBus)
         }
 
         updateInfo?.let { info ->
