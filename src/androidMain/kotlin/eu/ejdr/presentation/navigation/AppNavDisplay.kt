@@ -12,10 +12,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.SessionStatus
@@ -63,15 +65,27 @@ fun AppNavDisplay(
 
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.weight(1f)) {
-            // Décorateurs : on garde le défaut de NavDisplay
-            // (rememberSaveableStateHolderNavEntryDecorator). La rétention des ViewModels
-            // par destination (trio Saveable + SavedState + ViewModelStore) sera finalisée
-            // plus tard ; sans elle, koinViewModel résout contre le ViewModelStore de
-            // l'Activity (partagé) — suffisant pour un écran auth à la fois.
+            // Décorateurs : fournir cette liste **remplace** celle par défaut de NavDisplay, d'où
+            // le `SaveableStateHolder` re-déclaré ici — sans lui, l'état `rememberSaveable` et la
+            // position de défilement des pages seraient perdus à chaque aller-retour.
+            //
+            // `rememberViewModelStoreNavEntryDecorator` donne un ViewModelStore **par destination**,
+            // vidé quand l'entrée quitte la pile. Sans lui, `koinViewModel` résolvait contre le
+            // ViewModelStore de l'Activity : un seul exemplaire par classe pour toute
+            // l'application, jamais `onCleared()`. Deux dégâts concrets — un
+            // `SessionLobbyViewModel` quitté restait abonné à `group:{id}` et continuait d'écrire
+            // dans l'état partagé du salon (la bulle de retour s'effaçait toute seule quand le MJ
+            // démarrait la partie) ; et deux campagnes ouvertes l'une après l'autre partageaient
+            // le ViewModel resté sur la première. Le pendant desktop obtient la même chose avec un
+            // décorateur maison, le décorateur officiel n'étant pas publié pour cette cible.
             // Changement de page instantané : aucune transition (pas de fondu ni de glissement).
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
+                entryDecorators = listOf(
+                    rememberSaveableStateHolderNavEntryDecorator(),
+                    rememberViewModelStoreNavEntryDecorator(),
+                ),
                 transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
                 popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
                 // fallback : toute destination encore sans rendu Android affiche ComingSoon
