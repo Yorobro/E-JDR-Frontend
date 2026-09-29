@@ -17,6 +17,7 @@ import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
 import eu.ejdr.application.features.realtime.RealtimeCoordinator
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
+import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.application.features.settings.abstraction.usecase.GetThemeUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.CheckUpdateUseCase
 import eu.ejdr.application.features.update.abstraction.usecase.DownloadAndInstallUpdateUseCase
@@ -25,10 +26,14 @@ import eu.ejdr.application.shared.getOrNull
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.domain.features.settings.entities.ThemeVariant
 import eu.ejdr.presentation.features.update.UpdateController
+import eu.ejdr.presentation.features.session.SessionLobbyState
 import eu.ejdr.presentation.features.session.SessionRemovalWatcher
+import eu.ejdr.presentation.features.session.SessionStatusWatcher
+import eu.ejdr.presentation.features.session.component.SessionReturnBubble
 import eu.ejdr.presentation.navigation.AppNavDisplay
 import eu.ejdr.presentation.navigation.Route
 import eu.ejdr.presentation.navigation.appNavConfiguration
+import eu.ejdr.presentation.navigation.openSession
 import eu.ejdr.presentation.shared.component.organism.UpdateDialog
 import eu.ejdr.presentation.shared.feedback.UiMessageHost
 import eu.ejdr.presentation.shared.theme.AppTheme
@@ -70,6 +75,7 @@ fun App() {
         val backStack = rememberNavBackStack(appNavConfiguration, Route.Splash)
         val invalidationBus = koinInject<InvalidationBus>()
         val uiMessageBus = koinInject<UiMessageBus>()
+        val lobbyState = koinInject<SessionLobbyState>()
         var updateInfo by remember { mutableStateOf<UpdateInfoDto?>(null) }
         val sessionStatus by rootState.sessionStatus.collectAsStateWithLifecycle()
 
@@ -91,7 +97,15 @@ fun App() {
         // (session restaurée) ou Login (échec). Tant que le statut est Unknown, on attend.
         // Veille globale : un joueur retiré d'une session doit être averti même s'il n'a jamais
         // ouvert le salon d'attente. D'où une écoute à la racine plutôt que dans l'écran du lobby.
-        val removalWatcher = remember { SessionRemovalWatcher(scope, invalidationBus, uiMessageBus) }
+        val removalWatcher =
+            remember { SessionRemovalWatcher(scope, invalidationBus, uiMessageBus, lobbyState) }
+
+        // Même raison d'être à la racine : le démarrage de la partie doit être pris en compte
+        // même si l'utilisateur a quitté la page du salon — c'est justement lui qui a besoin
+        // que son raccourci bascule de « Retour au salon » à « Rejoindre la partie ». Le
+        // ViewModel du salon ne peut pas s'en charger : il meurt avec la page.
+        val getSessionLobby = koinInject<GetSessionLobbyUseCase>()
+        remember { SessionStatusWatcher(scope, invalidationBus, lobbyState, getSessionLobby) }
 
         LaunchedEffect(sessionStatus) {
             when (sessionStatus) {
@@ -112,6 +126,15 @@ fun App() {
             }
         }
 
+        // Route au sommet de la pile, lue **en composition** : la bulle de retour au salon doit
+        // se masquer dès qu'on est déjà dans la session. Le back-stack est une liste observable,
+        // donc la lecture suffit à déclencher la recomposition.
+        val currentRoute = backStack.lastOrNull()
+
+        // Déjà dans la session (salon ou partie) : la bulle n'a rien à proposer.
+        val alreadyInSession =
+            currentRoute is Route.SessionLobby || currentRoute is Route.SessionGame
+
         // Le fond du thème est peint sur le conteneur racine : pendant le chevauchement des
         // écrans en transition, aucun interstice clair ne peut apparaître (cause historique du
         // « flash » lors d'un fondu — voir AppNavDisplay).
@@ -119,9 +142,26 @@ fun App() {
             AppNavDisplay(
                 backStack = backStack,
                 onLoggedIn = rootState::onLoggedIn,
-                onLogout = { scope.launch { logout(); rootState.onLoggedOut(); resetTo(Route.Login) } },
+                // `clear()` au logout : sans ça, le compte suivant sur la même machine hériterait
+                // d'une bulle vers un salon qui n'est pas le sien.
+                onLogout = {
+                    scope.launch {
+                        logout()
+                        lobbyState.clear()
+                        rootState.onLoggedOut()
+                        resetTo(Route.Login)
+                    }
+                },
                 onThemeChange = rootState::setTheme,
                 resetTo = ::resetTo,
+            )
+            // Bulle de retour à la session : on peut quitter la page du salon — puis celle de la
+            // partie — tout en y restant engagé côté serveur. Montée **avant** l'hôte des
+            // messages, qui occupe le même bord et doit donc passer par-dessus.
+            SessionReturnBubble(
+                lobbyState = lobbyState,
+                alreadyInSession = alreadyInSession,
+                onOpenSession = { shortcut -> backStack.openSession(shortcut) },
             )
             UiMessageHost(bus = uiMessageBus)
         }

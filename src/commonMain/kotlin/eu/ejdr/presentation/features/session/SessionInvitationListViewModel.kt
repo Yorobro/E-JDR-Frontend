@@ -133,7 +133,12 @@ class SessionInvitationListViewModel(
                 )
                 // Activer le groupe débloque l'accès aux features (campagnes, fiches, lobby…).
                 activeGroupState.select(invitation.groupId)
-                lobbyState.open(lobby, members, canManage = false)
+                lobbyState.open(
+                    lobby = lobby,
+                    title = invitation.title,
+                    members = members,
+                    canManage = false,
+                )
                 _error.value = null
                 uiMessageBus.emit(UiMessage.success("Invitation acceptée"))
                 _navigateToLobby.value = LobbyDestination(invitation.sessionId, invitation.title)

@@ -201,9 +201,15 @@ class SessionDetailViewModel(
             createLobby(sessionId, participantUserIds).fold(
                 onSuccess = { lobby ->
                     _error.value = null
-                    // Dépose le lobby (+ membres conviables) dans l'état partagé, à destination de
-                    // l'écran de lobby vers lequel la page va naviguer.
-                    lobbyState.open(lobby, _selectableMembers.value, canManage = true)
+                    // Dépose le lobby (+ titre et membres conviables) dans l'état partagé, à
+                    // destination de l'écran de lobby vers lequel la page va naviguer. Le titre sert
+                    // aussi à la bulle de retour globale, qui doit pouvoir rouvrir ce salon plus tard.
+                    lobbyState.open(
+                        lobby = lobby,
+                        title = _session.value?.title.orEmpty(),
+                        members = _selectableMembers.value,
+                        canManage = true,
+                    )
                     uiMessageBus.emit(UiMessage.success("Lobby ouvert"))
                     _lobbyOpened.value = true
                     load()

@@ -27,18 +27,25 @@ private const val REMOVED_MESSAGE = "Vous avez été retiré de la session"
  * le handshake WebSocket) : le recevoir suffit à savoir qu'il s'agit de soi — inutile de lire
  * l'utilisateur courant pour se comparer à la liste des participants.
  *
- * Responsabilité bornée : avertir (message en haut de l'écran, il n'a rien demandé) et lever
- * [ejected]. **C'est l'appelant qui décide** de la navigation, car lui seul sait sur quel écran
- * se trouve le joueur : sortir du salon d'attente n'a de sens que s'il y est.
+ * Responsabilité bornée : avertir (message en haut de l'écran, il n'a rien demandé), vider l'état
+ * du salon et lever [ejected]. **C'est l'appelant qui décide** de la navigation, car lui seul sait
+ * sur quel écran se trouve le joueur : sortir du salon d'attente n'a de sens que s'il y est.
+ *
+ * Vider [SessionLobbyState] fait partie du retrait lui-même, pas de la navigation : le raccourci
+ * qui alimente la bulle de retour globale y vit, et il doit disparaître **dans la même
+ * recomposition** que l'affichage du message — sinon le joueur garde sous les yeux un bouton vers un
+ * salon dont il ne fait plus partie.
  *
  * @property scope Portée de coroutine qui porte l'écoute (celle de la racine).
  * @property invalidationBus Bus d'invalidation temps réel.
  * @property uiMessageBus Bus des messages UI transitoires.
+ * @property lobbyState État partagé du salon, vidé au retrait.
  */
 class SessionRemovalWatcher(
     scope: CoroutineScope,
     private val invalidationBus: InvalidationBus,
     private val uiMessageBus: UiMessageBus,
+    private val lobbyState: SessionLobbyState,
 ) {
 
     private val _ejected = MutableStateFlow(false)
@@ -50,6 +57,7 @@ class SessionRemovalWatcher(
         scope.launch {
             invalidationBus.events.collect { invalidation ->
                 if (invalidation.resource == RESOURCE_SESSION_REMOVED) {
+                    lobbyState.clear()
                     uiMessageBus.emit(UiMessage.error(REMOVED_MESSAGE, UiMessagePlacement.TOP))
                     _ejected.value = true
                 }
