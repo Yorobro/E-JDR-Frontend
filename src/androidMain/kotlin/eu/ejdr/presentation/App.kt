@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import eu.ejdr.application.features.auth.abstraction.usecase.LogoutUseCase
 import eu.ejdr.application.features.auth.abstraction.usecase.RestoreSessionUseCase
@@ -89,7 +90,10 @@ fun App() {
 
         LaunchedEffect(sessionStatus) {
             when (sessionStatus) {
-                SessionStatus.Authenticated -> resetTo(Route.Home)
+                // Seulement depuis un écran pré-authentification : une rotation recrée l'Activity,
+                // donc `rootState` et une nouvelle restauration de session, alors que la pile, elle,
+                // est restaurée. Réinitialiser sans condition renverrait l'utilisateur à l'accueil.
+                SessionStatus.Authenticated -> if (backStack.lastOrNull().isPreAuth()) resetTo(Route.Home)
                 SessionStatus.Unauthenticated -> resetTo(Route.Login)
                 SessionStatus.Unknown -> Unit
             }
@@ -154,3 +158,7 @@ fun App() {
         }
     }
 }
+
+/** Pile vide ou écran d'avant connexion : les seuls depuis lesquels l'authentification mène à l'accueil. */
+private fun NavKey?.isPreAuth(): Boolean =
+    this == null || this is Route.Splash || this is Route.Login || this is Route.Register
