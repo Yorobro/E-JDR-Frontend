@@ -14,12 +14,18 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.CreateLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.DeleteSessionUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
 import eu.ejdr.presentation.features.session.SessionDetailViewModel
+import eu.ejdr.presentation.features.session.SessionLobbyState
 import eu.ejdr.presentation.features.session.component.ConfirmDeleteSessionDialog
+import eu.ejdr.presentation.features.session.component.LaunchSessionDialog
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
@@ -44,6 +50,7 @@ private val DatePattern = Regex("""\d{4}-\d{2}-\d{2}""")
  * @param id Identifiant de la session.
  * @param title Titre initial (affiché immédiatement en attendant le chargement complet).
  * @param onDeleted Callback déclenché après une suppression réussie (retour arrière).
+ * @param onLobbyOpened Callback déclenché après l'ouverture du lobby (navigation vers le salon d'attente).
  * @param modifier Modifier Compose appliqué à la page.
  */
 @Composable
@@ -51,28 +58,39 @@ fun SessionDetailPage(
     id: String,
     title: String,
     onDeleted: () -> Unit,
+    onLobbyOpened: (id: String, title: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val activeGroupState = koinInject<ActiveGroupState>()
     val viewModel = koinViewModel {
         SessionDetailViewModel(
             sessionId = id,
+            activeGroupId = activeGroupState.activeGroupId,
             getById = get<GetSessionUseCase>(),
             update = get<UpdateSessionUseCase>(),
             deleteSession = get<DeleteSessionUseCase>(),
+            createLobby = get<CreateLobbyUseCase>(),
+            getGroup = get<GetGroupUseCase>(),
+            getCurrentUser = get<GetCurrentUserUseCase>(),
+            listCampaigns = get<ListCampaignsUseCase>(),
             uiMessageBus = get<UiMessageBus>(),
+            lobbyState = get<SessionLobbyState>(),
         )
     }
-    val activeGroupState = koinInject<ActiveGroupState>()
-    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
+    val activeGroupId by activeGroupState.activeGroupId.collectAsStateWithLifecycle()
     val session by viewModel.session.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val deleted by viewModel.deleted.collectAsStateWithLifecycle()
+    val lobbyOpened by viewModel.lobbyOpened.collectAsStateWithLifecycle()
+    val isGameMaster by viewModel.isGameMaster.collectAsStateWithLifecycle()
+    val selectableMembers by viewModel.selectableMembers.collectAsStateWithLifecycle()
 
     // Champs éditables, initialisés depuis la session une fois chargée.
     var titleField by remember { mutableStateOf(title) }
     var dateField by remember { mutableStateOf("") }
     var showDelete by remember { mutableStateOf(false) }
+    var showLaunch by remember { mutableStateOf(false) }
 
     LaunchedEffect(session) {
         session?.let {
@@ -83,6 +101,13 @@ fun SessionDetailPage(
 
     LaunchedEffect(deleted) {
         if (deleted) onDeleted()
+    }
+
+    LaunchedEffect(lobbyOpened) {
+        if (lobbyOpened) {
+            onLobbyOpened(id, session?.title ?: titleField)
+            viewModel.consumeLobbyOpened()
+        }
     }
 
     val dateValid = DatePattern.matches(dateField)
@@ -100,7 +125,7 @@ fun SessionDetailPage(
             value = titleField,
             onValueChange = { titleField = it },
             label = "Titre de la session",
-            enabled = canEdit,
+            enabled = isGameMaster,
             modifier = Modifier.fillMaxWidth(),
         )
         AppTextField(
@@ -108,15 +133,26 @@ fun SessionDetailPage(
             onValueChange = { dateField = it },
             label = "Date (AAAA-MM-JJ)",
             placeholder = "2026-06-20",
-            enabled = canEdit,
+            enabled = isGameMaster,
             errorMessage = if (dateField.isNotBlank() && !dateValid) "Format attendu : AAAA-MM-JJ" else null,
             modifier = Modifier.fillMaxWidth(),
         )
 
         FormError(message = error)
 
-        // Édition réservée aux éditeurs du groupe (ADMIN/MJ) ; un MEMBER consulte en lecture seule.
-        if (canEdit) {
+        // Édition réservée au MJ de la campagne parente ; les autres consultent en lecture seule.
+        if (isGameMaster) {
+            // Lancer la session n'a de sens que tant qu'elle est planifiée (pas déjà en lobby/active).
+            if (session?.status == "PLANNED") {
+                AppButton(
+                    label = "Lancer la session",
+                    onClick = {
+                        activeGroupId?.let { viewModel.loadSelectableMembers(it) }
+                        showLaunch = true
+                    },
+                    enabled = !isLoading,
+                )
+            }
             SessionEditActions(
                 canSave = canSave,
                 isLoading = isLoading,
@@ -134,6 +170,18 @@ fun SessionDetailPage(
                 viewModel.delete()
             },
             onDismiss = { showDelete = false },
+        )
+    }
+
+    if (showLaunch) {
+        LaunchSessionDialog(
+            members = selectableMembers,
+            loading = isLoading,
+            onDismiss = { showLaunch = false },
+            onConfirm = { ids ->
+                showLaunch = false
+                viewModel.openLobby(ids)
+            },
         )
     }
 }

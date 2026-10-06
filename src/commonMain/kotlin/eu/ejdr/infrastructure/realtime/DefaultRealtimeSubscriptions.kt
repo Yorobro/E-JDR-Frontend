@@ -12,13 +12,12 @@ import kotlinx.coroutines.sync.withLock
  * de contrôle via [RealtimeConnection.sendRaw]. Les envois sont lancés sur [scope] (les
  * appels publics sont non-suspendants pour rester simples côté ViewModel).
  *
- * **Caveat — pas de compteur de références :** L'ensemble [channels] n'est pas à compteur
- * de références. Si le même canal était abonné par deux appelants simultanément (p.ex. dans
- * une future UI multi-pane affichant la même fiche deux fois), le premier [unsubscribe]
- * le retirerait de l'ensemble et arrêterait les mises à jour pour les autres. La feature
- * actuelle (écran de détail unique) ne fait jamais cela, donc c'est sûr aujourd'hui.
- * Quand ce sera nécessaire, la correction sera de faire `Map<String, Int>` (ne dépublier
- * que quand le compteur atteint 0).
+ * **Compteur de références :** un même canal peut être voulu par plusieurs écrans à la fois
+ * (typiquement `group:{id}`, suivi par la liste des campagnes, le détail du groupe **et** le
+ * salon d'attente d'une session). [channels] compte donc les abonnés : le frame `subscribe`
+ * n'est envoyé qu'au **premier**, et `unsubscribe` qu'au **dernier** parti. Sans ce compteur,
+ * la fermeture d'un écran coupait le flux des autres (un joueur restait bloqué au salon,
+ * jamais basculé vers l'écran de jeu).
  *
  * @property connection Connexion temps réel (envoi des frames).
  * @property scope Portée portant les envois asynchrones.
@@ -29,24 +28,39 @@ class DefaultRealtimeSubscriptions(
 ) : RealtimeSubscriptions {
 
     private val mutex = Mutex()
-    private val channels = mutableSetOf<String>()
+
+    /** Canaux voulus → nombre d'abonnés en cours (jamais d'entrée à 0). */
+    private val channels = mutableMapOf<String, Int>()
 
     override fun subscribe(channel: String) {
         scope.launch {
-            val added = mutex.withLock { channels.add(channel) }
-            if (added) connection.sendRaw(frame("subscribe", channel))
+            val isFirst = mutex.withLock {
+                val count = (channels[channel] ?: 0) + 1
+                channels[channel] = count
+                count == 1
+            }
+            if (isFirst) connection.sendRaw(frame("subscribe", channel))
         }
     }
 
     override fun unsubscribe(channel: String) {
         scope.launch {
-            val removed = mutex.withLock { channels.remove(channel) }
-            if (removed) connection.sendRaw(frame("unsubscribe", channel))
+            val isLast = mutex.withLock {
+                val count = channels[channel] ?: return@withLock false
+                if (count > 1) {
+                    channels[channel] = count - 1
+                    false
+                } else {
+                    channels.remove(channel)
+                    true
+                }
+            }
+            if (isLast) connection.sendRaw(frame("unsubscribe", channel))
         }
     }
 
     override suspend fun resubscribeAll() {
-        val snapshot = mutex.withLock { channels.toList() }
+        val snapshot = mutex.withLock { channels.keys.toList() }
         for (channel in snapshot) {
             connection.sendRaw(frame("subscribe", channel))
         }

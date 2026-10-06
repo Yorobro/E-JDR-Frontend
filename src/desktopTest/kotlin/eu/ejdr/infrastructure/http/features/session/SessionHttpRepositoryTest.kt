@@ -133,6 +133,88 @@ class SessionHttpRepositoryTest {
     }
 
     @Test
+    fun `createLobby success maps the lobby and participants`() = runTest {
+        val body =
+            """{"sessionId":"s-1","status":"LOBBY","participants":[{"userId":"u-player","status":"INVITED","characterSheetId":null}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body))
+            .createLobby("s-1", listOf("u-player"))
+
+        assertIs<Result.Success<eu.ejdr.domain.features.session.entities.SessionLobby>>(result)
+        assertEquals("LOBBY", result.value.status)
+        assertEquals(1, result.value.participants.size)
+        assertEquals("u-player", result.value.participants.first().userId)
+        assertEquals("INVITED", result.value.participants.first().status)
+    }
+
+    @Test
+    fun `createLobby 409 SESSION_NOT_LAUNCHABLE maps to SessionNotLaunchable`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.Conflict, """{"code":"SESSION_NOT_LAUNCHABLE"}"""),
+        ).createLobby("s-1", listOf("u-player"))
+
+        assertIs<Result.Failure<SessionError>>(result)
+        assertEquals(SessionError.SessionNotLaunchable, result.error)
+    }
+
+    @Test
+    fun `createLobby 400 EMPTY_PARTICIPANT_SELECTION maps to EmptyParticipantSelection`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.BadRequest, """{"code":"EMPTY_PARTICIPANT_SELECTION"}"""),
+        ).createLobby("s-1", emptyList())
+
+        assertIs<Result.Failure<SessionError>>(result)
+        assertEquals(SessionError.EmptyParticipantSelection, result.error)
+    }
+
+    @Test
+    fun `inviteToLobby success maps the refreshed lobby`() = runTest {
+        val body =
+            """{"sessionId":"s-1","status":"LOBBY","participants":[{"userId":"u-present","status":"ACCEPTED","characterSheetId":null},{"userId":"u-refus","status":"INVITED","characterSheetId":null}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body))
+            .inviteToLobby("s-1", listOf("u-refus"))
+
+        assertIs<Result.Success<eu.ejdr.domain.features.session.entities.SessionLobby>>(result)
+        assertEquals("LOBBY", result.value.status)
+        // Le lobby renvoyé est complet : le joueur reconvié y est repassé « en attente ».
+        assertEquals(2, result.value.participants.size)
+        assertEquals("INVITED", result.value.participants.last().status)
+    }
+
+    @Test
+    fun `inviteToLobby 409 LOBBY_NOT_OPEN maps to LobbyNotOpen`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.Conflict, """{"code":"LOBBY_NOT_OPEN"}"""),
+        ).inviteToLobby("s-1", listOf("u-player"))
+
+        assertIs<Result.Failure<SessionError>>(result)
+        assertEquals(SessionError.LobbyNotOpen, result.error)
+    }
+
+    @Test
+    fun `removeParticipant success maps the lobby without the removed player`() = runTest {
+        val body =
+            """{"sessionId":"s-1","status":"LOBBY","participants":[{"userId":"u-present","status":"ACCEPTED","characterSheetId":null}]}"""
+        val result = repository(clientReturning(HttpStatusCode.OK, body))
+            .removeParticipant("s-1", "u-retire")
+
+        assertIs<Result.Success<eu.ejdr.domain.features.session.entities.SessionLobby>>(result)
+        assertEquals("LOBBY", result.value.status)
+        // Le serveur renvoie le lobby complet à jour : le joueur retiré n'y figure plus.
+        assertEquals(1, result.value.participants.size)
+        assertEquals("u-present", result.value.participants.single().userId)
+    }
+
+    @Test
+    fun `removeParticipant 409 LOBBY_NOT_OPEN maps to LobbyNotOpen`() = runTest {
+        val result = repository(
+            clientReturning(HttpStatusCode.Conflict, """{"code":"LOBBY_NOT_OPEN"}"""),
+        ).removeParticipant("s-1", "u-player")
+
+        assertIs<Result.Failure<SessionError>>(result)
+        assertEquals(SessionError.LobbyNotOpen, result.error)
+    }
+
+    @Test
     fun `delete success on 204`() = runTest {
         val result = repository(clientReturning(HttpStatusCode.NoContent, "")).delete("s-1")
         assertIs<Result.Success<Unit>>(result)

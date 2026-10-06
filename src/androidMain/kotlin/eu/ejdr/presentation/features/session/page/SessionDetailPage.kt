@@ -14,13 +14,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
+import eu.ejdr.application.features.campaign.abstraction.usecase.ListCampaignsUseCase
+import eu.ejdr.application.features.friendgroup.abstraction.usecase.GetGroupUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.CreateLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.DeleteSessionUseCase
 import eu.ejdr.application.shared.feedback.UiMessageBus
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
 import eu.ejdr.presentation.features.friendgroup.ActiveGroupState
 import eu.ejdr.presentation.features.session.SessionDetailViewModel
+import eu.ejdr.presentation.features.session.SessionLobbyState
 import eu.ejdr.presentation.features.session.component.ConfirmDeleteSessionDialog
+import eu.ejdr.presentation.features.session.component.LaunchSessionDialog
 import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppText
 import eu.ejdr.presentation.shared.component.atomic.AppTextField
@@ -39,27 +45,38 @@ fun SessionDetailPage(
     id: String,
     title: String,
     onDeleted: () -> Unit,
+    onLobbyOpened: (id: String, title: String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val activeGroupState = koinInject<ActiveGroupState>()
     val viewModel = koinViewModel {
         SessionDetailViewModel(
             sessionId = id,
+            activeGroupId = activeGroupState.activeGroupId,
             getById = get<GetSessionUseCase>(),
             update = get<UpdateSessionUseCase>(),
             deleteSession = get<DeleteSessionUseCase>(),
+            createLobby = get<CreateLobbyUseCase>(),
+            getGroup = get<GetGroupUseCase>(),
+            getCurrentUser = get<GetCurrentUserUseCase>(),
+            listCampaigns = get<ListCampaignsUseCase>(),
             uiMessageBus = get<UiMessageBus>(),
+            lobbyState = get<SessionLobbyState>(),
         )
     }
-    val activeGroupState = koinInject<ActiveGroupState>()
-    val canEdit by activeGroupState.canEdit.collectAsStateWithLifecycle()
+    val activeGroupId by activeGroupState.activeGroupId.collectAsStateWithLifecycle()
     val session by viewModel.session.collectAsStateWithLifecycle()
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val error by viewModel.error.collectAsStateWithLifecycle()
     val deleted by viewModel.deleted.collectAsStateWithLifecycle()
+    val lobbyOpened by viewModel.lobbyOpened.collectAsStateWithLifecycle()
+    val isGameMaster by viewModel.isGameMaster.collectAsStateWithLifecycle()
+    val selectableMembers by viewModel.selectableMembers.collectAsStateWithLifecycle()
 
     var titleField by remember { mutableStateOf(title) }
     var dateField by remember { mutableStateOf("") }
     var showDelete by remember { mutableStateOf(false) }
+    var showLaunch by remember { mutableStateOf(false) }
 
     LaunchedEffect(session) {
         session?.let {
@@ -70,6 +87,13 @@ fun SessionDetailPage(
 
     LaunchedEffect(deleted) {
         if (deleted) onDeleted()
+    }
+
+    LaunchedEffect(lobbyOpened) {
+        if (lobbyOpened) {
+            onLobbyOpened(id, session?.title ?: titleField)
+            viewModel.consumeLobbyOpened()
+        }
     }
 
     val dateValid = DatePattern.matches(dateField)
@@ -85,7 +109,7 @@ fun SessionDetailPage(
             value = titleField,
             onValueChange = { titleField = it },
             label = "Titre de la session",
-            enabled = canEdit,
+            enabled = isGameMaster,
             modifier = Modifier.fillMaxWidth(),
         )
         AppTextField(
@@ -93,14 +117,24 @@ fun SessionDetailPage(
             onValueChange = { dateField = it },
             label = "Date (AAAA-MM-JJ)",
             placeholder = "2026-06-20",
-            enabled = canEdit,
+            enabled = isGameMaster,
             errorMessage = if (dateField.isNotBlank() && !dateValid) "Format attendu : AAAA-MM-JJ" else null,
             modifier = Modifier.fillMaxWidth(),
         )
 
         FormError(message = error)
 
-        if (canEdit) {
+        if (isGameMaster) {
+            if (session?.status == "PLANNED") {
+                AppButton(
+                    label = "Lancer la session",
+                    onClick = {
+                        activeGroupId?.let { viewModel.loadSelectableMembers(it) }
+                        showLaunch = true
+                    },
+                    enabled = !isLoading,
+                )
+            }
             SessionEditActions(
                 canSave = canSave,
                 isLoading = isLoading,
@@ -118,6 +152,18 @@ fun SessionDetailPage(
                 viewModel.delete()
             },
             onDismiss = { showDelete = false },
+        )
+    }
+
+    if (showLaunch) {
+        LaunchSessionDialog(
+            members = selectableMembers,
+            loading = isLoading,
+            onDismiss = { showLaunch = false },
+            onConfirm = { ids ->
+                showLaunch = false
+                viewModel.openLobby(ids)
+            },
         )
     }
 }
