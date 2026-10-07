@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
@@ -23,12 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.presentation.features.charactersheet.component.StatKeys
 import eu.ejdr.presentation.shared.component.base.AppIconButton
 import eu.ejdr.presentation.shared.component.atomic.AppCheckbox
 import eu.ejdr.presentation.shared.component.atomic.AppDropdown
+import eu.ejdr.presentation.shared.component.atomic.AppButton
 import eu.ejdr.presentation.shared.component.atomic.AppIcon
 import eu.ejdr.presentation.shared.component.atomic.AppNumberField
 import eu.ejdr.presentation.shared.component.atomic.AppText
@@ -159,7 +163,7 @@ private fun ReferenceCardDetails(
         ReferenceType.ARMURE ->
             CardDetailLine("Protection : ${item.protectionPoints ?: 0} pt")
 
-        ReferenceType.PEUPLE -> StatLine(item)
+        ReferenceType.PEUPLE -> StatLines(item)
 
         ReferenceType.FORMATION -> {
             StatLine(item)
@@ -180,13 +184,30 @@ private fun ReferenceCardDetails(
     }
 }
 
-/** Ligne « Stat : {libellé FR} (+{bonus}) » d'une carte formation/peuple, si une stat est définie. */
+/** Ligne « Stat : {libellé FR} (+{bonus}) » d'une carte **formation** (mono-bonus). */
 @Composable
 private fun StatLine(item: ReferenceItem) {
     val stat = item.stat ?: return
-    val label = StatKeys.ORDERED.firstOrNull { it.first == stat }?.second ?: stat
-    CardDetailLine("Stat : $label (+${item.bonus ?: 0})")
+    CardDetailLine("Stat : ${statLabel(stat)} (+${item.bonus ?: 0})")
 }
+
+/**
+ * Bonus d'une carte **peuple** (0..N), joints sur **une seule ligne** :
+ * « Stats : Social (+2), Vigueur (+1) ».
+ *
+ * Une ligne par bonus déborderait : la carte fait [CardHeight] et [CardDetailLine] est limité à
+ * deux lignes — un peuple peut porter jusqu'à 5 bonus.
+ */
+@Composable
+private fun StatLines(item: ReferenceItem) {
+    if (item.statBonuses.isEmpty()) return
+    val text = item.statBonuses.joinToString(", ") { "${statLabel(it.stat)} (+${it.bonus})" }
+    CardDetailLine("Stats : $text")
+}
+
+/** Libellé FR d'un slug de statistique (repli sur le slug si inconnu). */
+private fun statLabel(slug: String): String =
+    StatKeys.ORDERED.firstOrNull { it.first == slug }?.second ?: slug
 
 /** Ligne de détail discrète (texte secondaire centré) d'une carte de référence. */
 @Composable
@@ -234,14 +255,7 @@ fun ReferenceFormDialog(
     label: String,
     confirmLabel: String,
     onDismiss: () -> Unit,
-    onConfirm: (
-        name: String,
-        stat: String?,
-        bonus: Int?,
-        competenceIds: List<String>,
-        protectionPoints: Int?,
-        description: String?,
-    ) -> Unit,
+    onConfirm: (ReferenceItemForm) -> Unit,
     initial: ReferenceItem? = null,
     availableCompetences: List<ReferenceItem> = emptyList(),
     errorMessage: String? = null,
@@ -255,8 +269,18 @@ fun ReferenceFormDialog(
     }
     var description by remember { mutableStateOf(initial?.description.orEmpty()) }
     val selectedCompetences = remember { mutableStateListOf<String>().apply { addAll(initial?.competenceIds.orEmpty()) } }
+    // Lignes de bonus d'un peuple. Immuables et remplacées par `rows[i] = rows[i].copy(...)` :
+    // muter un champ `var` d'une data class dans un SnapshotStateList ne déclencherait PAS la
+    // recomposition (piège Compose classique).
+    val statBonusRows = remember {
+        mutableStateListOf<StatBonusRow>().apply {
+            addAll(initial?.statBonuses.orEmpty().map { StatBonusRow(it.stat, it.bonus.toString()) })
+        }
+    }
 
-    val hasStatChoice = type == ReferenceType.FORMATION || type == ReferenceType.PEUPLE
+    // Contrat asymétrique du backend : une formation porte AU PLUS UN bonus, un peuple 0..N.
+    val hasSingleStat = type == ReferenceType.FORMATION
+    val hasMultiStats = type == ReferenceType.PEUPLE
     val hasDescription = type == ReferenceType.SORT || type == ReferenceType.MIRACLE
     val selectedStat = STAT_OPTIONS.firstOrNull { it.first == statLabel }?.second
 
@@ -266,12 +290,15 @@ fun ReferenceFormDialog(
         confirmLabel = confirmLabel,
         onConfirm = {
             onConfirm(
-                name.trim(),
-                selectedStat,
-                selectedStat?.let { bonus.toIntOrNull() ?: 1 },
-                selectedCompetences.toList(),
-                if (type == ReferenceType.ARMURE) protection.toIntOrNull() ?: 0 else null,
-                if (hasDescription) description.trim().ifBlank { null } else null,
+                ReferenceItemForm(
+                    name = name.trim(),
+                    stat = if (hasSingleStat) selectedStat else null,
+                    bonus = if (hasSingleStat) selectedStat?.let { bonus.toIntOrNull() ?: 1 } else null,
+                    statBonuses = if (hasMultiStats) statBonusRows.toReferenceStatBonuses() else emptyList(),
+                    competenceIds = selectedCompetences.toList(),
+                    protectionPoints = if (type == ReferenceType.ARMURE) protection.toIntOrNull() ?: 0 else null,
+                    description = if (hasDescription) description.trim().ifBlank { null } else null,
+                ),
             )
         },
         confirmEnabled = name.isNotBlank(),
@@ -287,7 +314,7 @@ fun ReferenceFormDialog(
                 errorMessage = if (nameTouched && name.isBlank()) "Le nom ne peut pas être vide" else null,
                 modifier = Modifier.fillMaxWidth(),
             )
-            if (hasStatChoice) {
+            if (hasSingleStat) {
                 StatBonusFields(
                     statLabel = statLabel,
                     onStatSelected = { newLabel ->
@@ -302,6 +329,9 @@ fun ReferenceFormDialog(
                     onBonusChange = { bonus = it },
                     showBonus = selectedStat != null,
                 )
+            }
+            if (hasMultiStats) {
+                StatBonusListFields(rows = statBonusRows)
             }
             if (type == ReferenceType.FORMATION) {
                 CompetencePicker(
@@ -332,8 +362,8 @@ fun ReferenceFormDialog(
 }
 
 /**
- * Sous-bloc « statistique + bonus » du dialog de création (formation/peuple) : dropdown de stat et,
- * si une stat est choisie, champ numérique du montant de bonus.
+ * Sous-bloc « statistique + bonus » du dialog d'une **formation** (mono-bonus) : dropdown de stat
+ * et, si une stat est choisie, champ numérique du montant de bonus.
  */
 @Composable
 private fun StatBonusFields(
@@ -358,6 +388,91 @@ private fun StatBonusFields(
             allowNegative = true,
             modifier = Modifier.fillMaxWidth(),
         )
+    }
+}
+
+/**
+ * Une ligne de bonus en cours de saisie (dialog **peuple**). Immuable : dans un `SnapshotStateList`,
+ * seule la **substitution** d'un élément déclenche la recomposition — muter un `var` interne
+ * passerait inaperçu.
+ *
+ * @property statSlug Slug serveur de la statistique ciblée.
+ * @property bonus Montant saisi (texte : le champ peut être transitoirement vide).
+ */
+private data class StatBonusRow(val statSlug: String, val bonus: String)
+
+/** Convertit les lignes saisies en bonus du domaine (un champ vide retombe sur le défaut 1). */
+private fun List<StatBonusRow>.toReferenceStatBonuses(): List<ReferenceStatBonus> =
+    map { ReferenceStatBonus(stat = it.statSlug, bonus = it.bonus.toIntOrNull() ?: 1) }
+        // Ceinture : le dropdown empêche déjà de choisir deux fois la même stat, et le backend
+        // renverrait 400. Ce distinctBy garantit qu'on ne l'atteint jamais.
+        .distinctBy { it.stat }
+
+/**
+ * Sous-bloc « bonus multiples » du dialog d'un **peuple** : une ligne par bonus (stat + montant +
+ * bouton de retrait), et un bouton d'ajout.
+ *
+ * **Le doublon de statistique est impossible par construction** : le dropdown d'une ligne ne propose
+ * que les stats **non prises par les autres lignes**. Plutôt qu'un message d'erreur a posteriori,
+ * l'utilisateur ne peut simplement pas se tromper. Le bouton d'ajout disparaît quand les 5 stats
+ * sont utilisées.
+ */
+@Composable
+private fun StatBonusListFields(rows: SnapshotStateList<StatBonusRow>) {
+    Column(verticalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm)) {
+        AppText(text = "Bonus de caractéristique", style = AppTextStyle.Label)
+
+        rows.forEachIndexed { index, row ->
+            // Stats encore libres pour CETTE ligne : toutes sauf celles prises par les AUTRES.
+            val takenByOthers = rows.filterIndexed { i, _ -> i != index }.map { it.statSlug }.toSet()
+            val options = StatKeys.ORDERED.filter { it.first !in takenByOthers }
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(AppTheme.dimens.sm),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AppDropdown(
+                    value = statLabel(row.statSlug),
+                    options = options.map { it.second },
+                    onSelect = { label ->
+                        val slug = StatKeys.ORDERED.firstOrNull { it.second == label }?.first
+                        if (slug != null) rows[index] = row.copy(statSlug = slug)
+                    },
+                    label = "Statistique",
+                    modifier = Modifier.weight(1f),
+                )
+                AppNumberField(
+                    value = row.bonus,
+                    onValueChange = { rows[index] = row.copy(bonus = it) },
+                    label = "Bonus",
+                    allowNegative = true,
+                    modifier = Modifier.weight(1f),
+                )
+                AppIconButton(
+                    onClick = { rows.removeAt(index) },
+                    contentDescription = "Retirer ce bonus",
+                ) {
+                    AppIcon(
+                        imageVector = AppIcons.Delete,
+                        contentDescription = null,
+                        tint = AppTheme.colors.danger,
+                    )
+                }
+            }
+        }
+
+        val remaining = StatKeys.ORDERED.map { it.first } - rows.map { it.statSlug }.toSet()
+        if (remaining.isNotEmpty()) {
+            AppButton(
+                label = "Ajouter un bonus",
+                // Pré-remplie avec la première stat libre : une ligne est toujours valide dès sa
+                // création (pas d'état « stat non choisie » à gérer).
+                onClick = { rows.add(StatBonusRow(remaining.first(), DEFAULT_BONUS)) },
+                variant = ButtonVariant.Secondary,
+                leadingIcon = AppIcons.Add,
+            )
+        }
     }
 }
 

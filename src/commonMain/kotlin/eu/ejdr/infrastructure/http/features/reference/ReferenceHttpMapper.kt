@@ -1,6 +1,7 @@
 package eu.ejdr.infrastructure.http.features.reference
 
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
 import eu.ejdr.domain.features.reference.error.ReferenceError
 import eu.ejdr.infrastructure.http.features.reference.dto.ReferenceItemDto
 import io.ktor.http.HttpStatusCode
@@ -22,8 +23,10 @@ object ReferenceHttpMapper {
             id = dto.id,
             name = dto.name,
             createdAt = dto.createdAt,
+            // stat/bonus : formations (mono-bonus). statBonuses : peuples (0..N). Jamais les deux.
             stat = dto.stat,
             bonus = dto.bonus,
+            statBonuses = dto.statBonuses.map { ReferenceStatBonus(it.stat, it.bonus) },
             competenceIds = dto.competenceIds,
             protectionPoints = dto.protectionPoints,
             description = dto.description,

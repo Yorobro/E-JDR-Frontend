@@ -14,8 +14,17 @@ jobs:
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version: '22'
+          cache: npm
       - name: Install dev deps
-        run: npm install
-      - name: Validate commit messages
-        run: npx commitlint --from=HEAD~10 --to=HEAD
+        run: npm ci
+      # Ne valider QUE les commits de la PR. `--from=HEAD~10` remontait à l'aveugle 10 commits en
+      # arrière : il relisait des commits déjà mergés dans main et faisait échouer la PR pour des
+      # messages qu'on ne peut plus corriger (et laissait passer une PR de plus de 10 commits).
+      # Aligné sur le workflow du backend.
+      - name: Validate PR commits
+        run: >-
+          npx commitlint
+          --from "${{ github.event.pull_request.base.sha }}"
+          --to "${{ github.event.pull_request.head.sha }}"
+          --verbose

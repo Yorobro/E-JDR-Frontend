@@ -2,6 +2,7 @@ package eu.ejdr.infrastructure.http.features.charactersheet
 
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.Purse
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedCompetence
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedFormation
 import eu.ejdr.domain.features.charactersheet.entities.ResolvedReference
@@ -67,9 +68,17 @@ object CharacterSheetHttpMapper {
             competences = dto.competences.map { ResolvedCompetence(it.id, it.name) },
         )
 
-    /** Convertit le bloc peuple résolu (dérivé, affichage seul) en vue domaine. */
+    /**
+     * Convertit le bloc peuple résolu (dérivé, affichage seul) en vue domaine.
+     *
+     * Un peuple porte 0..N bonus (au plus un par stat), là où une formation n'en porte qu'un.
+     */
     private fun toResolvedReference(dto: ResolvedReferenceDto): ResolvedReference =
-        ResolvedReference(id = dto.id, name = dto.name, stat = dto.stat, bonus = dto.bonus)
+        ResolvedReference(
+            id = dto.id,
+            name = dto.name,
+            statBonuses = dto.statBonuses.map { ReferenceStatBonus(it.stat, it.bonus) },
+        )
 
     /** Convertit une campagne rattachée reçue de l'API en vue domaine (onglet Campagnes). */
     fun toSheetCampaign(dto: SheetCampaignDto): SheetCampaign =

@@ -1,5 +1,6 @@
 package eu.ejdr.presentation.features.charactersheet
 
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
 import eu.ejdr.application.features.auth.abstraction.usecase.GetCurrentUserUseCase
 import eu.ejdr.application.features.charactersheet.abstraction.service.FileSaver
 import eu.ejdr.application.features.charactersheet.abstraction.usecase.ExportCharacterSheetPdfUseCase
@@ -143,7 +144,11 @@ class CharacterSheetDetailViewModelTest {
         // les bonus de stat et compétences dérivées disparaissent jusqu'au prochain chargement.
         val getResult = sheet(name = "Strider", vigueur = 7).copy(
             formation = ResolvedFormation(id = "f-1", name = "Mage", stat = "intelligence", bonus = 3),
-            peuple = ResolvedReference(id = "p-1", name = "Elfe", stat = "dexterite", bonus = 1),
+            peuple = ResolvedReference(
+                id = "p-1",
+                name = "Elfe",
+                statBonuses = listOf(ReferenceStatBonus("dexterite", 1)),
+            ),
         )
         val vm = buildVm(
             getById = GetCharacterSheetUseCase { Result.Success(getResult) },

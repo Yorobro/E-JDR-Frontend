@@ -45,10 +45,14 @@ data class StatDisplay(
 /**
  * Calcule l'affichage d'une stat à partir de sa base, du total serveur et des sources résolues.
  *
- * Une source contribue un bonus uniquement si sa `stat` (slug serveur) est égale à [statKey] ET
- * que son `bonus` est non nul. L'ordre des bonus est déterministe : peuple d'abord, formation
- * ensuite. Le [total] retenu est celui du backend ([total]) ; à défaut (back muet), il est
- * recalculé localement en `(base ?: 0) + somme(bonus)`. Fonction pure (sans dépendance Compose).
+ * Les deux sources sont **asymétriques**, comme côté serveur : la **formation** apporte au plus un
+ * bonus (`stat`/`bonus`), le **peuple** en apporte 0..N — mais **au plus un par statistique**, donc
+ * au plus un pour la stat évaluée ici. L'ordre des bonus est déterministe : peuple d'abord,
+ * formation ensuite.
+ *
+ * Le [total] retenu est celui du backend ; à défaut (back muet, ou version antérieure au
+ * multi-bonus), il est recalculé localement en `(base ?: 0) + somme(bonus)`. Fonction pure (sans
+ * dépendance Compose).
  *
  * @param statKey Slug de la stat évaluée (`dexterite`/`intelligence`/`perception`/`social`/`vigueur`).
  * @param base Valeur de base de la stat (ou `null`).
@@ -64,14 +68,19 @@ fun statDisplay(
     peuple: ResolvedReference?,
 ): StatDisplay {
     val bonuses = buildList {
-        bonusFor(StatBonusSource.PEUPLE, statKey, peuple?.stat, peuple?.bonus)?.let(::add)
+        // `firstOrNull` et non `filter` : le backend garantit au plus un bonus de peuple par stat.
+        // On n'affichera donc jamais « + 1 peuple + 2 peuple » sur une même caractéristique, même
+        // si la donnée dérivait.
+        peuple?.statBonuses
+            ?.firstOrNull { it.stat == statKey && it.bonus != 0 }
+            ?.let { add(StatBonus(StatBonusSource.PEUPLE, it.bonus)) }
         bonusFor(StatBonusSource.FORMATION, statKey, formation?.stat, formation?.bonus)?.let(::add)
     }
     val resolvedTotal = total ?: ((base ?: 0) + bonuses.sumOf { it.amount })
     return StatDisplay(base = base, bonuses = bonuses, total = resolvedTotal)
 }
 
-/** Retourne le bonus si la source cible [statKey] avec un montant non nul, sinon `null`. */
+/** Retourne le bonus si la source **mono-bonus** (formation) cible [statKey], sinon `null`. */
 private fun bonusFor(
     source: StatBonusSource,
     statKey: String,

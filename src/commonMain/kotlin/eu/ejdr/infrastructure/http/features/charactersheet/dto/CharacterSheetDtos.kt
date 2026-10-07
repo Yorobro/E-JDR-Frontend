@@ -1,5 +1,6 @@
 package eu.ejdr.infrastructure.http.features.charactersheet.dto
 
+import eu.ejdr.infrastructure.http.features.reference.dto.StatBonusDto
 import kotlinx.serialization.Serializable
 
 /** Bourse JSON (pièces brutes). */
@@ -11,17 +12,20 @@ data class PurseDto(val gold: Int = 0, val silver: Int = 0, val copper: Int = 0)
 data class ResolvedCompetenceDto(val id: String, val name: String)
 
 /**
- * Référence N‑1 résolue (peuple) renvoyée dans le détail. Champs tolérants (défaut `null`/vide).
+ * **Peuple** résolu renvoyé dans le détail d'une fiche. Champs tolérants (défaut vide) : le front
+ * doit continuer de fonctionner contre un backend pas encore déployé — il affichera alors une fiche
+ * sans ligne de bonus de peuple, mais avec des totaux justes (ils viennent du serveur).
  *
- * @property stat Statistique ciblée (slug serveur), ou `null`.
- * @property bonus Bonus appliqué à [stat] (déjà calculé serveur), ou `null`.
+ * Contrairement à la formation (mono-bonus), un peuple porte 0..N bonus et n'expose donc pas
+ * `stat`/`bonus`.
+ *
+ * @property statBonuses Bonus apportés par le peuple (au plus un par statistique).
  */
 @Serializable
 data class ResolvedReferenceDto(
     val id: String,
     val name: String,
-    val stat: String? = null,
-    val bonus: Int? = null,
+    val statBonuses: List<StatBonusDto> = emptyList(),
 )
 
 /**
