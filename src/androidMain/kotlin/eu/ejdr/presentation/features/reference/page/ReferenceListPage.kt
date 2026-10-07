@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
 import eu.ejdr.presentation.shared.icons.AppIcons
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -138,14 +139,14 @@ fun ReferenceListPage(
         pendingEdit = pendingEdit,
         availableCompetences = availableCompetences,
         onCreateDismiss = { showCreate = false },
-        onCreateConfirm = { name, stat, bonus, competenceIds, protectionPoints, description ->
+        onCreateConfirm = { form ->
             showCreate = false
-            viewModel.create(name, stat, bonus, competenceIds, protectionPoints, description)
+            viewModel.create(form)
         },
         onEditDismiss = { pendingEdit = null },
-        onEditConfirm = { id, name, stat, bonus, competenceIds, protectionPoints, description ->
+        onEditConfirm = { id, form ->
             pendingEdit = null
-            viewModel.update(id, name, stat, bonus, competenceIds, protectionPoints, description)
+            viewModel.update(id, form)
         },
     )
 
@@ -166,9 +167,9 @@ private fun ReferenceFormDialogs(
     pendingEdit: ReferenceItem?,
     availableCompetences: List<ReferenceItem>,
     onCreateDismiss: () -> Unit,
-    onCreateConfirm: (String, String?, Int?, List<String>, Int?, String?) -> Unit,
+    onCreateConfirm: (ReferenceItemForm) -> Unit,
     onEditDismiss: () -> Unit,
-    onEditConfirm: (String, String, String?, Int?, List<String>, Int?, String?) -> Unit,
+    onEditConfirm: (String, ReferenceItemForm) -> Unit,
 ) {
     if (showCreate) {
         ReferenceFormDialog(
@@ -190,9 +191,7 @@ private fun ReferenceFormDialogs(
             confirmLabel = "Enregistrer",
             initial = item,
             onDismiss = onEditDismiss,
-            onConfirm = { name, stat, bonus, competenceIds, protectionPoints, description ->
-                onEditConfirm(item.id, name, stat, bonus, competenceIds, protectionPoints, description)
-            },
+            onConfirm = { form -> onEditConfirm(item.id, form) },
             availableCompetences = availableCompetences,
         )
     }

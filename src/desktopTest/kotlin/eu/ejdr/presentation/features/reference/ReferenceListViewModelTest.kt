@@ -1,5 +1,7 @@
 package eu.ejdr.presentation.features.reference
 
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
@@ -43,9 +45,9 @@ class ReferenceListViewModelTest {
         activeGroupId: StateFlow<String?> = MutableStateFlow("g-1"),
         listItems: ListReferenceItemsUseCase = ListReferenceItemsUseCase { _, _ -> Result.Success(emptyList()) },
         createItem: CreateReferenceItemUseCase =
-            CreateReferenceItemUseCase { _, _, _, _, _, _, _, _ -> Result.Success(item("a")) },
+            CreateReferenceItemUseCase { _, _, _ -> Result.Success(item("a")) },
         updateItem: UpdateReferenceItemUseCase =
-            UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _, _ -> Result.Success(item("a")) },
+            UpdateReferenceItemUseCase { _, _, _, _ -> Result.Success(item("a")) },
         deleteItem: DeleteReferenceItemUseCase = DeleteReferenceItemUseCase { _, _ -> Result.Success(Unit) },
     ) = ReferenceListViewModel(
         type, activeGroupId, listItems, createItem, updateItem, deleteItem,
@@ -120,7 +122,7 @@ class ReferenceListViewModelTest {
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, groupId, _, _, _, _, _ ->
+            createItem = CreateReferenceItemUseCase { _, groupId, _ ->
                 createdGroup = groupId
                 stored = listOf(item("f"))
                 Result.Success(item("f"))
@@ -128,7 +130,7 @@ class ReferenceListViewModelTest {
         )
         advanceUntilIdle()
 
-        vm.create("Rôdeur")
+        vm.create(ReferenceItemForm("Rôdeur"))
         advanceUntilIdle()
 
         assertEquals("g-1", createdGroup)
@@ -141,11 +143,11 @@ class ReferenceListViewModelTest {
         val vm = viewModel(
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
-            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
+            createItem = CreateReferenceItemUseCase { _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
         )
         advanceUntilIdle()
 
-        vm.create("Doublon")
+        vm.create(ReferenceItemForm("Doublon"))
         advanceUntilIdle()
 
         assertEquals(ReferenceError.NameAlreadyUsed.message, vm.error.value)
@@ -174,109 +176,140 @@ class ReferenceListViewModelTest {
 
     @Test
     fun `create formation forwards stat bonus and competence ids and reloads`() = runTest {
-        var capturedStat: String? = "untouched"
-        var capturedBonus: Int? = -999
-        var capturedCompetences: List<String>? = null
+        var capturedForm: ReferenceItemForm? = null
         var stored = emptyList<ReferenceItem>()
         val vm = viewModel(
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds, _, _ ->
-                capturedStat = stat
-                capturedBonus = bonus
-                capturedCompetences = competenceIds
+            createItem = CreateReferenceItemUseCase { _, _, form ->
+                capturedForm = form
                 stored = listOf(item("f"))
                 Result.Success(item("f"))
             },
         )
         advanceUntilIdle()
 
-        vm.create("Rôdeur", stat = "dexterite", bonus = 3, competenceIds = listOf("c-1", "c-2"))
+        vm.create(
+            ReferenceItemForm(
+                name = "Rôdeur",
+                stat = "dexterite",
+                bonus = 3,
+                competenceIds = listOf("c-1", "c-2"),
+            ),
+        )
         advanceUntilIdle()
 
-        assertEquals("dexterite", capturedStat)
-        assertEquals(3, capturedBonus)
-        assertEquals(listOf("c-1", "c-2"), capturedCompetences)
+        assertEquals("dexterite", capturedForm?.stat)
+        assertEquals(3, capturedForm?.bonus)
+        assertEquals(listOf("c-1", "c-2"), capturedForm?.competenceIds)
+        // Une formation reste mono-bonus : elle n'utilise jamais statBonuses.
+        assertEquals(emptyList(), capturedForm?.statBonuses)
         assertEquals(1, vm.items.value.size)
         assertNull(vm.error.value)
     }
 
     @Test
+    fun `create peuple forwards the list of stat bonuses`() = runTest {
+        var capturedForm: ReferenceItemForm? = null
+        val vm = viewModel(
+            type = ReferenceType.PEUPLE,
+            activeGroupId = MutableStateFlow("g-1"),
+            createItem = CreateReferenceItemUseCase { _, _, form ->
+                capturedForm = form
+                Result.Success(item("p"))
+            },
+        )
+        advanceUntilIdle()
+
+        vm.create(
+            ReferenceItemForm(
+                name = "Nain",
+                statBonuses = listOf(
+                    ReferenceStatBonus("vigueur", 2),
+                    ReferenceStatBonus("social", 1),
+                ),
+            ),
+        )
+        advanceUntilIdle()
+
+        assertEquals(
+            listOf(ReferenceStatBonus("vigueur", 2), ReferenceStatBonus("social", 1)),
+            capturedForm?.statBonuses,
+        )
+        // Un peuple n'utilise jamais le couple mono-bonus.
+        assertNull(capturedForm?.stat)
+        assertNull(capturedForm?.bonus)
+    }
+
+    @Test
     fun `create armure forwards protection points and reloads`() = runTest {
-        var capturedProtection: Int? = -999
+        var capturedForm: ReferenceItemForm? = null
         var stored = emptyList<ReferenceItem>()
         val vm = viewModel(
             type = ReferenceType.ARMURE,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, protectionPoints, _ ->
-                capturedProtection = protectionPoints
+            createItem = CreateReferenceItemUseCase { _, _, form ->
+                capturedForm = form
                 stored = listOf(item("a"))
                 Result.Success(item("a"))
             },
         )
         advanceUntilIdle()
 
-        vm.create("Cotte de mailles", protectionPoints = 5)
+        vm.create(ReferenceItemForm(name = "Cotte de mailles", protectionPoints = 5))
         advanceUntilIdle()
 
-        assertEquals(5, capturedProtection)
+        assertEquals(5, capturedForm?.protectionPoints)
         assertEquals(1, vm.items.value.size)
         assertNull(vm.error.value)
     }
 
     @Test
     fun `create simple type forwards null stat null bonus empty competences null protection and null description`() = runTest {
-        var capturedStat: String? = "untouched"
-        var capturedBonus: Int? = -999
-        var capturedCompetences: List<String>? = listOf("dirty")
-        var capturedProtection: Int? = -999
-        var capturedDescription: String? = "untouched"
+        var capturedForm: ReferenceItemForm? = null
         val vm = viewModel(
             type = ReferenceType.ARME,
             activeGroupId = MutableStateFlow("g-1"),
-            createItem = CreateReferenceItemUseCase { _, _, _, stat, bonus, competenceIds, protectionPoints, description ->
-                capturedStat = stat
-                capturedBonus = bonus
-                capturedCompetences = competenceIds
-                capturedProtection = protectionPoints
-                capturedDescription = description
+            createItem = CreateReferenceItemUseCase { _, _, form ->
+                capturedForm = form
                 Result.Success(item("a"))
             },
         )
         advanceUntilIdle()
 
-        vm.create("Épée")
+        vm.create(ReferenceItemForm("Épée"))
         advanceUntilIdle()
 
-        assertNull(capturedStat)
-        assertNull(capturedBonus)
-        assertEquals(emptyList(), capturedCompetences)
-        assertNull(capturedProtection)
-        assertNull(capturedDescription)
+        assertNull(capturedForm?.stat)
+        assertNull(capturedForm?.bonus)
+        assertEquals(emptyList(), capturedForm?.statBonuses)
+        assertEquals(emptyList(), capturedForm?.competenceIds)
+        assertNull(capturedForm?.protectionPoints)
+        assertNull(capturedForm?.description)
     }
 
     @Test
     fun `create sort forwards description and reloads`() = runTest {
-        var capturedDescription: String? = "untouched"
+        var capturedForm: ReferenceItemForm? = null
         var stored = emptyList<ReferenceItem>()
         val vm = viewModel(
             type = ReferenceType.SORT,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            createItem = CreateReferenceItemUseCase { _, _, _, _, _, _, _, description ->
-                capturedDescription = description
+            createItem = CreateReferenceItemUseCase { _, _, form ->
+                capturedForm = form
                 stored = listOf(item("s"))
                 Result.Success(item("s"))
             },
         )
         advanceUntilIdle()
 
-        vm.create("Boule de feu", description = "3d6 dégâts de feu.")
+        vm.create(ReferenceItemForm(name = "Boule de feu", description = "3d6 dégâts de feu."))
         advanceUntilIdle()
 
-        assertEquals("3d6 dégâts de feu.", capturedDescription)
+        assertEquals("3d6 dégâts de feu.", capturedForm?.description)
         assertEquals(1, vm.items.value.size)
         assertNull(vm.error.value)
     }
@@ -284,41 +317,41 @@ class ReferenceListViewModelTest {
     @Test
     fun `update forwards item id name and fields to the use case and reloads`() = runTest {
         var capturedId: String? = null
-        var capturedName: String? = null
         var capturedGroup: String? = null
-        var capturedStat: String? = "untouched"
-        var capturedBonus: Int? = -999
-        var capturedCompetences: List<String>? = null
-        var capturedProtection: Int? = -999
+        var capturedForm: ReferenceItemForm? = null
         var stored = listOf(item("f"))
         val vm = viewModel(
             type = ReferenceType.FORMATION,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> Result.Success(stored) },
-            updateItem = UpdateReferenceItemUseCase { _, itemId, name, groupId, stat, bonus, competenceIds, protectionPoints, _ ->
+            updateItem = UpdateReferenceItemUseCase { _, itemId, groupId, form ->
                 capturedId = itemId
-                capturedName = name
                 capturedGroup = groupId
-                capturedStat = stat
-                capturedBonus = bonus
-                capturedCompetences = competenceIds
-                capturedProtection = protectionPoints
+                capturedForm = form
                 stored = listOf(item("g"))
                 Result.Success(item("g"))
             },
         )
         advanceUntilIdle()
 
-        vm.update("f", "Rôdeur+", stat = "vigueur", bonus = 4, competenceIds = listOf("c-1"))
+        vm.update(
+            "f",
+            ReferenceItemForm(
+                name = "Rôdeur+",
+                stat = "vigueur",
+                bonus = 4,
+                competenceIds = listOf("c-1"),
+            ),
+        )
         advanceUntilIdle()
 
         assertEquals("f", capturedId)
-        assertEquals("Rôdeur+", capturedName)
         assertEquals("g-1", capturedGroup)
-        assertEquals("vigueur", capturedStat)
-        assertEquals(4, capturedBonus)
-        assertEquals(listOf("c-1"), capturedCompetences)
-        assertNull(capturedProtection)
+        assertEquals("Rôdeur+", capturedForm?.name)
+        assertEquals("vigueur", capturedForm?.stat)
+        assertEquals(4, capturedForm?.bonus)
+        assertEquals(listOf("c-1"), capturedForm?.competenceIds)
+        assertNull(capturedForm?.protectionPoints)
         assertEquals("g", vm.items.value.first().id)
         assertNull(vm.error.value)
     }
@@ -330,12 +363,12 @@ class ReferenceListViewModelTest {
             type = ReferenceType.ARME,
             activeGroupId = MutableStateFlow("g-1"),
             listItems = ListReferenceItemsUseCase { _, _ -> listed++; Result.Success(emptyList()) },
-            updateItem = UpdateReferenceItemUseCase { _, _, _, _, _, _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
+            updateItem = UpdateReferenceItemUseCase { _, _, _, _ -> Result.Failure(ReferenceError.NameAlreadyUsed) },
         )
         advanceUntilIdle()
         val listedAfterInit = listed
 
-        vm.update("a", "Doublon")
+        vm.update("a", ReferenceItemForm("Doublon"))
         advanceUntilIdle()
 
         assertEquals(ReferenceError.NameAlreadyUsed.message, vm.error.value)

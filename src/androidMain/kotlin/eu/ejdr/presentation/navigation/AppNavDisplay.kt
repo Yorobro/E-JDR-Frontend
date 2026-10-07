@@ -12,7 +12,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.lifecycle.viewmodel.navigation3.rememberViewModelStoreNavEntryDecorator
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.runtime.NavKey
@@ -71,26 +70,21 @@ fun AppNavDisplay(
 
     Column(Modifier.fillMaxSize()) {
         Box(Modifier.weight(1f)) {
-            // Décorateurs : fournir cette liste **remplace** celle par défaut de NavDisplay, d'où
-            // le `SaveableStateHolder` re-déclaré ici — sans lui, l'état `rememberSaveable` et la
-            // position de défilement des pages seraient perdus à chaque aller-retour.
-            //
-            // `rememberViewModelStoreNavEntryDecorator` donne un ViewModelStore **par destination**,
-            // vidé quand l'entrée quitte la pile. Sans lui, `koinViewModel` résolvait contre le
-            // ViewModelStore de l'Activity : un seul exemplaire par classe pour toute
-            // l'application, jamais `onCleared()`. Deux dégâts concrets — un
-            // `SessionLobbyViewModel` quitté restait abonné à `group:{id}` et continuait d'écrire
-            // dans l'état partagé du salon (la bulle de retour s'effaçait toute seule quand le MJ
-            // démarrait la partie) ; et deux campagnes ouvertes l'une après l'autre partageaient
-            // le ViewModel resté sur la première. Le pendant desktop obtient la même chose avec un
-            // décorateur maison, le décorateur officiel n'étant pas publié pour cette cible.
             // Changement de page instantané : aucune transition (pas de fondu ni de glissement).
             NavDisplay(
                 backStack = backStack,
                 onBack = { backStack.removeLastOrNull() },
+                // `entryDecorators` REMPLACE la liste par défaut de NavDisplay : il faut donc
+                // réinjecter le SaveableStateHolder, sinon on perd `rememberSaveable` et les
+                // positions de défilement. Le premier de la liste est le plus externe.
                 entryDecorators = listOf(
                     rememberSaveableStateHolderNavEntryDecorator(),
-                    rememberViewModelStoreNavEntryDecorator(),
+                    // Sans lui, tous les ViewModels partagent le ViewModelStore de l'Activity et
+                    // sont mis en cache par CLASSE : ReferenceListViewModel devenait un singleton
+                    // de fait et le premier type ouvert gagnait pour toute la session (titre
+                    // « Armures », contenu « Armes »). Idem campagne/fiche/groupe/session, et un
+                    // SessionLobbyViewModel quitté restait abonné à `group:{id}` (bulle de retour au salon).
+                    rememberEjdrViewModelStoreNavEntryDecorator(),
                 ),
                 transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
                 popTransitionSpec = { EnterTransition.None togetherWith ExitTransition.None },

@@ -1,5 +1,7 @@
 package eu.ejdr.infrastructure.http.features.reference
 
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
@@ -98,7 +100,7 @@ class ReferenceHttpRepositoryTest {
             install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
         }
 
-        val result = repository(client).create(ReferenceType.ARME, "Épée", "g-1")
+        val result = repository(client).create(ReferenceType.ARME, "g-1", ReferenceItemForm("Épée"))
 
         assertIs<Result.Success<ReferenceItem>>(result)
         assertEquals("a-1", result.value.id)
@@ -124,11 +126,13 @@ class ReferenceHttpRepositoryTest {
 
         val result = repository(client).create(
             ReferenceType.FORMATION,
-            "Rôdeur",
             "g-1",
-            stat = "dexterite",
-            bonus = 3,
-            competenceIds = listOf("c-1", "c-2"),
+            ReferenceItemForm(
+                name = "Rôdeur",
+                stat = "dexterite",
+                bonus = 3,
+                competenceIds = listOf("c-1", "c-2"),
+            ),
         )
 
         assertIs<Result.Success<ReferenceItem>>(result)
@@ -140,6 +144,53 @@ class ReferenceHttpRepositoryTest {
         assertTrue(
             requestBody.contains("\"competenceIds\":[\"c-1\",\"c-2\"]"),
             "Body should carry competenceIds: $requestBody",
+        )
+        // Contrat asymétrique : une formation n'envoie JAMAIS statBonuses.
+        assertTrue(
+            !requestBody.contains("statBonuses"),
+            "A formation must not send statBonuses: $requestBody",
+        )
+    }
+
+    @Test
+    fun `create peuple sends the list of stat bonuses in the body`() = runTest {
+        val body = """{"id":"p-1","name":"Nain","createdAt":"2026-06-13T10:00:00.000Z",""" +
+            """"statBonuses":[{"stat":"vigueur","bonus":2},{"stat":"social","bonus":1}]}"""
+        var requestBody = ""
+        val engine = MockEngine { request ->
+            requestBody = (request.body as io.ktor.http.content.TextContent).text
+            respond(
+                content = ByteReadChannel(body),
+                status = HttpStatusCode.Created,
+                headers = headersOf(HttpHeaders.ContentType, "application/json"),
+            )
+        }
+        val client = HttpClient(engine) {
+            install(ContentNegotiation) { json(Json { ignoreUnknownKeys = true; isLenient = true }) }
+        }
+
+        val result = repository(client).create(
+            ReferenceType.PEUPLE,
+            "g-1",
+            ReferenceItemForm(
+                name = "Nain",
+                statBonuses = listOf(
+                    ReferenceStatBonus("vigueur", 2),
+                    ReferenceStatBonus("social", 1),
+                ),
+            ),
+        )
+
+        assertIs<Result.Success<ReferenceItem>>(result)
+        assertEquals(
+            listOf(ReferenceStatBonus("vigueur", 2), ReferenceStatBonus("social", 1)),
+            result.value.statBonuses,
+        )
+        assertTrue(
+            requestBody.contains(
+                """"statBonuses":[{"stat":"vigueur","bonus":2},{"stat":"social","bonus":1}]""",
+            ),
+            "Body should carry statBonuses: $requestBody",
         )
     }
 
@@ -162,9 +213,11 @@ class ReferenceHttpRepositoryTest {
 
         val result = repository(client).create(
             ReferenceType.ARMURE,
-            "Cotte",
             "g-1",
-            protectionPoints = 5,
+            ReferenceItemForm(
+                name = "Cotte",
+                protectionPoints = 5,
+            ),
         )
 
         assertIs<Result.Success<ReferenceItem>>(result)
@@ -194,9 +247,11 @@ class ReferenceHttpRepositoryTest {
 
         val result = repository(client).create(
             ReferenceType.SORT,
-            "Boule de feu",
             "g-1",
-            description = "3d6 dégâts de feu.",
+            ReferenceItemForm(
+                name = "Boule de feu",
+                description = "3d6 dégâts de feu.",
+            ),
         )
 
         assertIs<Result.Success<ReferenceItem>>(result)
@@ -244,11 +299,13 @@ class ReferenceHttpRepositoryTest {
         val result = repository(client).update(
             ReferenceType.FORMATION,
             "f-1",
-            "Rôdeur+",
             "g-1",
-            stat = "vigueur",
-            bonus = 4,
-            competenceIds = listOf("c-1"),
+            ReferenceItemForm(
+                name = "Rôdeur+",
+                stat = "vigueur",
+                bonus = 4,
+                competenceIds = listOf("c-1"),
+            ),
         )
 
         assertIs<Result.Success<ReferenceItem>>(result)
@@ -265,7 +322,7 @@ class ReferenceHttpRepositoryTest {
     fun `update 409 maps to NameAlreadyUsed`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.Conflict, """{"code":"REFERENCE_NAME_ALREADY_USED"}"""),
-        ).update(ReferenceType.ARME, "a-1", "Épée", "g-1")
+        ).update(ReferenceType.ARME, "a-1", "g-1", ReferenceItemForm("Épée"))
 
         assertIs<Result.Failure<ReferenceError>>(result)
         assertEquals(ReferenceError.NameAlreadyUsed, result.error)
@@ -307,7 +364,7 @@ class ReferenceHttpRepositoryTest {
     fun `create 409 maps to NameAlreadyUsed`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.Conflict, """{"code":"REFERENCE_NAME_ALREADY_USED"}"""),
-        ).create(ReferenceType.ARME, "Épée", "g-1")
+        ).create(ReferenceType.ARME, "g-1", ReferenceItemForm("Épée"))
 
         assertIs<Result.Failure<ReferenceError>>(result)
         assertEquals(ReferenceError.NameAlreadyUsed, result.error)
@@ -317,7 +374,7 @@ class ReferenceHttpRepositoryTest {
     fun `create 400 maps to InvalidName`() = runTest {
         val result = repository(
             clientReturning(HttpStatusCode.BadRequest, """{"code":"INVALID_REFERENCE_NAME"}"""),
-        ).create(ReferenceType.ARME, "", "g-1")
+        ).create(ReferenceType.ARME, "g-1", ReferenceItemForm(""))
 
         assertIs<Result.Failure<ReferenceError>>(result)
         assertEquals(ReferenceError.InvalidName, result.error)

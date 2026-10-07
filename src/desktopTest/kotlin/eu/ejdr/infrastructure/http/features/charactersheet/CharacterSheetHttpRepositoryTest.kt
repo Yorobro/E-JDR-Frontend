@@ -1,5 +1,6 @@
 package eu.ejdr.infrastructure.http.features.charactersheet
 
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.charactersheet.entities.Purse
@@ -183,10 +184,13 @@ class CharacterSheetHttpRepositoryTest {
 
     @Test
     fun `getById maps the resolved formation and peuple blocks`() = runTest {
+        // Contrat asymétrique du backend : la formation porte stat/bonus (au plus un), le peuple
+        // porte statBonuses (0..N).
         val body = """
             {"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z",
              "social":2,
-             "peuple":{"id":"peuple-1","name":"Dúnedain","stat":"social","bonus":1},
+             "peuple":{"id":"peuple-1","name":"Dúnedain",
+              "statBonuses":[{"stat":"social","bonus":1},{"stat":"vigueur","bonus":2}]},
              "formation":{"id":"formation-1","name":"Rôdeur","stat":"social","bonus":2,
               "competences":[{"id":"comp-1","name":"Pistage"}]}}
         """.trimIndent()
@@ -195,11 +199,27 @@ class CharacterSheetHttpRepositoryTest {
         assertIs<Result.Success<CharacterSheet>>(result)
         val sheet = result.value
         assertEquals("Dúnedain", sheet.peuple?.name)
-        assertEquals("social", sheet.peuple?.stat)
-        assertEquals(1, sheet.peuple?.bonus)
+        assertEquals(
+            listOf(ReferenceStatBonus("social", 1), ReferenceStatBonus("vigueur", 2)),
+            sheet.peuple?.statBonuses,
+        )
         assertEquals("Rôdeur", sheet.formation?.name)
         assertEquals(2, sheet.formation?.bonus)
         assertEquals(listOf("Pistage"), sheet.formation?.competences?.map { it.name })
+    }
+
+    @Test
+    fun `getById tolerates a peuple without stat bonuses (older backend)`() = runTest {
+        // Le front doit continuer de fonctionner contre un back pas encore deploye : le peuple
+        // arrive sans statBonuses ⇒ liste vide, aucun crash. Les totaux, eux, viennent du serveur.
+        val body = """
+            {"id":"s-1","ownerId":"u-1","name":"Aragorn","createdAt":"2026-06-13T10:00:00.000Z",
+             "peuple":{"id":"peuple-1","name":"Dúnedain"}}
+        """.trimIndent()
+        val result = repository(clientReturning(HttpStatusCode.OK, body)).getById("s-1")
+
+        assertIs<Result.Success<CharacterSheet>>(result)
+        assertEquals(emptyList(), result.value.peuple?.statBonuses)
     }
 
     @Test

@@ -1,5 +1,6 @@
 package eu.ejdr.application.features.reference.usecase
 
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
 import eu.ejdr.application.features.reference.abstraction.repository.ReferenceRepository
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
@@ -32,24 +33,9 @@ class CreateReferenceItemUseCaseImpl(
 ) : CreateReferenceItemUseCase {
     override suspend fun invoke(
         type: ReferenceType,
-        name: String,
         groupId: String,
-        stat: String?,
-        bonus: Int?,
-        competenceIds: List<String>,
-        protectionPoints: Int?,
-        description: String?,
-    ): Result<ReferenceItem, ReferenceError> =
-        repository.create(
-            type,
-            name,
-            groupId,
-            stat,
-            bonus,
-            competenceIds,
-            protectionPoints,
-            description,
-        )
+        form: ReferenceItemForm,
+    ): Result<ReferenceItem, ReferenceError> = repository.create(type, groupId, form)
 }
 
 class UpdateReferenceItemUseCaseImpl(
@@ -58,25 +44,9 @@ class UpdateReferenceItemUseCaseImpl(
     override suspend fun invoke(
         type: ReferenceType,
         itemId: String,
-        name: String,
         groupId: String,
-        stat: String?,
-        bonus: Int?,
-        competenceIds: List<String>,
-        protectionPoints: Int?,
-        description: String?,
-    ): Result<ReferenceItem, ReferenceError> =
-        repository.update(
-            type,
-            itemId,
-            name,
-            groupId,
-            stat,
-            bonus,
-            competenceIds,
-            protectionPoints,
-            description,
-        )
+        form: ReferenceItemForm,
+    ): Result<ReferenceItem, ReferenceError> = repository.update(type, itemId, groupId, form)
 }
 
 class DeleteReferenceItemUseCaseImpl(

@@ -1,3 +1,16 @@
+## [1.29.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.28.0...v1.29.0) (2026-10-07)
+
+
+### Features
+
+* **reference:** tri alphabetique de toutes les listes de reference ([9d60802](https://github.com/Yorobro/E-JDR-Frontend/commit/9d608020206553b16fa52f5b8b7179874155fd52))
+* **reference:** un peuple porte plusieurs bonus de caracteristique ([686f987](https://github.com/Yorobro/E-JDR-Frontend/commit/686f987648f2dfef79d78628868a1c03234d2727))
+
+
+### Bug Fixes
+
+* **navigation:** retention des ViewModels par destination sur Android ([0fb28d4](https://github.com/Yorobro/E-JDR-Frontend/commit/0fb28d46aa3253e20ff67c666a5971d0336b8dac))
+
 ## [1.28.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.27.0...v1.28.0) (2026-07-05)
 
 

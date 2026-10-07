@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import eu.ejdr.application.features.realtime.abstraction.InvalidationBus
 import eu.ejdr.application.features.realtime.abstraction.RealtimeSubscriptions
+import eu.ejdr.application.features.reference.abstraction.ReferenceItemForm
 import eu.ejdr.application.features.reference.abstraction.usecase.CreateReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.DeleteReferenceItemUseCase
 import eu.ejdr.application.features.reference.abstraction.usecase.ListReferenceItemsUseCase
@@ -13,6 +14,7 @@ import eu.ejdr.application.shared.fold
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
 import eu.ejdr.application.shared.feedback.UiMessage
+import eu.ejdr.presentation.shared.util.sortedAlphabeticallyBy
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -113,7 +115,12 @@ class ReferenceListViewModel(
         _needsGroup.value = false
         _isLoading.value = true
         listItems(type, groupId).fold(
-            onSuccess = { list -> _items.value = list; _error.value = null },
+            // Trié ici, une fois par chargement : l'API renvoie l'ordre d'insertion, illisible dès
+            // qu'un catalogue dépasse quelques entrées.
+            onSuccess = { list ->
+                _items.value = list.sortedAlphabeticallyBy { it.name }
+                _error.value = null
+            },
             onFailure = { error -> _error.value = error.message },
         )
         _isLoading.value = false
@@ -121,13 +128,13 @@ class ReferenceListViewModel(
     }
 
     /**
-     * Charge le catalogue des compétences du groupe (pour le picker du dialog de formation).
-     * No-op silencieux pour les autres types ou en cas d'échec (le picker reste vide).
+     * Charge le catalogue des compétences du groupe (pour le picker du dialog de formation), trié
+     * alphabétiquement. No-op silencieux pour les autres types ou en cas d'échec (picker vide).
      */
     private suspend fun loadAvailableCompetences(groupId: String) {
         if (type != ReferenceType.FORMATION) return
         listItems(ReferenceType.COMPETENCE, groupId).fold(
-            onSuccess = { list -> _availableCompetences.value = list },
+            onSuccess = { list -> _availableCompetences.value = list.sortedAlphabeticallyBy { it.name } },
             onFailure = { _availableCompetences.value = emptyList() },
         )
     }
@@ -135,32 +142,22 @@ class ReferenceListViewModel(
     /**
      * Crée un élément dans le groupe actif puis recharge la liste en cas de succès.
      *
-     * [stat]/[bonus] s'appliquent aux formations/peuples, [competenceIds] à la seule formation,
-     * [protectionPoints] à la seule armure, [description] aux seuls sorts/miracles ; pour les types
-     * simples, l'appelant passe les défauts.
+     * Les champs du [form] ne concernent qu'une partie des types : cf. [ReferenceItemForm].
      */
-    fun create(
-        name: String,
-        stat: String? = null,
-        bonus: Int? = null,
-        competenceIds: List<String> = emptyList(),
-        protectionPoints: Int? = null,
-        description: String? = null,
-    ) {
+    fun create(form: ReferenceItemForm) {
         val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            createItem(type, name, groupId, stat, bonus, competenceIds, protectionPoints, description)
-                .fold(
-                    onSuccess = {
-                        _error.value = null
-                        uiMessageBus.emit(UiMessage.success("Élément créé"))
-                        reload(groupId)
-                    },
-                    onFailure = { error ->
-                        _error.value = error.message
-                        uiMessageBus.emit(UiMessage.error(error.message))
-                    },
-                )
+            createItem(type, groupId, form).fold(
+                onSuccess = {
+                    _error.value = null
+                    uiMessageBus.emit(UiMessage.success("Élément créé"))
+                    reload(groupId)
+                },
+                onFailure = { error ->
+                    _error.value = error.message
+                    uiMessageBus.emit(UiMessage.error(error.message))
+                },
+            )
         }
     }
 
@@ -168,28 +165,10 @@ class ReferenceListViewModel(
      * Modifie un élément du groupe actif (remplacement complet) puis recharge la liste en cas de
      * succès. Mêmes règles de champs par type que [create].
      */
-    fun update(
-        itemId: String,
-        name: String,
-        stat: String? = null,
-        bonus: Int? = null,
-        competenceIds: List<String> = emptyList(),
-        protectionPoints: Int? = null,
-        description: String? = null,
-    ) {
+    fun update(itemId: String, form: ReferenceItemForm) {
         val groupId = activeGroupId.value ?: return
         viewModelScope.launch {
-            updateItem(
-                type,
-                itemId,
-                name,
-                groupId,
-                stat,
-                bonus,
-                competenceIds,
-                protectionPoints,
-                description,
-            ).fold(
+            updateItem(type, itemId, groupId, form).fold(
                 onSuccess = {
                     _error.value = null
                     uiMessageBus.emit(UiMessage.success("Élément modifié"))

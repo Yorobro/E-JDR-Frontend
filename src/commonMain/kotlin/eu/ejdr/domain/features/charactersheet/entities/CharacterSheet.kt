@@ -1,5 +1,7 @@
 package eu.ejdr.domain.features.charactersheet.entities
 
+import eu.ejdr.domain.features.reference.entities.ReferenceStatBonus
+
 /**
  * Fiche de personnage appartenant à un utilisateur.
  *
@@ -82,18 +84,19 @@ data class CharacterSheet(
 )
 
 /**
- * Élément de référence N‑1 **résolu** rattaché à une fiche (peuple, ou base d'une formation).
+ * **Peuple** résolu rattaché à une fiche.
  *
- * @property id Identifiant de l'élément de référence.
+ * Contrairement à la [ResolvedFormation] (mono-bonus), un peuple porte **0..N** bonus de
+ * caractéristique, au plus un par statistique. Il n'expose donc pas `stat`/`bonus`.
+ *
+ * @property id Identifiant du peuple.
  * @property name Nom affiché.
- * @property stat Statistique ciblée (slug serveur `dexterite`/.../`vigueur`), ou `null`.
- * @property bonus Montant du bonus appliqué à [stat] (déjà calculé côté serveur), ou `null`.
+ * @property statBonuses Bonus apportés par le peuple (vide s'il n'en porte aucun).
  */
 data class ResolvedReference(
     val id: String,
     val name: String,
-    val stat: String? = null,
-    val bonus: Int? = null,
+    val statBonuses: List<ReferenceStatBonus> = emptyList(),
 )
 
 /**

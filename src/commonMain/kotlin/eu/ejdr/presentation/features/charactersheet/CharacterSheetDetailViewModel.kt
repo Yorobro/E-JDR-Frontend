@@ -19,6 +19,7 @@ import eu.ejdr.application.shared.getOrElse
 import eu.ejdr.domain.features.charactersheet.entities.CharacterSheet
 import eu.ejdr.domain.features.reference.entities.ReferenceItem
 import eu.ejdr.domain.features.reference.entities.ReferenceType
+import eu.ejdr.presentation.shared.util.sortedAlphabeticallyBy
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -150,10 +151,15 @@ class CharacterSheetDetailViewModel(
      * référence n'écrasent pas l'erreur principale de la fiche (sections simplement vides).
      */
     private suspend fun loadReferences() {
+        // Toutes les listes sont triées alphabétiquement ici, à la source : l'API renvoie l'ordre
+        // d'insertion. Trier dans les composants les re-trierait à chaque recomposition, et trier
+        // dans le mapper HTTP imposerait une décision de présentation à la couche infra.
         // Les éléments rattachés à la fiche (N‑N) dépendent de la fiche, pas du groupe : toujours chargés.
         val linked = mutableMapOf<ReferenceType, List<ReferenceItem>>()
         for (type in linkableTypes) {
-            linked[type] = listSheetReferences(sheetId, type).getOrElse { emptyList() }
+            linked[type] = listSheetReferences(sheetId, type)
+                .getOrElse { emptyList() }
+                .sortedAlphabeticallyBy { it.name }
         }
         _linked.value = linked
 
@@ -166,12 +172,18 @@ class CharacterSheetDetailViewModel(
             _catalogues.value = emptyMap()
             return
         }
-        _formations.value = listReferenceItems(ReferenceType.FORMATION, groupId).getOrElse { emptyList() }
-        _peoples.value = listReferenceItems(ReferenceType.PEUPLE, groupId).getOrElse { emptyList() }
+        _formations.value = listReferenceItems(ReferenceType.FORMATION, groupId)
+            .getOrElse { emptyList() }
+            .sortedAlphabeticallyBy { it.name }
+        _peoples.value = listReferenceItems(ReferenceType.PEUPLE, groupId)
+            .getOrElse { emptyList() }
+            .sortedAlphabeticallyBy { it.name }
 
         val catalogues = mutableMapOf<ReferenceType, List<ReferenceItem>>()
         for (type in linkableTypes) {
-            catalogues[type] = listReferenceItems(type, groupId).getOrElse { emptyList() }
+            catalogues[type] = listReferenceItems(type, groupId)
+                .getOrElse { emptyList() }
+                .sortedAlphabeticallyBy { it.name }
         }
         _catalogues.value = catalogues
     }
@@ -198,7 +210,9 @@ class CharacterSheetDetailViewModel(
 
     /** Recharge la liste des éléments rattachés pour un seul type (après link/unlink). */
     private suspend fun reloadLinked(type: ReferenceType) {
-        val items = listSheetReferences(sheetId, type).getOrElse { return }
+        val items = listSheetReferences(sheetId, type)
+            .getOrElse { return }
+            .sortedAlphabeticallyBy { it.name }
         _linked.value = _linked.value.toMutableMap().apply { put(type, items) }
     }
 

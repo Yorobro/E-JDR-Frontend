@@ -25,9 +25,25 @@ data class ReferenceItemDto(
     val createdAt: String,
     val stat: String? = null,
     val bonus: Int? = null,
+    val statBonuses: List<StatBonusDto> = emptyList(),
     val competenceIds: List<String> = emptyList(),
     val protectionPoints: Int? = null,
     val description: String? = null,
+)
+
+/**
+ * Bonus de caractéristique d'un **peuple** (0..N, au plus un par stat).
+ *
+ * Une **formation** n'utilise pas ce DTO : elle porte `stat`/`bonus` directement. Le contrat est
+ * asymétrique, aligné sur le backend.
+ *
+ * @property stat Slug serveur (`dexterite`/`intelligence`/`perception`/`social`/`vigueur`).
+ * @property bonus Montant ajouté à [stat] (entier ≥ 1).
+ */
+@Serializable
+data class StatBonusDto(
+    val stat: String,
+    val bonus: Int,
 )
 
 /**
@@ -47,6 +63,7 @@ data class CreateReferenceRequestDto(
     val groupId: String,
     val stat: String? = null,
     val bonus: Int? = null,
+    val statBonuses: List<StatBonusDto>? = null,
     val competenceIds: List<String>? = null,
     val protectionPoints: Int? = null,
     val description: String? = null,
@@ -72,6 +89,7 @@ data class UpdateReferenceRequestDto(
     val groupId: String,
     val stat: String? = null,
     val bonus: Int? = null,
+    val statBonuses: List<StatBonusDto>? = null,
     val competenceIds: List<String>? = null,
     val protectionPoints: Int? = null,
     val description: String? = null,
