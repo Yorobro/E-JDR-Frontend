@@ -44,6 +44,11 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * Tant que les pages Android par feature ne sont pas implémentées, les destinations sans rendu
  * affichent un écran d'attente ([ComingSoon]). Seul [Route.Splash] est défini ici.
+ *
+ * @param contentOverlay Calque libre posé **au-dessus de l'écran courant mais sous la bottom
+ * bar**, dans la zone de contenu. C'est ce qui donne à un élément flottant (la bulle de retour au
+ * salon) son dégagement au-dessus de la barre sans coder sa hauteur en dur : la mise en page s'en
+ * charge. Défaut : rien.
  */
 @Composable
 fun AppNavDisplay(
@@ -54,6 +59,7 @@ fun AppNavDisplay(
     onLogout: () -> Unit,
     onThemeChange: (ThemeVariant) -> Unit,
     resetTo: (Route) -> Unit,
+    contentOverlay: @Composable () -> Unit = {},
 ) {
     val status by sessionStatus.collectAsStateWithLifecycle()
     val groupId by activeGroupId.collectAsStateWithLifecycle()
@@ -76,7 +82,8 @@ fun AppNavDisplay(
                     // Sans lui, tous les ViewModels partagent le ViewModelStore de l'Activity et
                     // sont mis en cache par CLASSE : ReferenceListViewModel devenait un singleton
                     // de fait et le premier type ouvert gagnait pour toute la session (titre
-                    // « Armures », contenu « Armes »). Idem campagne/fiche/groupe/session.
+                    // « Armures », contenu « Armes »). Idem campagne/fiche/groupe/session, et un
+                    // SessionLobbyViewModel quitté restait abonné à `group:{id}` (bulle de retour au salon).
                     rememberEjdrViewModelStoreNavEntryDecorator(),
                 ),
                 transitionSpec = { EnterTransition.None togetherWith ExitTransition.None },
@@ -95,6 +102,7 @@ fun AppNavDisplay(
                     referenceEntries(actions)
                 },
             )
+            contentOverlay()
         }
 
         if (status == SessionStatus.Authenticated && visibleItems.isNotEmpty()) {

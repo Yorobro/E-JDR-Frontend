@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Config réseau Android.
+
+  Le trafic en clair (HTTP/WS) reste interdit par défaut (cleartextTrafficPermitted="false"),
+  conformément aux bonnes pratiques. On l'autorise UNIQUEMENT pour le backend local en dev :
+  - localhost / 127.0.0.1 : atteint via `adb reverse tcp:3000 tcp:3000` (appareil USB).
+  - 10.0.2.2 : alias de la machine hôte depuis l'émulateur Android.
+  La prod passe par HTTPS et n'est donc pas concernée.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">127.0.0.1</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+</network-security-config>

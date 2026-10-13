@@ -35,7 +35,9 @@ fun EntryProviderScope<Any>.friendGroupEntries(actions: NavActions) {
         AppScaffold(
             topBar = { MainTopBar(title = "Invitations", currentRoute = Route.Invitations, actions = actions) },
         ) {
-            InvitationsPage()
+            InvitationsPage(
+                onOpenLobby = { id, title -> actions.backStack.add(Route.SessionLobby(id, title)) },
+            )
         }
     }
 }

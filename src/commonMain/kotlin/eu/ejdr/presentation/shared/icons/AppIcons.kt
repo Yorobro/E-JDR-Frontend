@@ -15,11 +15,13 @@ import com.composables.icons.lucide.Lock
 import com.composables.icons.lucide.Lucide
 import com.composables.icons.lucide.Mail
 import com.composables.icons.lucide.Pencil
+import com.composables.icons.lucide.Play
 import com.composables.icons.lucide.Plus
 import com.composables.icons.lucide.Settings
 import com.composables.icons.lucide.Shapes
 import com.composables.icons.lucide.Trash2
 import com.composables.icons.lucide.User
+import com.composables.icons.lucide.UserPlus
 import com.composables.icons.lucide.Users
 import com.composables.icons.lucide.X
 
@@ -34,6 +36,7 @@ import com.composables.icons.lucide.X
 object AppIcons {
 
     val Add: ImageVector = Lucide.Plus
+    val Play: ImageVector = Lucide.Play
     val Close: ImageVector = Lucide.X
     val ArrowBack: ImageVector = Lucide.ArrowLeft
     val List: ImageVector = Lucide.LucideList
@@ -42,6 +45,7 @@ object AppIcons {
     val ContentCopy: ImageVector = Lucide.Copy
     val Person: ImageVector = Lucide.User
     val PersonOutline: ImageVector = Lucide.User
+    val PersonAdd: ImageVector = Lucide.UserPlus
     val AccountCircle: ImageVector = Lucide.CircleUser
     val Group: ImageVector = Lucide.Users
     val Groups: ImageVector = Lucide.Users

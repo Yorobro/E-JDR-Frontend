@@ -56,6 +56,27 @@ class DefaultRealtimeSubscriptionsTest {
     }
 
     @Test
+    fun `deux abonnés au même canal, un seul frame, et il survit au premier désabonnement`() =
+        runTest {
+            val conn = RecordingConnection()
+            val subs = DefaultRealtimeSubscriptions(conn, this)
+            // Cas réel : la liste des campagnes et le salon d'attente suivent le même groupe.
+            subs.subscribe("group:g-1")
+            subs.subscribe("group:g-1")
+            advanceUntilIdle()
+            assertEquals(listOf("""{"type":"subscribe","channel":"group:g-1"}"""), conn.sent)
+
+            conn.sent.clear()
+            subs.unsubscribe("group:g-1")
+            advanceUntilIdle()
+            assertTrue(conn.sent.isEmpty(), "le canal est encore voulu par l'autre écran")
+
+            subs.unsubscribe("group:g-1")
+            advanceUntilIdle()
+            assertEquals(listOf("""{"type":"unsubscribe","channel":"group:g-1"}"""), conn.sent)
+        }
+
+    @Test
     fun `resubscribeAll réémet tous les canaux encore voulus`() = runTest {
         val conn = RecordingConnection()
         val subs = DefaultRealtimeSubscriptions(conn, this)

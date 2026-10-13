@@ -36,7 +36,10 @@ fun EntryProviderScope<Any>.friendGroupEntries(actions: NavActions) {
     entry<Route.Invitations> {
         Column(Modifier.fillMaxSize()) {
             AppTopBar(title = "Invitations", onBack = { actions.backStack.removeLastOrNull() })
-            InvitationsPage(modifier = Modifier.weight(1f))
+            InvitationsPage(
+                onOpenLobby = { id, title -> actions.backStack.add(Route.SessionLobby(id, title)) },
+                modifier = Modifier.weight(1f),
+            )
         }
     }
 }

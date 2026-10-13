@@ -12,6 +12,7 @@ import kotlinx.serialization.Serializable
  * @property campaignId Identifiant de la campagne parente.
  * @property title Titre de la session.
  * @property date Date de la session au format `YYYY-MM-DD`.
+ * @property status Statut courant (`PLANNED`, `LOBBY`, `ACTIVE`, `ENDED`).
  * @property createdAt Date de création au format ISO 8601.
  */
 @Serializable
@@ -20,6 +21,7 @@ data class SessionDto(
     val campaignId: String,
     val title: String,
     val date: String,
+    val status: String = "PLANNED",
     val createdAt: String,
 )
 
@@ -48,3 +50,90 @@ data class UpdateSessionRequestDto(val title: String, val date: String)
  */
 @Serializable
 data class SessionListResponseDto(val sessions: List<SessionDto>)
+
+/**
+ * Corps de requête d'ouverture du lobby (`POST /sessions/{id}/launch`).
+ *
+ * Le MJ ne figure pas dans [participantUserIds] : il accède à la session via son rôle, sans
+ * s'inviter lui-même. La liste ne contient donc que les joueurs cochés.
+ *
+ * @property participantUserIds Identifiants des joueurs conviés à la session.
+ */
+@Serializable
+data class CreateLobbyRequestDto(val participantUserIds: List<String>)
+
+/**
+ * Corps de requête d'invitation dans un lobby ouvert (`POST /sessions/{id}/invite`).
+ *
+ * Même forme que [CreateLobbyRequestDto], mais pour un salon **déjà ouvert** : on ajoute des
+ * joueurs (oubli, refus accidentel) sans changer le statut de la session.
+ *
+ * @property participantUserIds Identifiants des joueurs à convier.
+ */
+@Serializable
+data class InviteToLobbyRequestDto(val participantUserIds: List<String>)
+
+/**
+ * Participant tel que renvoyé dans la réponse d'ouverture du lobby.
+ *
+ * @property userId Identifiant de l'utilisateur convié.
+ * @property status État de l'invitation (`INVITED`, `ACCEPTED`, `REFUSED`).
+ * @property characterSheetId Fiche choisie à l'acceptation, ou `null` s'il n'a pas encore répondu.
+ */
+@Serializable
+data class LobbyParticipantDto(
+    val userId: String,
+    val status: String,
+    val characterSheetId: String? = null,
+)
+
+/**
+ * Corps de réponse des routes de lobby (`POST /sessions/{id}/launch`, `GET /sessions/{id}/lobby`,
+ * `POST /sessions/{id}/invite`) : la session en lobby + ses invitations.
+ *
+ * @property sessionId Identifiant de la session passée en statut `LOBBY`.
+ * @property status Statut de la session après ouverture (normalement `LOBBY`).
+ * @property participants Joueurs conviés et leur état d'invitation.
+ */
+@Serializable
+data class CreateLobbyResponseDto(
+    val sessionId: String,
+    val status: String,
+    val participants: List<LobbyParticipantDto>,
+)
+
+/**
+ * Corps de requête de réponse à une invitation (`POST /sessions/{id}/respond`).
+ *
+ * @property accept `true` pour accepter (rejoindre le lobby), `false` pour refuser.
+ */
+@Serializable
+data class RespondToInvitationRequestDto(val accept: Boolean)
+
+/**
+ * Représentation JSON d'une invitation de session en attente (`GET /sessions/invitations`).
+ *
+ * @property sessionId Identifiant de la session.
+ * @property title Titre de la session.
+ * @property date Date au format `YYYY-MM-DD`.
+ * @property campaignId Identifiant de la campagne parente.
+ * @property campaignName Nom de la campagne parente.
+ * @property groupId Identifiant du groupe de la campagne (à activer à l'acceptation).
+ */
+@Serializable
+data class SessionInvitationDto(
+    val sessionId: String,
+    val title: String,
+    val date: String,
+    val campaignId: String,
+    val campaignName: String,
+    val groupId: String,
+)
+
+/**
+ * Corps de réponse de `GET /sessions/invitations` : l'API enveloppe la liste sous `invitations`.
+ *
+ * @property invitations Invitations de session en attente du joueur courant.
+ */
+@Serializable
+data class SessionInvitationListResponseDto(val invitations: List<SessionInvitationDto>)

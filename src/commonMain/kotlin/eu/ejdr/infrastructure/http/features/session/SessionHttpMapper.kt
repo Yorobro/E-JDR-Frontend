@@ -1,8 +1,13 @@
 package eu.ejdr.infrastructure.http.features.session
 
+import eu.ejdr.domain.features.session.entities.LobbyParticipant
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.entities.SessionInvitation
+import eu.ejdr.domain.features.session.entities.SessionLobby
 import eu.ejdr.domain.features.session.error.SessionError
+import eu.ejdr.infrastructure.http.features.session.dto.CreateLobbyResponseDto
 import eu.ejdr.infrastructure.http.features.session.dto.SessionDto
+import eu.ejdr.infrastructure.http.features.session.dto.SessionInvitationDto
 import io.ktor.http.HttpStatusCode
 
 /**
@@ -24,7 +29,43 @@ object SessionHttpMapper {
             campaignId = dto.campaignId,
             title = dto.title,
             date = dto.date,
+            status = dto.status,
             createdAt = dto.createdAt,
+        )
+
+    /**
+     * Convertit la réponse d'ouverture du lobby en entité domaine.
+     *
+     * @param dto Réponse JSON désérialisée de `POST /sessions/{id}/launch`.
+     * @return Le [SessionLobby] correspondant.
+     */
+    fun toLobby(dto: CreateLobbyResponseDto): SessionLobby =
+        SessionLobby(
+            sessionId = dto.sessionId,
+            status = dto.status,
+            participants = dto.participants.map { p ->
+                LobbyParticipant(
+                    userId = p.userId,
+                    status = p.status,
+                    characterSheetId = p.characterSheetId,
+                )
+            },
+        )
+
+    /**
+     * Convertit une invitation de session reçue de l'API en entité domaine.
+     *
+     * @param dto Invitation JSON désérialisée.
+     * @return La [SessionInvitation] correspondante.
+     */
+    fun toInvitation(dto: SessionInvitationDto): SessionInvitation =
+        SessionInvitation(
+            sessionId = dto.sessionId,
+            title = dto.title,
+            date = dto.date,
+            campaignId = dto.campaignId,
+            campaignName = dto.campaignName,
+            groupId = dto.groupId,
         )
 
     /**
@@ -44,7 +85,13 @@ object SessionHttpMapper {
             "INVALID_SESSION_DATE" -> SessionError.InvalidDate
             "SESSION_NOT_FOUND" -> SessionError.NotFound
             "CAMPAIGN_NOT_FOUND" -> SessionError.NotFound
+            "PARTICIPANT_NOT_FOUND" -> SessionError.NotFound
             "CAMPAIGN_ACCESS_DENIED" -> SessionError.AccessDenied
+            "NOT_GROUP_EDITOR", "NOT_GROUP_MEMBER" -> SessionError.AccessDenied
+            "EMPTY_PARTICIPANT_SELECTION" -> SessionError.EmptyParticipantSelection
+            "PARTICIPANT_NOT_IN_GROUP" -> SessionError.ParticipantNotInGroup
+            "SESSION_NOT_LAUNCHABLE", "SESSION_NOT_JOINABLE" -> SessionError.SessionNotLaunchable
+            "LOBBY_NOT_OPEN" -> SessionError.LobbyNotOpen
             else -> when (status) {
                 HttpStatusCode.NotFound -> SessionError.NotFound
                 HttpStatusCode.Forbidden -> SessionError.AccessDenied

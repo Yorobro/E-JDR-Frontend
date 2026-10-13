@@ -1,13 +1,22 @@
 package eu.ejdr.application.features.session.usecase
 
 import eu.ejdr.application.features.session.abstraction.repository.SessionRepository
+import eu.ejdr.application.features.session.abstraction.usecase.CreateLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.CreateSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.DeleteSessionUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.GetSessionLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.GetSessionUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.InviteToLobbyUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.ListCampaignSessionsUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.ListMySessionInvitationsUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.RemoveParticipantUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.RespondToInvitationUseCase
+import eu.ejdr.application.features.session.abstraction.usecase.StartSessionUseCase
 import eu.ejdr.application.features.session.abstraction.usecase.UpdateSessionUseCase
 import eu.ejdr.application.shared.Result
 import eu.ejdr.domain.features.session.entities.Session
+import eu.ejdr.domain.features.session.entities.SessionInvitation
+import eu.ejdr.domain.features.session.entities.SessionLobby
 import eu.ejdr.domain.features.session.error.SessionError
 
 /**
@@ -41,6 +50,33 @@ class GetSessionUseCaseImpl(
         repository.get(sessionId)
 }
 
+class CreateLobbyUseCaseImpl(
+    private val repository: SessionRepository,
+) : CreateLobbyUseCase {
+    override suspend fun invoke(
+        sessionId: String,
+        participantUserIds: List<String>,
+    ): Result<SessionLobby, SessionError> = repository.createLobby(sessionId, participantUserIds)
+}
+
+class InviteToLobbyUseCaseImpl(
+    private val repository: SessionRepository,
+) : InviteToLobbyUseCase {
+    override suspend fun invoke(
+        sessionId: String,
+        participantUserIds: List<String>,
+    ): Result<SessionLobby, SessionError> = repository.inviteToLobby(sessionId, participantUserIds)
+}
+
+class RemoveParticipantUseCaseImpl(
+    private val repository: SessionRepository,
+) : RemoveParticipantUseCase {
+    override suspend fun invoke(
+        sessionId: String,
+        userId: String,
+    ): Result<SessionLobby, SessionError> = repository.removeParticipant(sessionId, userId)
+}
+
 class UpdateSessionUseCaseImpl(
     private val repository: SessionRepository,
 ) : UpdateSessionUseCase {
@@ -56,4 +92,32 @@ class DeleteSessionUseCaseImpl(
 ) : DeleteSessionUseCase {
     override suspend fun invoke(sessionId: String): Result<Unit, SessionError> =
         repository.delete(sessionId)
+}
+
+class RespondToInvitationUseCaseImpl(
+    private val repository: SessionRepository,
+) : RespondToInvitationUseCase {
+    override suspend fun invoke(sessionId: String, accept: Boolean): Result<Unit, SessionError> =
+        repository.respondToInvitation(sessionId, accept)
+}
+
+class ListMySessionInvitationsUseCaseImpl(
+    private val repository: SessionRepository,
+) : ListMySessionInvitationsUseCase {
+    override suspend fun invoke(): Result<List<SessionInvitation>, SessionError> =
+        repository.listMyInvitations()
+}
+
+class StartSessionUseCaseImpl(
+    private val repository: SessionRepository,
+) : StartSessionUseCase {
+    override suspend fun invoke(sessionId: String): Result<Unit, SessionError> =
+        repository.start(sessionId)
+}
+
+class GetSessionLobbyUseCaseImpl(
+    private val repository: SessionRepository,
+) : GetSessionLobbyUseCase {
+    override suspend fun invoke(sessionId: String): Result<SessionLobby, SessionError> =
+        repository.getLobby(sessionId)
 }
