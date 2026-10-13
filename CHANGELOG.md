@@ -1,3 +1,10 @@
+## [1.30.1](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.30.0...v1.30.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* **update:** la mise à jour automatique Windows s'installe et relance l'app ([7325d90](https://github.com/Yorobro/E-JDR-Frontend/commit/7325d907ed6417a6ca9573625ebef82fb41559a2))
+
 ## [1.30.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.29.0...v1.30.0) (2026-10-13)
 
 
