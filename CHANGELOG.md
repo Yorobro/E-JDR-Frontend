@@ -1,3 +1,26 @@
+## [1.30.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.29.0...v1.30.0) (2026-10-13)
+
+
+### Features
+
+* **session:** bulle de retour à la session, du salon à la partie ([4076d82](https://github.com/Yorobro/E-JDR-Frontend/commit/4076d82e7b5d5506f2747d249c1f399bdbb3285d))
+* **session:** démarrer la session et basculer sur l'écran de jeu ([665969d](https://github.com/Yorobro/E-JDR-Frontend/commit/665969d20e01ecb7225b68201915da1a85b426ce))
+* **session:** écran de lobby + gestion réservée au MJ de la campagne ([d8f88de](https://github.com/Yorobro/E-JDR-Frontend/commit/d8f88de74b34fcf2cd3b95bfa472aa4d736fdcdf))
+* **session:** invitations joueur, lobby partagé et mises à jour temps réel ([3c9fd3f](https://github.com/Yorobro/E-JDR-Frontend/commit/3c9fd3f203d678d1a3264640fc668cb98bb1a1e9))
+* **session:** parité Android des invitations de session ([0c8cb77](https://github.com/Yorobro/E-JDR-Frontend/commit/0c8cb777e965de880684131eaa1281a8e7e0c2e8))
+* **session:** réinviter réellement un joueur depuis le lobby ([2085847](https://github.com/Yorobro/E-JDR-Frontend/commit/2085847938df7d07b6bca15d46fa78b97cd8b628))
+* **session:** retirer un joueur depuis le salon d'attente ([ca2f4c6](https://github.com/Yorobro/E-JDR-Frontend/commit/ca2f4c64b74668fc4c1ed387ddbb59c38e1a9ca9))
+* **session:** sortir du salon le joueur qui vient d'en être retiré ([e13c627](https://github.com/Yorobro/E-JDR-Frontend/commit/e13c6276a260c97b6d304d5cacce6d3b60e908e5))
+
+
+### Bug Fixes
+
+* **android:** ne plus renvoyer à l'accueil après une rotation d'écran ([8c430fe](https://github.com/Yorobro/E-JDR-Frontend/commit/8c430fe79c1b19d0bb7e5aec78a73277b58d0664))
+* **navigation:** un ViewModelStore par destination sur Android ([473a9a5](https://github.com/Yorobro/E-JDR-Frontend/commit/473a9a54b5def50ee0c45eac0a4389be3f7bdb85))
+* **session:** le joueur venant d'une invitation n'était jamais abonné au canal du groupe ([fb9019e](https://github.com/Yorobro/E-JDR-Frontend/commit/fb9019e2d2e5410965e4069c1d63380ac0db7b63))
+* **session:** migrer les icônes du lobby vers AppIcons (post-refonte) ([b80c4b6](https://github.com/Yorobro/E-JDR-Frontend/commit/b80c4b6dc0349d8a627fac23833b62379e026d1e))
+* **session:** rendre le sélecteur d'invitation du lobby utilisable sur téléphone ([e8cee1d](https://github.com/Yorobro/E-JDR-Frontend/commit/e8cee1df6c7da3b01ada3bdf4a2b79099a5063d6))
+
 ## [1.29.0](https://github.com/Yorobro/E-JDR-Frontend/compare/v1.28.0...v1.29.0) (2026-10-07)
 
 
